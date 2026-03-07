@@ -17,6 +17,7 @@ const C = {
   red:"#F87171", white:"#F8FAFC", green:"#34D399",
 };
 
+const sp = (n=8) => <div style={{height:n}}/>;
 const sLabel = (txt, col=C.mut) => (
   <div style={{fontSize:11,color:col,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700,fontFamily:F.b,marginBottom:12}}>{txt}</div>
 );
@@ -38,6 +39,110 @@ function Timeline({items,accent}){
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ── Latest Run — Morning Run Mar 7 2026 ──
+const latestRunHR = [
+  {d:0,hr:100,alt:905},{d:0.14,hr:135,alt:904},{d:0.28,hr:143,alt:902},{d:0.43,hr:147,alt:900},
+  {d:0.57,hr:148,alt:898},{d:0.71,hr:144,alt:894},{d:0.85,hr:142,alt:892},{d:1.0,hr:147,alt:892},
+  {d:1.14,hr:147,alt:892},{d:1.28,hr:147,alt:894},{d:1.42,hr:154,alt:897},{d:1.57,hr:152,alt:899},
+  {d:1.71,hr:145,alt:901},{d:1.85,hr:148,alt:902},{d:1.99,hr:147,alt:903},{d:2.13,hr:147,alt:901},
+  {d:2.28,hr:147,alt:900},{d:2.42,hr:141,alt:898},{d:2.56,hr:140,alt:895},{d:2.70,hr:139,alt:892},
+  {d:2.85,hr:147,alt:893},{d:2.99,hr:149,alt:895},{d:3.13,hr:150,alt:895},{d:3.27,hr:136,alt:885},
+  {d:3.41,hr:141,alt:878},{d:3.56,hr:138,alt:872},{d:3.70,hr:140,alt:863},{d:3.84,hr:154,alt:869},
+  {d:3.98,hr:151,alt:871},{d:4.12,hr:157,alt:879},{d:4.27,hr:155,alt:881},{d:4.41,hr:157,alt:884},
+  {d:4.55,hr:166,alt:894},{d:4.69,hr:170,alt:902},{d:4.84,hr:168,alt:909},{d:4.98,hr:157,alt:906},
+  {d:5.12,hr:149,alt:901},{d:5.26,hr:151,alt:898},{d:5.40,hr:157,alt:895},{d:5.55,hr:167,alt:898},
+  {d:5.69,hr:172,alt:903},{d:5.83,hr:177,alt:907},{d:5.97,hr:178,alt:913},{d:6.12,hr:178,alt:918},
+  {d:6.26,hr:172,alt:912},{d:6.40,hr:167,alt:906},{d:6.54,hr:159,alt:899},{d:6.69,hr:157,alt:889},
+  {d:6.83,hr:162,alt:889},{d:6.97,hr:163,alt:887},{d:7.11,hr:167,alt:889},{d:7.25,hr:172,alt:890},
+  {d:7.40,hr:169,alt:891},{d:7.54,hr:172,alt:896},{d:7.68,hr:172,alt:900},{d:7.82,hr:171,alt:900},
+  {d:7.96,hr:166,alt:900},{d:8.11,hr:164,alt:899},{d:8.25,hr:160,alt:900},{d:8.39,hr:163,alt:900},
+  {d:8.53,hr:164,alt:900},{d:8.68,hr:164,alt:899},{d:8.82,hr:168,alt:900},{d:8.96,hr:168,alt:900},
+  {d:9.10,hr:174,alt:900},{d:9.25,hr:174,alt:900},{d:9.39,hr:173,alt:900},{d:9.53,hr:172,alt:900},
+  {d:9.67,hr:167,alt:899},{d:9.81,hr:169,alt:899},{d:9.96,hr:164,alt:893},{d:10.10,hr:166,alt:890},
+  {d:10.24,hr:169,alt:889},{d:10.38,hr:172,alt:887},{d:10.52,hr:173,alt:886},{d:10.67,hr:172,alt:887},
+  {d:10.81,hr:172,alt:890},{d:10.95,hr:181,alt:900},{d:11.09,hr:152,alt:906},{d:11.24,hr:145,alt:912},
+  {d:11.38,hr:145,alt:915},{d:11.52,hr:149,alt:908},{d:11.66,hr:153,alt:903},{d:11.81,hr:159,alt:900},
+  {d:11.95,hr:159,alt:894},{d:12.09,hr:164,alt:892},{d:12.23,hr:173,alt:897},{d:12.38,hr:174,alt:900},
+  {d:12.52,hr:177,alt:905},{d:12.66,hr:174,alt:904},{d:12.80,hr:170,alt:903},{d:12.94,hr:168,alt:899},
+  {d:13.09,hr:175,alt:898},{d:13.23,hr:179,alt:904},{d:13.37,hr:174,alt:901},{d:13.51,hr:170,alt:900},
+  {d:13.65,hr:167,alt:898},{d:13.80,hr:168,alt:895},{d:13.94,hr:166,alt:894},{d:14.08,hr:153,alt:895},
+];
+
+function LatestRunCard() {
+  const [showChart, setShowChart] = useState("hr");
+  const accent = "#818CF8"; // indigo for latest run
+  const daysToNamma = Math.ceil((new Date("2026-03-15") - new Date("2026-03-07")) / (1000*60*60*24));
+  return (
+    <div style={{background:"linear-gradient(135deg,#080A18,#0A0C1A,#080E12)",border:`1px solid ${accent}33`,borderBottom:`1px solid ${accent}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(129,140,248,0.08) 0%,transparent 50%)`}}/>
+      <div style={{position:"relative"}}>
+        {/* Header row */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:accent,boxShadow:`0 0 8px ${accent}`,animation:"pulse 2s infinite"}}/>
+              <span style={{fontSize:11,color:accent,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Run · Today</span>
+              <div style={{background:"#13152A",border:`1px solid ${accent}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>Mar 7</div>
+            </div>
+            <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>MORNING RUN</div>
+            <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>{daysToNamma} days to Namma Power Run 🔥</div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px",lineHeight:1}}>14.08<span style={{fontSize:14,color:C.mut}}> km</span></div>
+            <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>1:40:20 · 7:08/km</div>
+          </div>
+        </div>
+        {/* Stat pills */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:14}}>
+          {[["❤️","Avg HR","159 bpm"],["📈","Max HR","181 bpm"],["⬆️","Elevation","150m"],["⚡","Power","189W"],["🔥","Calories","1244"]].map(([icon,l,v])=>(
+            <div key={l} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
+              <div style={{fontSize:13,marginBottom:2}}>{icon}</div>
+              <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
+              <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.05em"}}>{l}</div>
+            </div>
+          ))}
+        </div>
+        {/* Chart toggle */}
+        <div style={{display:"flex",gap:6,marginBottom:8}}>
+          {[["hr","Heart Rate"],["alt","Elevation"]].map(([k,l])=>(
+            <button key={k} onClick={()=>setShowChart(k)} style={{padding:"4px 10px",background:showChart===k?"#13152A":"transparent",border:`1px solid ${showChart===k?accent+"55":C.border}`,borderRadius:20,fontSize:10,color:showChart===k?accent:C.mut,cursor:"pointer",fontFamily:F.b,fontWeight:600}}>
+              {l}
+            </button>
+          ))}
+        </div>
+        {/* Sparkline chart */}
+        <ResponsiveContainer width="100%" height={80}>
+          <AreaChart data={latestRunHR} margin={{left:0,right:0,top:4,bottom:0}}>
+            <defs>
+              <linearGradient id="lrf" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={accent} stopOpacity={0.4}/>
+                <stop offset="100%" stopColor={accent} stopOpacity={0.02}/>
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`} ticks={[0,3.5,7,10.5,14]}/>
+            <YAxis domain={showChart==="hr"?[90,190]:[855,925]} hide/>
+            <Tooltip content={({active,payload})=>{
+              if(active&&payload?.length){const p=payload[0].payload;return(
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 9px",fontSize:11,fontFamily:F.b}}>
+                  <div style={{color:C.sec}}>{p.d}km</div>
+                  {showChart==="hr"?<div style={{color:accent}}>{p.hr} bpm</div>:<div style={{color:accent}}>{p.alt}m</div>}
+                </div>
+              );} return null;
+            }}/>
+            <Area type="monotone" dataKey={showChart==="hr"?"hr":"alt"} stroke={accent} strokeWidth={2} fill="url(#lrf)" dot={false} activeDot={{r:3,fill:accent}}/>
+          </AreaChart>
+        </ResponsiveContainer>
+        {/* Coaching note */}
+        <div style={{marginTop:10,padding:"9px 12px",background:"rgba(129,140,248,0.06)",borderRadius:8,border:`1px solid ${accent}22`}}>
+          <div style={{fontSize:12,color:"#A5B4FC",lineHeight:1.6,fontFamily:F.b}}>
+            🧠 <strong>Coach note:</strong> 14km long run with <strong style={{color:C.white}}>150m elevation</strong> — your biggest week of prep. Easy 7:08/km pace with HR staying mostly Z3 means aerobic engine is solid. {daysToNamma} days to Namma: do 1 more hill session then taper. You're ready.
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -256,16 +361,26 @@ const nammaSegments=[
 ];
 
 const nammaTraining=[
-  {date:"Fri Mar 6", emoji:"🛌",label:"Full Rest",       light:C.sec,  isRace:false,isKey:false,desc:"Walk, stretch, foam roll."},
-  {date:"Sat Mar 7", emoji:"🏃",label:"Easy Long Run",   light:C.blue, isRace:false,isKey:false,desc:"10–12 km @ 7:30–8:00/km · HR < 155 · Find a mild hill."},
-  {date:"Sun Mar 8", emoji:"🛌",label:"Full Rest",       light:C.sec,  isRace:false,isKey:false,desc:"Full off day. Hydrate aggressively. Sleep 8+ hrs."},
-  {date:"Mon Mar 9", emoji:"🏃",label:"Easy Run",        light:C.green,isRace:false,isKey:false,desc:"6 km @ 7:45/km. Loose, relaxed."},
-  {date:"Tue Mar 10",emoji:"⚡",label:"Hill Intervals 🔑",light:C.tcs,  isRace:false,isKey:true, desc:"6 km total: 4× run up a 400–600m incline, jog down."},
-  {date:"Wed Mar 11",emoji:"🏃",label:"Recovery Run",    light:C.green,isRace:false,isKey:false,desc:"5 km @ 8:00/km or rest if legs heavy."},
-  {date:"Thu Mar 12",emoji:"💨",label:"Shakeout + Strides",light:C.purple,isRace:false,isKey:false,desc:"4 km easy + 4×80m strides at race effort."},
-  {date:"Fri Mar 13",emoji:"🛌",label:"Full Rest",       light:C.sec,  isRace:false,isKey:false,desc:"Nothing. Carb load: rice + dal + curd. Sleep by 10pm."},
-  {date:"Sat Mar 14",emoji:"🎽",label:"Shakeout + BIB",  light:C.blue, isRace:false,isKey:false,desc:"20 min easy + 2 strides. Collect BIB at Swaasthya Fitness, Whitefield."},
-  {date:"Sun Mar 15",emoji:"🏅",label:"RACE DAY",        light:C.namma,isRace:true, isKey:false,desc:"Namma Power Run 2026 · Target: 57:30–58:30 · NICE Road, Hoskerehalli"},
+  {date:"Fri Mar 6", emoji:"🏸",label:"Badminton ✓",      light:C.green, isRace:false,isKey:false,done:true,
+   desc:"67 min · Avg HR 133 · Max 157 · 547 kcal. Cross-training instead of rest — legs fresh, heart rate controlled. ✅"},
+  {date:"Sat Mar 7", emoji:"✅",label:"Long Run ✓",        light:"#818CF8",isRace:false,isKey:false,done:true,
+   desc:"14.08 km · 1:40:20 · 7:08/km · HR avg 159 · 150m elevation · 1244 kcal. EXCEEDED plan (10–12km target). Big aerobic base work. ✅"},
+  {date:"Sun Mar 8", emoji:"🛌",label:"Full Rest",         light:C.sec,   isRace:false,isKey:false,done:false,
+   desc:"Full off day. Legs earned it after 14km. Hydrate aggressively. Sleep 8+ hrs."},
+  {date:"Mon Mar 9", emoji:"🏃",label:"Easy Run",          light:C.green, isRace:false,isKey:false,done:false,
+   desc:"6 km @ 7:45/km. Loose, relaxed. Flush out the weekend fatigue."},
+  {date:"Tue Mar 10",emoji:"⚡",label:"Hill Intervals 🔑", light:C.tcs,   isRace:false,isKey:true, done:false,
+   desc:"6 km total: find a 400–600m incline. 4× run up at effort, jog down. Trains legs for NICE Road's km 1–2 climb."},
+  {date:"Wed Mar 11",emoji:"🏃",label:"Recovery Run",      light:C.green, isRace:false,isKey:false,done:false,
+   desc:"5 km @ 8:00/km or full rest if legs feel heavy."},
+  {date:"Thu Mar 12",emoji:"💨",label:"Shakeout + Strides",light:C.purple,isRace:false,isKey:false,done:false,
+   desc:"4 km easy + 4×80m strides at race effort. Stay sharp, don't tire."},
+  {date:"Fri Mar 13",emoji:"🛌",label:"Full Rest",         light:C.sec,   isRace:false,isKey:false,done:false,
+   desc:"Nothing. Carb load at dinner: rice + dal + curd. Sleep by 10pm."},
+  {date:"Sat Mar 14",emoji:"🎽",label:"Shakeout + BIB",    light:C.blue,  isRace:false,isKey:false,done:false,
+   desc:"20 min very easy + 2 strides at race pace. Collect BIB at Swaasthya Fitness, Whitefield."},
+  {date:"Sun Mar 15",emoji:"🏅",label:"RACE DAY",          light:C.namma, isRace:true, isKey:false,done:false,
+   desc:"Namma Power Run 2026 · Target: 57:30–58:30 · NICE Road, Hoskerehalli"},
 ];
 
 const NAMMA_ELEV_PTS=[0,3,6,12,22,35,45,52,58,62,65,67,68,66,63,58,52,45,38,30,24,18,14,10,7,5,4,3,2,2,2,3,5,8,12,18,25,33,42,50,57,63,67,68,67,65,62,58,53,47,40,33,26,20,15,10,7,4,2,0];
@@ -344,19 +459,38 @@ function NammaRun(){
         )}
         {tab===2&&(
           <div>
-            {sLabel("9-Day Countdown to Race Day")}
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:11,color:C.mut,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700,fontFamily:F.b}}>9-Day Countdown to Race Day</div>
+              <div style={{display:"flex",gap:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Done</span></div>
+                <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:2,background:"#283040"}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Planned</span></div>
+              </div>
+            </div>
             {nammaTraining.map((day,i)=>(
-              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:8,padding:"12px 14px",background:day.isRace?"linear-gradient(135deg,#1A0000,#2A0000)":C.card,border:`1px solid ${day.isRace?accent+"55":day.isKey?"#F9731633":C.border}`,borderRadius:10,borderLeft:`3px solid ${day.light}`}}>
+              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:8,padding:"12px 14px",
+                background:day.isRace?"linear-gradient(135deg,#1A0000,#2A0000)":day.done?"linear-gradient(135deg,#060F08,#080E0A)":C.card,
+                border:`1px solid ${day.isRace?accent+"55":day.done?day.light+"44":day.isKey?"#F9731633":C.border}`,
+                borderRadius:10,borderLeft:`3px solid ${day.light}`,
+                opacity:(!day.done&&!day.isRace&&i>1)?0.72:1,
+              }}>
                 <div style={{fontSize:22,lineHeight:1,paddingTop:2}}>{day.emoji}</div>
                 <div style={{flex:1}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-                    <span style={{fontSize:15,fontWeight:700,color:day.light,textTransform:"uppercase",fontFamily:F.h,letterSpacing:"0.5px"}}>{day.label}</span>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:15,fontWeight:700,color:day.light,textTransform:"uppercase",fontFamily:F.h,letterSpacing:"0.5px"}}>{day.label}</span>
+                      {day.done&&<div style={{background:"#0A1F0D",border:`1px solid ${C.green}55`,borderRadius:10,padding:"1px 7px",fontSize:9,color:C.green,fontWeight:700,fontFamily:F.b,letterSpacing:"0.05em"}}>✓ DONE</div>}
+                    </div>
                     <span style={{fontSize:12,color:C.mut,fontFamily:F.b}}>{day.date}</span>
                   </div>
-                  <div style={{fontSize:12,color:C.sec,marginTop:5,lineHeight:1.6,fontFamily:F.b}}>{day.desc}</div>
+                  <div style={{fontSize:12,color:day.done?"#86EFAC99":C.sec,marginTop:3,lineHeight:1.6,fontFamily:F.b}}>{day.desc}</div>
                 </div>
               </div>
             ))}
+            <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}33`,borderRadius:12,padding:14,marginTop:6}}>
+              <div style={{fontSize:12,color:"#86EFAC",fontFamily:F.b,lineHeight:1.7}}>
+                📊 <strong>Week progress: 2/9 days done</strong> · <strong style={{color:C.white}}>14.08km</strong> in the bank · Long run exceeded plan by ~2km (+150m elevation!) · <strong style={{color:C.white}}>8 days to race</strong>. Next up: Rest today, easy run Mon, hill intervals Tue. 🎯
+              </div>
+            </div>
           </div>
         )}
         {tab===3&&(
@@ -639,6 +773,8 @@ export default function RacePlanner(){
   const r=RACES[race];
   return(
     <div style={{background:C.bg,minHeight:"100vh",color:C.pri,fontFamily:F.b,maxWidth:780,margin:"0 auto",paddingBottom:40}}>
+      {/* Latest Run */}
+      <LatestRunCard/>
       {/* Switcher */}
       <div style={{background:"#09090F",borderBottom:`1px solid ${C.border}`,padding:"14px 16px 0"}}>
         <div style={{fontSize:10,color:"#283040",textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:10,fontWeight:700,fontFamily:F.b}}>Sachin K G · Strava #99703920 · 2026 Race Season</div>
