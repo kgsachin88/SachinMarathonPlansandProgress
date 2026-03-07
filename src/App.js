@@ -17,7 +17,6 @@ const C = {
   red:"#F87171", white:"#F8FAFC", green:"#34D399",
 };
 
-const sp = (n=8) => <div style={{height:n}}/>;
 const sLabel = (txt, col=C.mut) => (
   <div style={{fontSize:11,color:col,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700,fontFamily:F.b,marginBottom:12}}>{txt}</div>
 );
