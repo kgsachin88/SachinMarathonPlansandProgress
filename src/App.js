@@ -56,19 +56,33 @@ const weatherData = {
   ],
 };
 
-// ── Badminton HR stream — Mar 8 2026 (time in minutes) ──
-const badmintonHR = [
-  {t:0,hr:85},{t:4.2,hr:120},{t:8.4,hr:145},{t:12.6,hr:123},{t:16.8,hr:141},
-  {t:21.0,hr:131},{t:25.3,hr:133},{t:29.5,hr:124},{t:33.7,hr:134},{t:37.9,hr:127},
-  {t:42.1,hr:134},{t:46.3,hr:122},{t:50.5,hr:132},{t:54.7,hr:123},{t:58.9,hr:154},
-  {t:63.1,hr:141},{t:67.4,hr:121},{t:71.6,hr:117},{t:75.8,hr:127},{t:80.0,hr:133},
-  {t:84.2,hr:142},{t:88.4,hr:147},{t:92.6,hr:150},{t:96.8,hr:135},{t:101.0,hr:136},{t:104.2,hr:128},
+// ── Latest Run — Morning Run Mar 9 2026 ──
+const latestRunHR = [
+  {d:0,hr:123},{d:0.52,hr:136},{d:1.04,hr:146},{d:1.57,hr:151},{d:2.09,hr:155},
+  {d:2.59,hr:158},{d:3.11,hr:160},{d:3.65,hr:163},{d:4.16,hr:164},{d:4.68,hr:165},
+  {d:5.20,hr:167},{d:5.73,hr:166},{d:6.25,hr:166},{d:6.76,hr:168},{d:7.28,hr:167},
+  {d:7.79,hr:167},{d:8.33,hr:171},{d:8.84,hr:172},{d:9.37,hr:173},{d:9.89,hr:172},
+  {d:10.39,hr:172},{d:10.92,hr:171},{d:11.45,hr:170},{d:11.96,hr:171},{d:12.49,hr:172},
+  {d:12.99,hr:171},{d:13.52,hr:172},{d:14.03,hr:172},{d:14.55,hr:174},{d:15.07,hr:174},
+  {d:15.59,hr:173},{d:16.11,hr:174},{d:16.64,hr:173},{d:17.15,hr:174},{d:17.67,hr:173},
+  {d:18.19,hr:173},{d:18.73,hr:172},{d:19.25,hr:173},{d:19.77,hr:174},{d:20.28,hr:174},
+  {d:20.79,hr:173},{d:21.31,hr:174},{d:21.84,hr:173},{d:22.37,hr:173},{d:22.87,hr:173},
+  {d:23.39,hr:172},{d:23.91,hr:172},{d:24.45,hr:173},{d:24.96,hr:172},{d:25.48,hr:173},
+  {d:25.99,hr:171},{d:26.52,hr:169},{d:27.04,hr:172},{d:27.56,hr:169},{d:28.08,hr:171},
+  {d:28.58,hr:171},{d:29.13,hr:171},{d:29.64,hr:170},{d:30.14,hr:168},{d:30.68,hr:171},
+  {d:31.71,hr:172},{d:32.24,hr:170},{d:32.76,hr:170},{d:33.28,hr:169},{d:33.80,hr:171},
+  {d:34.30,hr:173},{d:34.83,hr:173},{d:35.35,hr:174},{d:35.87,hr:174},{d:36.40,hr:173},
+  {d:36.92,hr:173},{d:37.43,hr:174},{d:37.95,hr:173},{d:38.47,hr:173},{d:38.98,hr:175},
+  {d:39.50,hr:174},{d:40.02,hr:175},{d:40.62,hr:176},{d:41.06,hr:177},{d:41.76,hr:176},
+  {d:42.12,hr:178},{d:42.79,hr:179},{d:43.18,hr:178},{d:43.90,hr:179},{d:44.18,hr:178},
+  {d:44.70,hr:179},{d:45.22,hr:179},{d:45.75,hr:178},{d:46.27,hr:178},{d:46.79,hr:179},
+  {d:47.32,hr:178},{d:47.84,hr:178},{d:48.36,hr:179},{d:48.88,hr:181},{d:49.38,hr:181},
+  {d:49.90,hr:181},{d:50.44,hr:180},{d:50.96,hr:177},{d:51.48,hr:172},{d:51.47,hr:163},
 ];
 
-// ── Latest workout (today) ──
 function LatestRunCard() {
   const accent = "#818CF8";
-  const daysToNamma = 7;
+  const daysToNamma = 6;
   return (
     <div style={{background:"linear-gradient(135deg,#080A18,#0A0C1A,#080E12)",borderBottom:`1px solid ${accent}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(129,140,248,0.08) 0%,transparent 50%)`}}/>
@@ -78,20 +92,20 @@ function LatestRunCard() {
           <div>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
               <div style={{width:7,height:7,borderRadius:"50%",background:accent,boxShadow:`0 0 8px ${accent}`}}/>
-              <span style={{fontSize:11,color:accent,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Activity · Today</span>
-              <div style={{background:"#13152A",border:`1px solid ${accent}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>Mar 8</div>
+              <span style={{fontSize:11,color:accent,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Run · Today</span>
+              <div style={{background:"#13152A",border:`1px solid ${accent}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>Mar 9</div>
             </div>
-            <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>MORNING BADMINTON 🏸</div>
-            <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>{daysToNamma} days to Namma Power Run · Active recovery ✅</div>
+            <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>MORNING RUN 🏃</div>
+            <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>{daysToNamma} days to Namma Power Run · 👟 Nimbus 27</div>
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px",lineHeight:1}}>1:44<span style={{fontSize:14,color:C.mut}}> hrs</span></div>
-            <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>822 kcal · Avg HR 132</div>
+            <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px",lineHeight:1}}>5.15<span style={{fontSize:14,color:C.mut}}> km</span></div>
+            <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>31:00 · 6:01/km</div>
           </div>
         </div>
         {/* Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:14}}>
-          {[["❤️","Avg HR","132 bpm"],["📈","Max HR","161 bpm"],["⏱️","Duration","1:44:11"],["🔥","Calories","822"]].map(([icon,l,v])=>(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:14}}>
+          {[["❤️","Avg HR","171 bpm"],["📈","Max HR","182 bpm"],["⚡","Power","221W"],["👣","Cadence","84 spm"],["🔥","Calories","435"]].map(([icon,l,v])=>(
             <div key={l} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
               <div style={{fontSize:13,marginBottom:2}}>{icon}</div>
               <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
@@ -100,26 +114,26 @@ function LatestRunCard() {
           ))}
         </div>
         {/* HR chart */}
-        <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Heart Rate Over Session</div>
+        <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Heart Rate · Distance</div>
         <ResponsiveContainer width="100%" height={72}>
-          <AreaChart data={badmintonHR} margin={{left:0,right:0,top:4,bottom:0}}>
+          <AreaChart data={latestRunHR} margin={{left:0,right:0,top:4,bottom:0}}>
             <defs>
-              <linearGradient id="bhr" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="lrf" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={accent} stopOpacity={0.4}/>
                 <stop offset="100%" stopColor={accent} stopOpacity={0.02}/>
               </linearGradient>
             </defs>
-            <XAxis dataKey="t" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}m`} ticks={[0,20,40,60,80,104]}/>
-            <YAxis domain={[80,170]} hide/>
-            <Tooltip content={({active,payload})=>{if(active&&payload?.length)return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 9px",fontSize:11,fontFamily:F.b}}><div style={{color:C.sec}}>{payload[0].payload.t}min</div><div style={{color:accent}}>{payload[0].value} bpm</div></div>);return null;}}/>
-            <ReferenceLine y={132} stroke={accent} strokeDasharray="3 3" strokeOpacity={0.4}/>
-            <Area type="monotone" dataKey="hr" stroke={accent} strokeWidth={2} fill="url(#bhr)" dot={false} activeDot={{r:3,fill:accent}}/>
+            <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`} ticks={[0,1,2,3,4,5]}/>
+            <YAxis domain={[120,185]} hide/>
+            <Tooltip content={({active,payload})=>{if(active&&payload?.length)return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 9px",fontSize:11,fontFamily:F.b}}><div style={{color:C.sec}}>{payload[0].payload.d}km</div><div style={{color:accent}}>{payload[0].value} bpm</div></div>);return null;}}/>
+            <ReferenceLine y={171} stroke={accent} strokeDasharray="3 3" strokeOpacity={0.4}/>
+            <Area type="monotone" dataKey="hr" stroke={accent} strokeWidth={2} fill="url(#lrf)" dot={false} activeDot={{r:3,fill:accent}}/>
           </AreaChart>
         </ResponsiveContainer>
-        {/* Coach note */}
-        <div style={{marginTop:10,padding:"9px 12px",background:"rgba(129,140,248,0.06)",borderRadius:8,border:`1px solid ${accent}22`}}>
-          <div style={{fontSize:12,color:"#A5B4FC",lineHeight:1.6,fontFamily:F.b}}>
-            🧠 <strong>Coach note:</strong> Smart rest day — 104 min of badminton keeps you active without taxing the legs. HR stayed mostly in Z2–Z3 (avg 132 bpm), perfect active recovery. Yesterday's 14km long run is your peak prep. <strong style={{color:C.white}}>7 days out: legs fresh, aerobic engine primed.</strong>
+        {/* Coach alert */}
+        <div style={{marginTop:10,padding:"9px 12px",background:"rgba(249,115,22,0.07)",borderRadius:8,border:`1px solid ${C.tcs}33`}}>
+          <div style={{fontSize:12,color:"#FED7AA",lineHeight:1.6,fontFamily:F.b}}>
+            ⚠️ <strong>Coach note:</strong> Planned easy 6km @ 7:45/km — you ran 5km @ <strong style={{color:C.white}}>6:01/km with avg HR 171</strong>. That's Z4 territory, not easy. <strong style={{color:C.namma}}>6 days to race: tomorrow's hill session is crucial — don't skip it, but don't go deep either.</strong> Legs must arrive at the start line fresh.
           </div>
         </div>
       </div>
@@ -404,8 +418,8 @@ const nammaTraining=[
    desc:"14.08 km · 1:40:20 · 7:08/km · HR avg 159 · 150m elevation · 1244 kcal. EXCEEDED plan (10–12km target). Big aerobic base work. ✅"},
   {date:"Sun Mar 8", emoji:"🏸",label:"Badminton ✓",        light:C.green, isRace:false,isKey:false,done:true,
    desc:"1:44:11 · Avg HR 132 · Max 161 · 822 kcal. Planned rest day → smart active recovery instead. Legs stayed fresh. ✅"},
-  {date:"Mon Mar 9", emoji:"🏃",label:"Easy Run",          light:C.green, isRace:false,isKey:false,done:false,
-   desc:"6 km @ 7:45/km. Loose, relaxed. Flush out the weekend fatigue."},
+  {date:"Mon Mar 9", emoji:"✅",label:"Morning Run ✓",     light:C.green, isRace:false,isKey:false,done:true,
+   desc:"5.15km · 31:00 · 6:01/km · Avg HR 171 · 221W · 435 kcal. Faster than planned easy pace — HR ran at Z4 avg (171). Legs felt good. 6 days to race: taper mode from here. ✅"},
   {date:"Tue Mar 10",emoji:"⚡",label:"Hill Intervals 🔑", light:C.tcs,   isRace:false,isKey:true, done:false,
    desc:"6 km total: find a 400–600m incline. 4× run up at effort, jog down. Trains legs for NICE Road's km 1–2 climb."},
   {date:"Wed Mar 11",emoji:"🏃",label:"Recovery Run",      light:C.green, isRace:false,isKey:false,done:false,
@@ -438,7 +452,7 @@ function NammaElevSVG(){
   );
 }
 
-const NAMMA_TABS=["Race Plan","Route & Elev","Training Week","Race Morning"];
+const NAMMA_TABS=["Race Plan","SBI Analysis","Route & Elev","Training Week","Race Morning"];
 function NammaRun(){
   const [tab,setTab]=useState(0);
   const accent=C.namma;
@@ -477,7 +491,8 @@ function NammaRun(){
             </div>
           </div>
         )}
-        {tab===1&&(
+        {tab===1&&<SBIAnalysis/>}
+        {tab===2&&(
           <div>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
               {sLabel("NICE Road Elevation Profile (Out & Back)")}
@@ -494,7 +509,7 @@ function NammaRun(){
             </div>
           </div>
         )}
-        {tab===2&&(
+        {tab===3&&(
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div style={{fontSize:11,color:C.mut,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700,fontFamily:F.b}}>9-Day Countdown to Race Day</div>
@@ -525,12 +540,12 @@ function NammaRun(){
             ))}
             <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}33`,borderRadius:12,padding:14,marginTop:6}}>
               <div style={{fontSize:12,color:"#86EFAC",fontFamily:F.b,lineHeight:1.7}}>
-                📊 <strong>Week progress: 3/9 days done</strong> · <strong style={{color:C.white}}>14.08km</strong> running + 2 badminton sessions · Long run exceeded plan · <strong style={{color:C.white}}>7 days to race</strong>. Next: easy run Mon, 🔑 hill intervals Tue. 🎯
+                📊 <strong>Week progress: 4/9 days done</strong> · <strong style={{color:C.white}}>19.23km</strong> running + 2 badminton sessions · <strong style={{color:C.namma}}>⚠️ HR running hot — taper carefully</strong> · <strong style={{color:C.white}}>6 days to race</strong>. Next: 🔑 hill intervals Tue. 🎯
               </div>
             </div>
           </div>
         )}
-        {tab===3&&(
+        {tab===4&&(
           <div>
             {sLabel("Mar 15 Morning Timeline")}
             <Timeline accent={accent} items={[
@@ -790,6 +805,370 @@ function TCSRun(){
                   <span style={{fontSize:12,color:C.sec,lineHeight:1.5,fontFamily:F.b}}>{v}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  SBI GREEN 10K — COMPARISON & SUB-60 PLAN
+// ══════════════════════════════════════════════════════════════════════════════
+
+const SBI_COLOR = "#38BDF8"; // sky blue
+
+// Real Strava lap data from SBI Green 10K
+const sbiLaps = [
+  {km:1, time:"6:10", pace:6.17, hr:160, elev:13,  power:223, cad:84},
+  {km:2, time:"6:53", pace:6.88, hr:174, elev:27,  power:221, cad:83},
+  {km:3, time:"6:21", pace:6.35, hr:171, elev:16,  power:223, cad:83},
+  {km:4, time:"5:18", pace:5.30, hr:178, elev:0,   power:227, cad:86},
+  {km:5, time:"6:00", pace:6.00, hr:178, elev:0,   power:225, cad:85},
+  {km:6, time:"6:25", pace:6.42, hr:178, elev:9,   power:218, cad:85},
+  {km:7, time:"7:05", pace:7.08, hr:182, elev:24,  power:217, cad:83},
+  {km:8, time:"6:41", pace:6.68, hr:175, elev:12,  power:198, cad:83},
+  {km:9, time:"5:46", pace:5.77, hr:177, elev:4,   power:213, cad:85},
+  {km:10,time:"5:31", pace:5.52, hr:176, elev:2,   power:237, cad:85},
+];
+
+// Namma target blueprint derived from SBI analysis
+const nammaPlan = [
+  {km:1,  zone:"Flat Start",       sbiPace:6.17, targetPace:6.17, targetHR:155, elev:0,  color:C.green,
+   issue:null, fix:"Roll out easy. Match SBI km1. HR under 158."},
+  {km:2,  zone:"⬆️ Climb (out)",   sbiPace:6.88, targetPace:6.75, targetHR:170, elev:13, color:C.tcs,
+   issue:"SBI km2 HR spiked to 174 on the first climb.", fix:"Same climb at NICE Road. Shorten stride. HR 168–172 max."},
+  {km:3,  zone:"Flat Recovery",    sbiPace:6.35, targetPace:5.58, targetHR:165, elev:0,  color:C.blue,
+   issue:"SBI km3: still recovering at 6:21.", fix:"NICE km 2.5–5 is flat — capitalise. Bank 30–40 sec here."},
+  {km:4,  zone:"⚠️ DON'T SURGE",   sbiPace:5.30, targetPace:5.50, targetHR:170, elev:0,  color:C.red,
+   issue:"SBI km4: SURGED to 5:18 — fastest km of race. Burned ALL your matches.", fix:"Hold 5:45–5:50. Save legs. The 2nd climb is 3km away."},
+  {km:5,  zone:"Turnaround+Flat",  sbiPace:6.00, targetPace:5.50, targetHR:172, elev:0,  color:C.blue,
+   issue:"SBI km5 dropped back to 6:00 after the surge.",fix:"Steady 5:45–5:50. No yo-yo pacing like SBI."},
+  {km:6,  zone:"Flat Push",        sbiPace:6.42, targetPace:5.55, targetHR:174, elev:9,  color:C.blue,
+   issue:"SBI km6 slowed to 6:25 — fatigue from km4 surge showing.", fix:"You'll have energy here because you didn't surge at km4. Push to 5:45."},
+  {km:7,  zone:"⬆️ Climb (back)",  sbiPace:7.08, targetPace:6.58, targetHR:180, elev:24, color:C.namma,
+   issue:"SBI km7: DISASTER — 7:05, HR 187. Power fell to 217W. Tanks empty from km4.", fix:"With controlled km4–6, you hit this climb with fuel. Target 6:30–6:40. Cadence 88+."},
+  {km:8,  zone:"Recovery Downhill",sbiPace:6.68, targetPace:6.25, targetHR:176, elev:12, color:C.yellow,
+   issue:"SBI km8: still suffering at 6:41. Power dropped to 198W (lowest of race).", fix:"Downhill on NICE Road. Let gravity work. 6:00–6:15."},
+  {km:9,  zone:"Final Push",       sbiPace:5.77, targetPace:5.58, targetHR:178, elev:4,  color:C.green,
+   issue:"SBI km9 finally recovered at 5:46 — but too late.", fix:"You'll have legs here. Target sub-5:45. Start surging."},
+  {km:10, zone:"Sprint Finish",    sbiPace:5.52, targetPace:5.25, targetHR:185, elev:2,  color:C.namma,
+   issue:"SBI km10: 5:31 finish sprint.", fix:"Aim for 5:10–5:20. You'll have more left than SBI."},
+];
+
+// Time saved per km vs SBI
+const timeSavings = nammaPlan.map(d=>({
+  km: `Km ${d.km}`,
+  saved: Math.round((d.sbiPace - d.targetPace) * 60),
+  color: d.sbiPace > d.targetPace ? C.green : C.red,
+}));
+
+const SBI_TABS = ["Race Comparison","Km Blueprint","Sub-60 Plan","Key Mistakes"];
+function SBIAnalysis() {
+  const [tab, setTab] = useState(0);
+  const accent = SBI_COLOR;
+
+  const CustomTooltip = ({active, payload, label}) => {
+    if (active && payload?.length) return (
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 11px",fontSize:12,fontFamily:F.b}}>
+        <div style={{color:C.white,fontWeight:700,marginBottom:3}}>{label}</div>
+        {payload.map((p,i) => <div key={i} style={{color:p.color||accent}}>{p.name}: {p.value}</div>)}
+      </div>
+    );
+    return null;
+  };
+
+  return (
+    <>
+      {/* Banner */}
+      <div style={{background:"#080C14",padding:"10px 18px",borderBottom:`1px solid ${accent}22`,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+        <div style={{width:8,height:8,borderRadius:"50%",background:accent,flexShrink:0}}/>
+        <span style={{fontSize:12,color:accent,fontWeight:700,fontFamily:F.b}}>SBI Green 10K — Nov 30, 2025 · Bengaluru</span>
+        <div style={{marginLeft:"auto",display:"flex",gap:8,flexWrap:"wrap"}}>
+          <div style={{background:"#0A1020",border:`1px solid ${accent}44`,borderRadius:20,padding:"2px 10px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>63:09 → TARGET: SUB-60</div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.border}`,overflowX:"auto"}}>
+        {SBI_TABS.map((t,i)=>(
+          <button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"11px 6px",background:"transparent",border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>
+        ))}
+      </div>
+
+      <div style={{padding:"18px 18px"}}>
+
+        {/* ── TAB 0: RACE COMPARISON ── */}
+        {tab===0&&(
+          <div>
+            {/* Head-to-head stats */}
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
+              {sLabel("Head-to-Head: SBI vs Namma Target")}
+              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:6,alignItems:"center",marginBottom:16}}>
+                {/* SBI column */}
+                <div style={{background:"#080B12",borderRadius:10,padding:12,textAlign:"center",border:`1px solid ${accent}33`}}>
+                  <div style={{fontSize:10,color:accent,fontWeight:700,fontFamily:F.b,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.1em"}}>SBI Green 10K</div>
+                  <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px"}}>63:09</div>
+                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>6:14/km avg</div>
+                  <div style={{height:1,background:C.border,margin:"8px 0"}}/>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
+                    {[["HR","175 bpm"],["Max HR","187 bpm"],["Power","220W"],["Cad","84 spm"],["Elev","+111m"],["Load","323"]].map(([l,v])=>(
+                      <div key={l} style={{fontSize:10,fontFamily:F.b}}><span style={{color:C.mut}}>{l}: </span><span style={{color:C.pri,fontWeight:600}}>{v}</span></div>
+                    ))}
+                  </div>
+                </div>
+                {/* VS divider */}
+                <div style={{textAlign:"center",padding:"0 6px"}}>
+                  <div style={{fontSize:18,fontFamily:F.h,color:C.mut,letterSpacing:"2px"}}>VS</div>
+                  <div style={{marginTop:8,fontSize:10,color:C.mut,fontFamily:F.b}}>3:09<br/>faster</div>
+                </div>
+                {/* Namma target */}
+                <div style={{background:"linear-gradient(135deg,#1A0500,#120300)",borderRadius:10,padding:12,textAlign:"center",border:`1px solid ${C.namma}44`}}>
+                  <div style={{fontSize:10,color:C.namma,fontWeight:700,fontFamily:F.b,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.1em"}}>Namma Target</div>
+                  <div style={{fontSize:28,fontFamily:F.h,color:C.namma,letterSpacing:"1px"}}>58:30</div>
+                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>5:51/km avg</div>
+                  <div style={{height:1,background:C.border,margin:"8px 0"}}/>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
+                    {[["HR","~172"],["Max HR","~185"],["Power","~225W"],["Cad","85+ spm"],["Elev","+90m"],["Gap","−3:39"]].map(([l,v])=>(
+                      <div key={l} style={{fontSize:10,fontFamily:F.b}}><span style={{color:C.mut}}>{l}: </span><span style={{color:C.pri,fontWeight:600}}>{v}</span></div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Pace bar chart comparison */}
+              {sLabel("Pace Per Km — SBI vs Namma Target")}
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={nammaPlan.map(d=>({km:`${d.km}`,sbi:d.sbiPace,target:d.targetPace}))} barGap={3} barSize={16}>
+                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`Km${v}`}/>
+                  <YAxis domain={[5.0, 7.5]} hide/>
+                  <Tooltip content={({active,payload,label})=>{
+                    if(active&&payload?.length)return(
+                      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 11px",fontSize:12,fontFamily:F.b}}>
+                        <div style={{color:C.white,fontWeight:700,marginBottom:3}}>Km {label}</div>
+                        {payload.map((p,i)=>{const m=Math.floor(p.value);const s=Math.round((p.value-m)*100);return(<div key={i} style={{color:p.fill}}>{p.name}: {m}:{s<10?"0"+s:s}/km</div>);})}
+                      </div>
+                    );return null;
+                  }}/>
+                  <Bar dataKey="sbi" name="SBI" radius={[3,3,0,0]} fill={accent+"88"}/>
+                  <Bar dataKey="target" name="Target" radius={[3,3,0,0]}>
+                    {nammaPlan.map((d,i)=><Cell key={i} fill={d.color}/>)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{display:"flex",gap:14,justifyContent:"center",marginTop:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:12,height:8,borderRadius:2,background:accent+"88"}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>SBI Actual</span></div>
+                <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:12,height:8,borderRadius:2,background:C.green}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Namma Target</span></div>
+              </div>
+            </div>
+
+            {/* HR comparison */}
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
+              {sLabel("Heart Rate Per Km")}
+              <ResponsiveContainer width="100%" height={130}>
+                <BarChart data={sbiLaps.map(d=>({km:`${d.km}`,hr:d.hr}))} barSize={28}>
+                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`Km${v}`}/>
+                  <YAxis domain={[150,190]} hide/>
+                  <Tooltip content={({active,payload,label})=>{
+                    if(active&&payload?.length)return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white}}>Km {label}</div><div style={{color:"#F87171"}}>HR: {payload[0].value} bpm</div></div>);return null;
+                  }}/>
+                  <ReferenceLine y={177} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.6}/>
+                  <Bar dataKey="hr" radius={[3,3,0,0]}>
+                    {sbiLaps.map((d,i)=><Cell key={i} fill={d.hr>=182?C.namma:d.hr>=177?C.tcs:C.blue}/>)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{marginTop:10,padding:"9px 12px",background:"#080B12",borderRadius:8}}>
+                <div style={{fontSize:12,color:"#FED7AA",fontFamily:F.b,lineHeight:1.6}}>
+                  ⚠️ <strong>Km 7 peaked at 187 bpm</strong> — your highest of the race, right on the second big climb. Classic "blowup" pattern caused by the km 4 surge (5:18). Power also collapsed to just 198W at km 8 — total tank empty.
+                </div>
+              </div>
+            </div>
+
+            {/* Time savings bar */}
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
+              {sLabel("Seconds Saved Per Km vs SBI")}
+              <ResponsiveContainer width="100%" height={100}>
+                <BarChart data={timeSavings} barSize={28}>
+                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}/>
+                  <YAxis hide/>
+                  <ReferenceLine y={0} stroke={C.border} strokeWidth={1}/>
+                  <Tooltip content={({active,payload,label})=>{
+                    if(active&&payload?.length){const v=payload[0].value;return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white}}>{label}</div><div style={{color:v>0?C.green:C.red}}>{v>0?"+":""}{v}s saved</div></div>);}return null;
+                  }}/>
+                  <Bar dataKey="saved" radius={[3,3,0,0]}>
+                    {timeSavings.map((d,i)=><Cell key={i} fill={d.saved>0?C.green:C.red}/>)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:"8px 12px",background:"#080B12",borderRadius:8}}>
+                <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>Total time saved</div>
+                <div style={{fontSize:16,fontFamily:F.h,color:C.green,letterSpacing:"0.5px"}}>~3:39 faster = <strong>59:30</strong></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 1: KM BLUEPRINT ── */}
+        {tab===1&&(
+          <div>
+            {sLabel("Namma Km Blueprint — Learned from SBI")}
+            {nammaPlan.map((km,i)=>(
+              <div key={i} style={{background:C.card,border:`1px solid ${km.color}33`,borderLeft:`3px solid ${km.color}`,borderRadius:10,padding:"13px 14px",marginBottom:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                  <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                    <div style={{width:28,height:28,borderRadius:"50%",background:km.color+"22",border:`1px solid ${km.color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:km.color,fontFamily:F.h,flexShrink:0}}>{km.km}</div>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:700,color:C.pri,fontFamily:F.b}}>{km.zone}</div>
+                      <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>SBI was {km.time||`${km.sbiPace.toFixed(2).replace(".",":")} /km`}</div>
+                    </div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:20,fontFamily:F.h,color:km.color,letterSpacing:"0.5px"}}>{(()=>{const m=Math.floor(km.targetPace);const s=Math.round((km.targetPace-m)*100);return `${m}:${s<10?"0"+s:s}`;})()}/km</div>
+                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>HR ~{km.targetHR}</div>
+                  </div>
+                </div>
+                {km.issue&&(
+                  <div style={{background:"#1A0B00",borderRadius:6,padding:"7px 10px",marginBottom:7,border:`1px solid ${C.tcs}22`}}>
+                    <div style={{fontSize:11,color:"#FED7AA",fontFamily:F.b,lineHeight:1.5}}>❌ <strong>SBI mistake:</strong> {km.issue}</div>
+                  </div>
+                )}
+                <div style={{background:"#060F08",borderRadius:6,padding:"7px 10px",border:`1px solid ${C.green}22`}}>
+                  <div style={{fontSize:11,color:"#86EFAC",fontFamily:F.b,lineHeight:1.5}}>✅ <strong>Namma fix:</strong> {km.fix}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── TAB 2: SUB-60 PLAN ── */}
+        {tab===2&&(
+          <div>
+            <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}44`,borderRadius:12,padding:16,marginBottom:14}}>
+              {sLabel("Sub-60 is already yours 🎯", C.green)}
+              <div style={{fontSize:13,color:C.sec,lineHeight:1.7,fontFamily:F.b}}>
+                You ran <strong style={{color:C.police}}>58:53 at the Police Run</strong> — you are already a sub-60 runner. The SBI Green run (63:09) was slower because of one key error: the km 4 surge. Fix that single habit and you go sub-60 at Namma comfortably.
+              </div>
+            </div>
+
+            {/* Target time splits */}
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
+              {sLabel("The Sub-58:30 Split Plan")}
+              {[
+                ["Km 1",    "6:10","6:10","Flat start. Calm. HR under 158.",           C.green],
+                ["Km 2",    "6:53","6:30","CLIMB — same as SBI km2 but 23 sec faster by not fighting it. Short stride, high cadence.", C.tcs],
+                ["Km 3–5", "18:26","17:30","Three flat kms. Steady 5:50/km. NO surge. This is 56 sec of savings.", C.blue],
+                ["Km 6",    "6:25","5:55","You have fresh legs unlike SBI. Push here.", C.blue],
+                ["Km 7",    "7:05","6:35","CLIMB BACK — but with fuel in tank. Target 6:30. Not 7:05.", C.namma],
+                ["Km 8",    "6:41","6:10","Downhill. Gravity. Let it roll.",            C.yellow],
+                ["Km 9",    "5:46","5:40","Final push. You'll have more gas than SBI.", C.green],
+                ["Km 10",   "5:31","5:10","Sprint. Empty everything.",                  C.namma],
+              ].map(([km,sbi,target,tip,col],i,arr)=>(
+                <div key={km} style={{display:"flex",gap:10,padding:"10px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none",alignItems:"flex-start"}}>
+                  <div style={{width:44,fontSize:13,fontWeight:700,color:col,fontFamily:F.h,letterSpacing:"0.5px",flexShrink:0,paddingTop:1}}>{km}</div>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",gap:12,alignItems:"baseline",marginBottom:4}}>
+                      <span style={{fontSize:12,color:C.mut,fontFamily:F.b,textDecoration:"line-through"}}>{sbi}</span>
+                      <span style={{fontSize:16,fontWeight:700,color:col,fontFamily:F.h,letterSpacing:"0.5px"}}>→ {target}</span>
+                    </div>
+                    <div style={{fontSize:12,color:C.sec,lineHeight:1.5,fontFamily:F.b}}>{tip}</div>
+                  </div>
+                </div>
+              ))}
+              <div style={{marginTop:12,padding:"10px 12px",background:"linear-gradient(135deg,#060F08,#080E0A)",borderRadius:8,border:`1px solid ${C.green}33`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:13,color:C.sec,fontFamily:F.b}}>Projected Finish</span>
+                <span style={{fontSize:24,fontFamily:F.h,color:C.green,letterSpacing:"1px"}}>58:30 ✓</span>
+              </div>
+            </div>
+
+            {/* The single rule */}
+            <div style={{background:"linear-gradient(135deg,#1A0800,#0D0500)",border:`1px solid ${C.namma}44`,borderRadius:12,padding:16,marginBottom:14}}>
+              {sLabel("⚡ The One Rule That Unlocks Sub-60", C.namma)}
+              <div style={{fontSize:18,fontWeight:700,color:C.white,fontFamily:F.b,lineHeight:1.4,marginBottom:10}}>
+                "At km 4, <span style={{color:C.namma}}>DO NOT run faster than 5:50/km</span> — no matter how good you feel."
+              </div>
+              <div style={{fontSize:13,color:C.sec,fontFamily:F.b,lineHeight:1.7}}>
+                At SBI you ran km 4 in <strong style={{color:C.red}}>5:18</strong> — a full 90+ seconds faster than sustainable. The second climb (km 7) then cost you <strong style={{color:C.red}}>7:05</strong> — 2 full minutes slower than km 4. You net-lost 30 seconds by "going fast" on the flat. At Namma, km 5–7 is the same temptation. Resist it.
+              </div>
+            </div>
+
+            {/* Race day checklist */}
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
+              {sLabel("Namma Race Day Checklist")}
+              {[
+                [C.blue,  "Start of race","Seed in 58–60 min group. Let the fast pack go."],
+                [C.tcs,   "Km 1–2 climb","Shorten stride. Cadence 86+. HR 168–172 max."],
+                [C.red,   "Km 3–6 flat",  "HOLD 5:50. Repeat 'hold hold hold' on km 4."],
+                [C.namma, "Km 7–8 climb", "You have saved legs. 6:30–6:40. Cadence 88+."],
+                [C.green, "Km 9–10",      "Now is the time. Empty everything. Sub-5:30 finish sprint."],
+              ].map(([col,phase,tip],i,arr)=>(
+                <div key={phase} style={{display:"flex",gap:10,padding:"9px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
+                  <div style={{width:4,background:col,borderRadius:2,flexShrink:0,opacity:0.8}}/>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700,color:C.pri,fontFamily:F.b}}>{phase}</div>
+                    <div style={{fontSize:12,color:C.sec,marginTop:2,lineHeight:1.5,fontFamily:F.b}}>{tip}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 3: KEY MISTAKES ── */}
+        {tab===3&&(
+          <div>
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
+              {sLabel("The 3 Mistakes That Cost 3+ Minutes at SBI")}
+              {[
+                {rank:"#1",title:"Km 4 Surge (5:18)",severity:1.0,color:C.namma,
+                 what:"Ran km 4 in 5:18 — 56 seconds faster than your race pace. It felt great. It wasn't.",
+                 why:"You'd just come off the first climb (km2–3). Legs felt light on the flat. Classic over-confidence.",
+                 cost:"Cost you the entire km 7 climb. That one km was 7:05 — the single slowest km of your race.",
+                 fix:"At Namma: glance at watch at km 3.5. If you're under 5:45/km, SLOW DOWN deliberately."},
+                {rank:"#2",title:"Km 7 Blowup (7:05, HR 187)",severity:0.85,color:C.red,
+                 what:"Your slowest km AND your highest HR of the race — at the same time. Power: 217W, your second-lowest.",
+                 why:"Tank was empty from the km 4 surge. Body had nothing left for the second major climb.",
+                 cost:"7:05 vs a manageable 6:35 = 30 seconds lost on just this km.",
+                 fix:"At Namma: second climb is km 7–8.5. If you've held pace correctly, this should feel like a grind, not a collapse."},
+                {rank:"#3",title:"Power Collapse km 8 (198W)",severity:0.65,color:C.yellow,
+                 what:"After the km 7 blowup, your power dropped to 198W — lowest of the entire race.",
+                 why:"Glycogen-depleted effort. The body physically couldn't sustain output.",
+                 cost:"Km 8 was 6:41 when you should've been recovering and building towards the finish.",
+                 fix:"At Namma: if you feel this coming (sudden HR drop + legs locking), back off 10 sec/km and eat the loss. Don't panic and surge."},
+              ].map((m,i,arr)=>(
+                <div key={i} style={{marginBottom:i<arr.length-1?16:0,paddingBottom:i<arr.length-1?16:0,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                    <div style={{background:m.color+"22",border:`1px solid ${m.color}55`,borderRadius:8,padding:"4px 10px",fontSize:12,fontWeight:700,color:m.color,fontFamily:F.h,letterSpacing:"0.5px"}}>{m.rank}</div>
+                    <div style={{fontSize:15,fontWeight:700,color:C.white,fontFamily:F.b}}>{m.title}</div>
+                  </div>
+                  <IntBar val={m.severity} color={m.color} h={3}/>
+                  <div style={{marginTop:10,display:"grid",gap:7}}>
+                    {[["🔍 What happened",m.what],["❓ Why it happened",m.why],["💸 What it cost",m.cost],["✅ Namma fix",m.fix]].map(([l,t])=>(
+                      <div key={l} style={{display:"flex",gap:8,fontSize:12,fontFamily:F.b}}>
+                        <span style={{color:C.mut,flexShrink:0,width:130}}>{l}</span>
+                        <span style={{color:C.sec,lineHeight:1.5,flex:1}}>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Cadence note */}
+            <div style={{background:"#0A0D1A",border:`1px solid ${C.blue}33`,borderRadius:12,padding:16}}>
+              {sLabel("📊 Cadence Pattern", C.blue)}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:10}}>
+                {sbiLaps.filter((_,i)=>[1,3,6,8,9].includes(i)).map((l)=>(
+                  <div key={l.km} style={{background:"#080B12",borderRadius:8,padding:"8px 6px",textAlign:"center"}}>
+                    <div style={{fontSize:12,fontFamily:F.h,color:l.cad>=85?C.green:C.yellow,letterSpacing:"0.5px"}}>{l.cad}</div>
+                    <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>Km {l.km}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{fontSize:12,color:C.sec,fontFamily:F.b,lineHeight:1.6}}>
+                Cadence averaged 83.9 spm across SBI — just below the optimal 85+ threshold. On the climbs (km 2, 7) it dropped to 83. At Namma: target <strong style={{color:C.white}}>86+ on the flat, 88+ on the climbs</strong>. Higher cadence = lower impact per step = less fatigue.
+              </div>
             </div>
           </div>
         )}
