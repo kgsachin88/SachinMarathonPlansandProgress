@@ -869,16 +869,6 @@ function SBIAnalysis() {
   const [tab, setTab] = useState(0);
   const accent = SBI_COLOR;
 
-  const CustomTooltip = ({active, payload, label}) => {
-    if (active && payload?.length) return (
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 11px",fontSize:12,fontFamily:F.b}}>
-        <div style={{color:C.white,fontWeight:700,marginBottom:3}}>{label}</div>
-        {payload.map((p,i) => <div key={i} style={{color:p.color||accent}}>{p.name}: {p.value}</div>)}
-      </div>
-    );
-    return null;
-  };
-
   return (
     <>
       {/* Banner */}
