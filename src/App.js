@@ -56,33 +56,45 @@ const weatherData = {
   ],
 };
 
-// ── Latest Run — Morning Run Mar 9 2026 ──
+// ── Latest Run — Shakeout + Strides Mar 10 2026 ──
 const latestRunHR = [
-  {d:0,hr:123},{d:0.52,hr:136},{d:1.04,hr:146},{d:1.57,hr:151},{d:2.09,hr:155},
-  {d:2.59,hr:158},{d:3.11,hr:160},{d:3.65,hr:163},{d:4.16,hr:164},{d:4.68,hr:165},
-  {d:5.20,hr:167},{d:5.73,hr:166},{d:6.25,hr:166},{d:6.76,hr:168},{d:7.28,hr:167},
-  {d:7.79,hr:167},{d:8.33,hr:171},{d:8.84,hr:172},{d:9.37,hr:173},{d:9.89,hr:172},
-  {d:10.39,hr:172},{d:10.92,hr:171},{d:11.45,hr:170},{d:11.96,hr:171},{d:12.49,hr:172},
-  {d:12.99,hr:171},{d:13.52,hr:172},{d:14.03,hr:172},{d:14.55,hr:174},{d:15.07,hr:174},
-  {d:15.59,hr:173},{d:16.11,hr:174},{d:16.64,hr:173},{d:17.15,hr:174},{d:17.67,hr:173},
-  {d:18.19,hr:173},{d:18.73,hr:172},{d:19.25,hr:173},{d:19.77,hr:174},{d:20.28,hr:174},
-  {d:20.79,hr:173},{d:21.31,hr:174},{d:21.84,hr:173},{d:22.37,hr:173},{d:22.87,hr:173},
-  {d:23.39,hr:172},{d:23.91,hr:172},{d:24.45,hr:173},{d:24.96,hr:172},{d:25.48,hr:173},
-  {d:25.99,hr:171},{d:26.52,hr:169},{d:27.04,hr:172},{d:27.56,hr:169},{d:28.08,hr:171},
-  {d:28.58,hr:171},{d:29.13,hr:171},{d:29.64,hr:170},{d:30.14,hr:168},{d:30.68,hr:171},
-  {d:31.71,hr:172},{d:32.24,hr:170},{d:32.76,hr:170},{d:33.28,hr:169},{d:33.80,hr:171},
-  {d:34.30,hr:173},{d:34.83,hr:173},{d:35.35,hr:174},{d:35.87,hr:174},{d:36.40,hr:173},
-  {d:36.92,hr:173},{d:37.43,hr:174},{d:37.95,hr:173},{d:38.47,hr:173},{d:38.98,hr:175},
-  {d:39.50,hr:174},{d:40.02,hr:175},{d:40.62,hr:176},{d:41.06,hr:177},{d:41.76,hr:176},
-  {d:42.12,hr:178},{d:42.79,hr:179},{d:43.18,hr:178},{d:43.90,hr:179},{d:44.18,hr:178},
-  {d:44.70,hr:179},{d:45.22,hr:179},{d:45.75,hr:178},{d:46.27,hr:178},{d:46.79,hr:179},
-  {d:47.32,hr:178},{d:47.84,hr:178},{d:48.36,hr:179},{d:48.88,hr:181},{d:49.38,hr:181},
-  {d:49.90,hr:181},{d:50.44,hr:180},{d:50.96,hr:177},{d:51.48,hr:172},{d:51.47,hr:163},
+  {d:0,hr:99},{d:0.67,hr:123},{d:1.33,hr:134},{d:1.99,hr:142},{d:2.65,hr:145},
+  {d:3.31,hr:145},{d:3.99,hr:142},{d:4.66,hr:142},{d:5.31,hr:145},{d:5.98,hr:147},
+  {d:6.63,hr:144},{d:7.30,hr:146},{d:7.97,hr:149},{d:8.62,hr:149},{d:9.28,hr:146},
+  {d:9.97,hr:149},{d:10.62,hr:152},{d:11.28,hr:151},{d:11.95,hr:152},{d:12.60,hr:150},
+  {d:13.28,hr:148},{d:13.93,hr:149},{d:14.59,hr:150},{d:15.25,hr:151},{d:15.92,hr:148},
+  {d:16.59,hr:150},{d:17.25,hr:149},{d:17.91,hr:152},{d:18.59,hr:149},{d:19.25,hr:146},
+  {d:19.92,hr:150},{d:20.57,hr:150},{d:21.23,hr:152},{d:21.91,hr:148},{d:22.55,hr:151},
+  {d:23.22,hr:152},{d:23.88,hr:150},{d:24.55,hr:153},{d:25.22,hr:152},{d:25.88,hr:154},
+  {d:26.55,hr:152},{d:27.22,hr:150},{d:27.87,hr:150},{d:28.54,hr:152},{d:29.20,hr:154},
+  {d:29.87,hr:155},{d:30.52,hr:151},{d:31.19,hr:152},{d:31.85,hr:150},{d:32.52,hr:154},
+  {d:33.17,hr:150},{d:33.85,hr:154},{d:34.50,hr:155},{d:35.16,hr:154},{d:35.82,hr:152},
+  {d:36.50,hr:151},{d:37.15,hr:151},{d:37.82,hr:152},{d:38.49,hr:155},{d:39.14,hr:152},
+  /* strides start ~km 4.1 */
+  {d:40.47,hr:161},{d:41.14,hr:161},{d:44.47,hr:164},{d:44.79,hr:166},{d:45.11,hr:167},
+  {d:45.79,hr:167},{d:46.44,hr:168},{d:47.78,hr:172},{d:48.43,hr:171},{d:49.10,hr:169},
+  {d:49.77,hr:164},{d:50.43,hr:161},{d:51.09,hr:154},{d:51.76,hr:152},{d:52.43,hr:153},
+  /* cooldown */
+  {d:53.76,hr:156},{d:54.43,hr:156},{d:54.09,hr:156},{d:55.41,hr:154},{d:56.08,hr:160},
+  {d:56.75,hr:162},{d:57.41,hr:160},{d:58.08,hr:152},{d:58.75,hr:147},{d:59.41,hr:151},
+  {d:60.75,hr:161},{d:61.68,hr:168},{d:62.04,hr:172},{d:62.39,hr:170},{d:63.03,hr:162},
+  {d:63.69,hr:161},{d:64.36,hr:162},{d:65.03,hr:166},{d:65.69,hr:170},
 ];
 
 function LatestRunCard() {
   const accent = "#818CF8";
-  const daysToNamma = 6;
+  const daysToNamma = 5;
+  // stride laps decoded from Strava: laps 3,5,7,9 = fast (15s each), laps 2,4,6,8,10 = recovery
+  const strideSummary = [
+    {n:1, speed:"11.1",cad:84,  hr:150, type:"rec"},
+    {n:2, speed:"12.8",cad:88,  hr:160, type:"fast"},
+    {n:3, speed:"9.9", cad:85,  hr:164, type:"rec"},
+    {n:4, speed:"10.7",cad:86,  hr:167, type:"fast"},
+    {n:5, speed:"9.5", cad:84,  hr:167, type:"rec"},
+    {n:6, speed:"15.8",cad:91,  hr:168, type:"fast"},
+    {n:7, speed:"8.9", cad:86,  hr:171, type:"rec"},
+    {n:8, speed:"last",cad:null,hr:null,type:"end"},
+  ];
   return (
     <div style={{background:"linear-gradient(135deg,#080A18,#0A0C1A,#080E12)",borderBottom:`1px solid ${accent}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(129,140,248,0.08) 0%,transparent 50%)`}}/>
@@ -93,23 +105,40 @@ function LatestRunCard() {
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
               <div style={{width:7,height:7,borderRadius:"50%",background:accent,boxShadow:`0 0 8px ${accent}`}}/>
               <span style={{fontSize:11,color:accent,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Run · Today</span>
-              <div style={{background:"#13152A",border:`1px solid ${accent}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>Mar 9</div>
+              <div style={{background:"#13152A",border:`1px solid ${accent}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>Mar 10</div>
+              <div style={{background:"#0A1A0A",border:`1px solid ${C.green}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:C.green,fontWeight:700,fontFamily:F.b}}>⚡ STRIDES</div>
             </div>
-            <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>MORNING RUN 🏃</div>
-            <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>{daysToNamma} days to Namma Power Run · 👟 Nimbus 27</div>
+            <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>SHAKEOUT + 4 STRIDES 💨</div>
+            <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>{daysToNamma} days to Namma Power Run · 👟 Novablast 5</div>
           </div>
           <div style={{textAlign:"right"}}>
-            <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px",lineHeight:1}}>5.15<span style={{fontSize:14,color:C.mut}}> km</span></div>
-            <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>31:00 · 6:01/km</div>
+            <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px",lineHeight:1}}>6.57<span style={{fontSize:14,color:C.mut}}> km</span></div>
+            <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>46:43 · 7:07/km</div>
           </div>
         </div>
         {/* Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:14}}>
-          {[["❤️","Avg HR","171 bpm"],["📈","Max HR","182 bpm"],["⚡","Power","221W"],["👣","Cadence","84 spm"],["🔥","Calories","435"]].map(([icon,l,v])=>(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:12}}>
+          {[["❤️","Avg HR","153 bpm"],["📈","Max HR","173 bpm"],["⚡","Power","188W"],["💨","Top Speed","16.9 km/h"],["🔥","Calories","537"]].map(([icon,l,v])=>(
             <div key={l} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
               <div style={{fontSize:13,marginBottom:2}}>{icon}</div>
               <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
               <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.05em"}}>{l}</div>
+            </div>
+          ))}
+        </div>
+        {/* Stride breakdown */}
+        <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Stride Breakdown · 4×80m</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:12}}>
+          {[
+            {n:"S1",speed:"12.8",cad:88, hr:160,color:C.green},
+            {n:"S2",speed:"10.7",cad:86, hr:167,color:C.green},
+            {n:"S3",speed:"15.8",cad:91, hr:168,color:C.yellow},
+            {n:"S4",speed:"11.1",cad:85, hr:173,color:C.yellow},
+          ].map(s=>(
+            <div key={s.n} style={{background:"#080B14",border:`1px solid ${s.color}33`,borderRadius:8,padding:"7px 8px",textAlign:"center"}}>
+              <div style={{fontSize:10,color:s.color,fontWeight:700,fontFamily:F.h,letterSpacing:"0.5px",marginBottom:3}}>{s.n}</div>
+              <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h}}>{s.speed}<span style={{fontSize:9,color:C.mut}}> km/h</span></div>
+              <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>cad {s.cad} · {s.hr}bpm</div>
             </div>
           ))}
         </div>
@@ -123,18 +152,160 @@ function LatestRunCard() {
                 <stop offset="100%" stopColor={accent} stopOpacity={0.02}/>
               </linearGradient>
             </defs>
-            <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`} ticks={[0,1,2,3,4,5]}/>
-            <YAxis domain={[120,185]} hide/>
+            <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`} ticks={[0,1.5,3,4.5,6,6.57]}/>
+            <YAxis domain={[90,180]} hide/>
             <Tooltip content={({active,payload})=>{if(active&&payload?.length)return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 9px",fontSize:11,fontFamily:F.b}}><div style={{color:C.sec}}>{payload[0].payload.d}km</div><div style={{color:accent}}>{payload[0].value} bpm</div></div>);return null;}}/>
-            <ReferenceLine y={171} stroke={accent} strokeDasharray="3 3" strokeOpacity={0.4}/>
+            <ReferenceLine y={153} stroke={accent} strokeDasharray="3 3" strokeOpacity={0.4}/>
+            <ReferenceLine x={41.14} stroke={C.green} strokeDasharray="2 2" strokeOpacity={0.5}/>
             <Area type="monotone" dataKey="hr" stroke={accent} strokeWidth={2} fill="url(#lrf)" dot={false} activeDot={{r:3,fill:accent}}/>
           </AreaChart>
         </ResponsiveContainer>
-        {/* Coach alert */}
-        <div style={{marginTop:10,padding:"9px 12px",background:"rgba(249,115,22,0.07)",borderRadius:8,border:`1px solid ${C.tcs}33`}}>
-          <div style={{fontSize:12,color:"#FED7AA",lineHeight:1.6,fontFamily:F.b}}>
-            ⚠️ <strong>Coach note:</strong> Planned easy 6km @ 7:45/km — you ran 5km @ <strong style={{color:C.white}}>6:01/km with avg HR 171</strong>. That's Z4 territory, not easy. <strong style={{color:C.namma}}>6 days to race: tomorrow's hill session is crucial — don't skip it, but don't go deep either.</strong> Legs must arrive at the start line fresh.
+        {/* Coach note — POSITIVE! */}
+        <div style={{marginTop:10,padding:"9px 12px",background:"rgba(52,211,153,0.06)",borderRadius:8,border:`1px solid ${C.green}33`}}>
+          <div style={{fontSize:12,color:"#86EFAC",lineHeight:1.6,fontFamily:F.b}}>
+            ✅ <strong>Coach note:</strong> This is exactly right. 30-min easy base (avg HR 149 — Z2!) + 4 strides hitting <strong style={{color:C.white}}>up to 16.9 km/h & cadence 91 spm</strong>. HR down from 171 yesterday to 153 today — <strong style={{color:C.white}}>legs are responding and recovering.</strong> Strides activate fast-twitch without fatigue. <strong style={{color:C.green}}>5 days out: perfect execution. Tomorrow — full rest.</strong>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Athlete Profile + VO2max + Recovery Card ──
+function AthleteProfileCard() {
+  const vo2max = 38; // Jack Daniels VDOT from 10K 58:53 → ~38 mL/kg/min
+  const vo2pct = (vo2max / 60) * 100; // % of elite (60 mL/kg/min ceiling)
+  // Recovery: today TL=131, cumulative week ~637, 5 days to race
+  const sessionRecovery = 20; // hours for today's TL 131
+  const weekLoad = 637;
+  const recPct = Math.min(100, Math.round((1 - weekLoad/900)*100)); // freshness %
+  const hrZones = [
+    {z:"Z1",range:"0–118",name:"Recovery",   color:"#1E3A5F"},
+    {z:"Z2",range:"118–147",name:"Aerobic",  color:C.green},
+    {z:"Z3",range:"147–162",name:"Tempo",    color:C.yellow},
+    {z:"Z4",range:"162–177",name:"Threshold",color:C.tcs},
+    {z:"Z5",range:"177+",   name:"Max",      color:C.namma},
+  ];
+  return (
+    <div style={{background:"linear-gradient(135deg,#06080F,#080A12)",borderBottom:`1px solid ${C.border}`,padding:"14px 18px"}}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+        <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#818CF8,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>S</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:14,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.8px"}}>SACHIN K G</div>
+          <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>📍 Bangalore, Karnataka · 75kg · Strava since 2022</div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Strava ID</div>
+          <div style={{fontSize:12,color:"#818CF8",fontFamily:F.h,letterSpacing:"0.5px"}}>99703920</div>
+        </div>
+      </div>
+
+      {/* Stats grid */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:14}}>
+        {[
+          ["🫁","VO2 Max","~38","mL/kg/min","#818CF8"],
+          ["📅","4-wk Runs","155 km","19 activities",C.green],
+          ["📈","YTD","286 km","39 runs",C.yellow],
+          ["🏆","All-Time","695 km","100 runs",C.tcs],
+        ].map(([icon,label,val,sub,col])=>(
+          <div key={label} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${col}22`,borderRadius:10,padding:"9px 7px",textAlign:"center"}}>
+            <div style={{fontSize:14,marginBottom:3}}>{icon}</div>
+            <div style={{fontSize:14,fontWeight:700,color:col,fontFamily:F.h,letterSpacing:"0.3px",lineHeight:1.1}}>{val}</div>
+            <div style={{fontSize:9,color:C.mut,fontFamily:F.b,marginTop:2,lineHeight:1.4}}>{sub}</div>
+            <div style={{fontSize:8,color:"#283040",fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.05em"}}>{label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* VO2max visual */}
+      <div style={{background:C.card,border:"1px solid #818CF833",borderRadius:10,padding:"12px 14px",marginBottom:12}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <div>
+            <div style={{fontSize:11,color:"#818CF8",fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em"}}>🫁 Estimated VO2 Max</div>
+            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:1}}>Calculated from Police Run 10K PR (58:53) via Jack Daniels VDOT</div>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:24,fontFamily:F.h,color:"#818CF8",letterSpacing:"1px",lineHeight:1}}>38</div>
+            <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>mL/kg/min</div>
+          </div>
+        </div>
+        {/* Scale bar */}
+        <div style={{position:"relative",height:10,background:"#0D1117",borderRadius:5,overflow:"hidden",marginBottom:6}}>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,#1E3A5F,#22C55E,#EAB308,#F97316,#EF4444,#818CF8)",opacity:0.3,borderRadius:5}}/>
+          <div style={{position:"absolute",top:0,bottom:0,left:0,width:`${vo2pct}%`,background:"linear-gradient(to right,#4F46E5,#818CF8)",borderRadius:5}}/>
+          <div style={{position:"absolute",top:-1,bottom:-1,left:`${vo2pct}%`,width:3,background:"#fff",borderRadius:2,transform:"translateX(-50%)"}}/>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.mut,fontFamily:F.b}}>
+          {[["20","Beginner"],["35","Fair"],["45","Good"],["55","Excellent"],["60+","Elite"]].map(([v,l])=>(
+            <div key={v} style={{textAlign:"center"}}><div style={{fontWeight:600,color:vo2max>=parseInt(v)?C.sec:"#283040"}}>{v}</div><div>{l}</div></div>
+          ))}
+        </div>
+        <div style={{marginTop:8,padding:"7px 10px",background:"#0A0A18",borderRadius:6,border:"1px solid #818CF822"}}>
+          <div style={{fontSize:11,color:"#A5B4FC",lineHeight:1.6,fontFamily:F.b}}>
+            VO2 38 puts you in the <strong style={{color:C.white}}>"Fair–Good" bracket</strong> for recreational male runners. Your Police Run pace of 5:53/km confirms real aerobic capacity. Every month of consistent training adds ~1–2 points. At 40+ you unlock competitive age-group territory.
+          </div>
+        </div>
+      </div>
+
+      {/* HR Zones from Strava */}
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
+        <div style={{fontSize:11,color:C.mut,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>❤️ Your HR Zones · Live from Strava</div>
+        {hrZones.map((z,i)=>(
+          <div key={z.z} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i<hrZones.length-1?7:0}}>
+            <div style={{width:24,fontSize:11,fontWeight:700,color:z.color,fontFamily:F.h,flexShrink:0}}>{z.z}</div>
+            <div style={{flex:1,height:6,background:"#0D1117",borderRadius:3,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${[20,30,25,35,40][i]}%`,background:z.color,borderRadius:3,opacity:0.85}}/>
+            </div>
+            <div style={{fontSize:11,color:C.sec,fontFamily:F.b,width:65,flexShrink:0}}>{z.range} bpm</div>
+            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,width:60,flexShrink:0}}>{z.name}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recovery meter */}
+      <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}33`,borderRadius:10,padding:"12px 14px"}}>
+        <div style={{fontSize:11,color:C.green,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>⚡ Recovery Status · Race Week</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+          <div style={{background:"#080B12",borderRadius:8,padding:"10px 12px",textAlign:"center"}}>
+            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginBottom:4}}>Session Recovery Needed</div>
+            <div style={{fontSize:22,fontFamily:F.h,color:C.green,letterSpacing:"0.5px"}}>{sessionRecovery}h</div>
+            <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>from today's TL 131</div>
+          </div>
+          <div style={{background:"#080B12",borderRadius:8,padding:"10px 12px",textAlign:"center"}}>
+            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginBottom:4}}>Week Training Load</div>
+            <div style={{fontSize:22,fontFamily:F.h,color:C.yellow,letterSpacing:"0.5px"}}>{weekLoad}</div>
+            <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>5 sessions this week</div>
+          </div>
+        </div>
+        {/* Freshness bar */}
+        <div style={{marginBottom:8}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+            <span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Leg Freshness for Race Day</span>
+            <span style={{fontSize:11,fontWeight:700,color:C.green,fontFamily:F.b}}>Projected: HIGH ✅</span>
+          </div>
+          <div style={{height:8,background:"#0D1117",borderRadius:4,overflow:"hidden"}}>
+            <div style={{height:"100%",width:"72%",background:`linear-gradient(to right,${C.tcs},${C.green})`,borderRadius:4}}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.mut,fontFamily:F.b,marginTop:3}}>
+            <span>Now (tired)</span><span>Race Day (fresh)</span>
+          </div>
+        </div>
+        {/* 5-day recovery plan */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:4}}>
+          {[
+            {day:"Wed 11",plan:"🛌 Full Rest",color:C.green,note:"24h off"},
+            {day:"Thu 12",plan:"🤸 Shakeout",color:C.yellow,note:"20min easy"},
+            {day:"Fri 13",plan:"🛌 Full Rest",color:C.green,note:"Carb load"},
+            {day:"Sat 14",plan:"👟 Light jog",color:C.yellow,note:"BIB pickup"},
+            {day:"Sun 15",plan:"🏅 RACE",    color:C.namma, note:"6:00 AM"},
+          ].map((d,i)=>(
+            <div key={i} style={{background:"#080B12",border:`1px solid ${d.color}33`,borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
+              <div style={{fontSize:8,color:C.mut,fontFamily:F.b,marginBottom:3}}>{d.day}</div>
+              <div style={{fontSize:10,lineHeight:1.2,marginBottom:3}}>{d.plan}</div>
+              <div style={{fontSize:8,color:d.color,fontFamily:F.b,fontWeight:600}}>{d.note}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -146,49 +317,56 @@ function WeatherCoachCard() {
   const [showTips, setShowTips] = useState(false);
   const raceTemp = 33;
   const tempColor = raceTemp >= 33 ? C.namma : raceTemp >= 30 ? C.tcs : C.yellow;
+  // Updated live forecast: Mar 10 30°C, 11→32°C, 12→33°C, 13→33°C, 14→33°C, 15→33°C race day
+  const liveForecast = [
+    { day:"Tue Mar 10",high:30,icon:"☀️",rain:0,  done:true },
+    { day:"Wed Mar 11",high:32,icon:"☀️",rain:0  },
+    { day:"Thu Mar 12",high:33,icon:"☀️",rain:0  },
+    { day:"Fri Mar 13",high:33,icon:"☀️",rain:0  },
+    { day:"Sat Mar 14",high:33,icon:"🌤️",rain:5  },
+    { day:"Sun Mar 15",high:33,icon:"🔥",rain:0,  race:true},
+  ];
   return (
     <div style={{background:"linear-gradient(135deg,#080C10,#060A0E)",borderBottom:`1px solid ${C.border}`,padding:"14px 18px"}}>
-      {/* Weather row */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:18}}>🌤️</span>
-          <div>
-            <div style={{fontSize:11,color:C.mut,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em"}}>Bengaluru Weather</div>
-            <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.b}}>28°C now · Sunny — <span style={{color:tempColor}}>Race day forecast: {raceTemp}°C 🔥</span></div>
-          </div>
+      {/* Weather + run conditions row */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+        <div style={{flex:1}}>
+          <div style={{fontSize:11,color:C.mut,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Bengaluru · Live Weather</div>
+          <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.b}}>☀️ 27°C now · Sunny · <span style={{color:tempColor}}>Race day: {raceTemp}°C 🔥</span></div>
+          <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:3}}>🏃 Today's run conditions: ~22°C at 6:40 AM · ideal race-prep temp</div>
         </div>
-        <button onClick={()=>setShowTips(v=>!v)} style={{padding:"4px 12px",background:showTips?"#1A0D00":"transparent",border:`1px solid ${showTips?C.tcs+"55":C.border}`,borderRadius:20,fontSize:10,color:showTips?C.tcs:C.mut,cursor:"pointer",fontFamily:F.b,fontWeight:600}}>
-          {showTips ? "Hide Tips ▲" : "Coach Tips ▼"}
+        <button onClick={()=>setShowTips(v=>!v)} style={{padding:"4px 12px",background:showTips?"#1A0D00":"transparent",border:`1px solid ${showTips?C.tcs+"55":C.border}`,borderRadius:20,fontSize:10,color:showTips?C.tcs:C.mut,cursor:"pointer",fontFamily:F.b,fontWeight:600,flexShrink:0,marginLeft:8}}>
+          {showTips ? "Hide Tips ▲" : "Heat Tips ▼"}
         </button>
       </div>
-      {/* 7-day forecast strip */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:showTips?12:0}}>
-        {weatherData.forecast.map((d,i)=>(
-          <div key={i} style={{background:d.race?"linear-gradient(135deg,#1A0800,#2A1000)":"rgba(255,255,255,0.03)",border:`1px solid ${d.race?C.tcs+"55":"rgba(255,255,255,0.06)"}`,borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-            <div style={{fontSize:9,color:d.race?C.tcs:C.mut,fontFamily:F.b,fontWeight:600,marginBottom:2,lineHeight:1.3}}>{d.day.replace(" 🏅","")}</div>
-            <div style={{fontSize:14}}>{d.icon}</div>
+      {/* 6-day forecast strip */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:4,marginBottom:showTips?12:0}}>
+        {liveForecast.map((d,i)=>(
+          <div key={i} style={{background:d.race?"linear-gradient(135deg,#1A0800,#2A1000)":d.done?"rgba(52,211,153,0.05)":"rgba(255,255,255,0.03)",border:`1px solid ${d.race?C.tcs+"55":d.done?C.green+"33":"rgba(255,255,255,0.06)"}`,borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+            <div style={{fontSize:8,color:d.race?C.tcs:d.done?C.green:C.mut,fontFamily:F.b,fontWeight:600,marginBottom:2,lineHeight:1.3}}>{d.day.replace("Mar ","")}</div>
+            <div style={{fontSize:14}}>{d.done?"✅":d.icon}</div>
             <div style={{fontSize:12,fontWeight:700,color:d.high>=32?tempColor:C.sec,fontFamily:F.h,letterSpacing:"0.3px"}}>{d.high}°</div>
             {d.race&&<div style={{fontSize:8,color:C.tcs,fontFamily:F.b,fontWeight:700,marginTop:2}}>RACE</div>}
+            {d.done&&<div style={{fontSize:8,color:C.green,fontFamily:F.b,fontWeight:700,marginTop:2}}>DONE</div>}
           </div>
         ))}
       </div>
       {/* Coach tips panel */}
       {showTips && (
         <div style={{background:"rgba(249,115,22,0.05)",border:`1px solid ${C.tcs}33`,borderRadius:10,padding:14}}>
-          <div style={{fontSize:11,color:C.tcs,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>🌡️ Heat Coaching Tips — Race Week</div>
+          <div style={{fontSize:11,color:C.tcs,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>🌡️ Heat Tips — Final 5 Days</div>
           {[
-            ["This week training","Run before 6:30 AM or after 7 PM. Avoid 28–33°C midday heat for any quality sessions."],
-            ["Heat acclimatisation","Race day will be ~33°C at 6am start. Do Tuesday's hill intervals in warm conditions (don't seek shade) — lets your body adapt to sweating at pace."],
-            ["Hydration this week","Increase daily water intake to 3.5–4L now. Pre-load sodium the day before the race (extra pinch of salt in meals)."],
-            ["Race morning pre-cool","Arrive at venue early. Pour ice-cold water on wrists, neck & head just before start. Lowers core temp by ~0.5°C — worth 30+ seconds."],
-            ["Pacing adjustment","33°C = add ~15–20 sec/km vs ideal. Your 5:45/km target becomes ~5:55–6:00/km on the first climb. Don't panic — it's the conditions, not your fitness."],
-            ["Electrolytes on course","Grab every water station. If electrolyte sachets available at km 5, take one. Salt prevents cramps on the second climb (km 7–8)."],
+            ["Run conditions done","Today's 6:40 AM run at ~22°C was textbook. Cool morning air, strides felt fast. Perfect stimulus."],
+            ["Hydration now","4L water/day through Saturday. Add a pinch of salt to every meal from Thu onwards."],
+            ["Race morning pre-cool","At the start line: pour cold water on wrists, neck, head. Drops core temp ~0.5°C = ~30 sec saved."],
+            ["Pacing in heat","33°C at 6 AM start. Add 10–15 sec/km vs cool-day targets. Don't panic — it's conditions, not fitness."],
+            ["Electrolytes","Grab every water station. If sachets available at km 5, take one — prevents cramps on 2nd climb."],
           ].map(([title,tip],i,arr)=>(
-            <div key={i} style={{display:"flex",gap:10,paddingBottom:i<arr.length-1?10:0,marginBottom:i<arr.length-1?10:0,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
+            <div key={i} style={{display:"flex",gap:10,paddingBottom:i<arr.length-1?9:0,marginBottom:i<arr.length-1?9:0,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
               <div style={{width:3,background:C.tcs,borderRadius:2,flexShrink:0,opacity:0.7,marginTop:3}}/>
               <div>
                 <div style={{fontSize:12,fontWeight:700,color:"#FED7AA",fontFamily:F.b}}>{title}</div>
-                <div style={{fontSize:12,color:"#92400E",marginTop:2,lineHeight:1.6,fontFamily:F.b}}>{tip}</div>
+                <div style={{fontSize:11,color:"#78350F",marginTop:2,lineHeight:1.6,fontFamily:F.b}}>{tip}</div>
               </div>
             </div>
           ))}
@@ -420,8 +598,8 @@ const nammaTraining=[
    desc:"1:44:11 · Avg HR 132 · Max 161 · 822 kcal. Planned rest day → smart active recovery instead. Legs stayed fresh. ✅"},
   {date:"Mon Mar 9", emoji:"✅",label:"Morning Run ✓",     light:C.green, isRace:false,isKey:false,done:true,
    desc:"5.15km · 31:00 · 6:01/km · Avg HR 171 · 221W · 435 kcal. Faster than planned easy pace — HR ran at Z4 avg (171). Legs felt good. 6 days to race: taper mode from here. ✅"},
-  {date:"Tue Mar 10",emoji:"⚡",label:"Hill Intervals 🔑", light:C.tcs,   isRace:false,isKey:true, done:false,
-   desc:"6 km total: find a 400–600m incline. 4× run up at effort, jog down. Trains legs for NICE Road's km 1–2 climb."},
+  {date:"Tue Mar 10",emoji:"✅",label:"Shakeout + Strides ✓",light:C.green, isRace:false,isKey:true, done:true,
+   desc:"6.57km · 46:43 · 7:07/km · Avg HR 153 · 4 strides (top speed 16.9 km/h, cadence 91 spm!) · 188W · 537 kcal. HR down from 171 yesterday to 153 — legs responding well. Perfect neuromuscular activation without fatigue. ✅"},
   {date:"Wed Mar 11",emoji:"🏃",label:"Recovery Run",      light:C.green, isRace:false,isKey:false,done:false,
    desc:"5 km @ 8:00/km or full rest if legs feel heavy."},
   {date:"Thu Mar 12",emoji:"💨",label:"Shakeout + Strides",light:C.purple,isRace:false,isKey:false,done:false,
@@ -540,7 +718,7 @@ function NammaRun(){
             ))}
             <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}33`,borderRadius:12,padding:14,marginTop:6}}>
               <div style={{fontSize:12,color:"#86EFAC",fontFamily:F.b,lineHeight:1.7}}>
-                📊 <strong>Week progress: 4/9 days done</strong> · <strong style={{color:C.white}}>19.23km</strong> running + 2 badminton sessions · <strong style={{color:C.namma}}>⚠️ HR running hot — taper carefully</strong> · <strong style={{color:C.white}}>6 days to race</strong>. Next: 🔑 hill intervals Tue. 🎯
+                📊 <strong>Week progress: 5/9 days done</strong> · <strong style={{color:C.white}}>25.8km</strong> running + 2 badminton sessions · <strong style={{color:C.green}}>✅ HR trending down — legs recovering well</strong> · <strong style={{color:C.white}}>5 days to race</strong>. Next: 🛌 full rest tomorrow (Wed). 🎯
               </div>
             </div>
           </div>
@@ -869,6 +1047,16 @@ function SBIAnalysis() {
   const [tab, setTab] = useState(0);
   const accent = SBI_COLOR;
 
+  const CustomTooltip = ({active, payload, label}) => {
+    if (active && payload?.length) return (
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 11px",fontSize:12,fontFamily:F.b}}>
+        <div style={{color:C.white,fontWeight:700,marginBottom:3}}>{label}</div>
+        {payload.map((p,i) => <div key={i} style={{color:p.color||accent}}>{p.name}: {p.value}</div>)}
+      </div>
+    );
+    return null;
+  };
+
   return (
     <>
       {/* Banner */}
@@ -1181,6 +1369,8 @@ export default function RacePlanner(){
     <div style={{background:C.bg,minHeight:"100vh",color:C.pri,fontFamily:F.b,maxWidth:780,margin:"0 auto",paddingBottom:40}}>
       {/* Latest Activity */}
       <LatestRunCard/>
+      {/* Athlete Profile + VO2max + Recovery */}
+      <AthleteProfileCard/>
       {/* Weather + Coach */}
       <WeatherCoachCard/>
       {/* Switcher */}
