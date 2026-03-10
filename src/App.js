@@ -1,732 +1,155 @@
 import { useState } from "react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
-         Cell, BarChart, Bar } from "recharts";
+import {
+  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  XAxis, YAxis, Tooltip, ResponsiveContainer,
+  Cell, ReferenceLine
+} from "recharts";
 
-const fontLink = document.createElement("link");
-fontLink.rel = "stylesheet";
-fontLink.href = "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap";
-document.head.appendChild(fontLink);
+/* ─── Fonts ─── */
+const _fl = document.createElement("link");
+_fl.rel = "stylesheet";
+_fl.href = "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap";
+document.head.appendChild(_fl);
 
-const F = { h: "'Bebas Neue', sans-serif", b: "'Outfit', system-ui, sans-serif" };
+/* ─── Blue Design System ─── */
+const F = { h:"'Bebas Neue', sans-serif", b:"'Outfit', system-ui, sans-serif", m:"'Space Mono', monospace" };
 
 const C = {
-  bg:"#07090F", card:"#0D1117", border:"#1A1F2E",
-  pri:"#E2E8F0", sec:"#94A3B8", mut:"#475569",
-  police:"#6EE7B7", namma:"#FF3D3D", tcs:"#F97316",
-  blue:"#60A5FA", yellow:"#FCD34D", purple:"#A78BFA",
-  red:"#F87171", white:"#F8FAFC", green:"#34D399",
+  bg:     "#050810",
+  card:   "#090D1A",
+  card2:  "#0D1220",
+  bdr:    "#152038",
+  bdr2:   "#1E2D44",
+  white:  "#E8F0FF",
+  pri:    "#C8D8F8",
+  sec:    "#7A90B8",
+  mut:    "#3A4D6A",
+  faint:  "#111A2E",
+  // Blues — primary palette
+  blue:   "#3D8BF8",
+  sky:    "#60A5FA",
+  indigo: "#818CF8",
+  cyan:   "#22D3EE",
+  // Functional
+  green:  "#34D399",
+  yellow: "#FCD34D",
+  orange: "#F97316",
+  red:    "#F87171",
+  pink:   "#F472B6",
+  // Race accents (all in blue family)
+  police: "#34D399",   // completed  → teal
+  namma:  "#60A5FA",   // upcoming   → sky blue
+  tcs:    "#818CF8",   // goal race  → indigo
 };
 
-const sLabel = (txt, col=C.mut) => (
-  <div style={{fontSize:11,color:col,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700,fontFamily:F.b,marginBottom:12}}>{txt}</div>
+/* ─── Tiny helpers ─── */
+const sp = (n=8) => <div style={{height:n}}/>;
+const Pill = ({c=C.blue,children}) => (
+  <span style={{display:"inline-flex",padding:"2px 8px",borderRadius:20,fontSize:9,
+    fontFamily:F.m,fontWeight:700,color:c,background:`${c}18`,border:`1px solid ${c}33`,
+    letterSpacing:"0.07em",textTransform:"uppercase"}}>{children}</span>
 );
-function IntBar({val,color,h=4}){return(<div style={{height:h,background:C.border,borderRadius:2}}><div style={{height:"100%",width:`${val*100}%`,background:color,borderRadius:2}}/></div>);}
-
-function Timeline({items,accent}){
-  return(
-    <div style={{position:"relative"}}>
-      <div style={{position:"absolute",left:52,top:16,bottom:16,width:1,background:`linear-gradient(to bottom,${accent}44,${accent},${accent}44)`}}/>
-      {items.map((item,i)=>(
-        <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:16,position:"relative"}}>
-          <div style={{width:52,textAlign:"right",fontSize:11,color:C.sec,fontWeight:600,paddingTop:8,flexShrink:0,fontFamily:F.b}}>{item.time}</div>
-          <div style={{width:20,height:20,borderRadius:"50%",flexShrink:0,zIndex:1,marginTop:6,background:item.fire?accent:"#1A1F2E",border:`2px solid ${item.fire?accent:"#334155"}`,boxShadow:item.fire?`0 0 14px ${accent}88`:"none",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            {item.fire&&<div style={{width:7,height:7,borderRadius:"50%",background:"#fff"}}/>}
-          </div>
-          <div style={{flex:1,background:item.fire?"linear-gradient(135deg,#1A0800,#2A1000)":C.card,border:`1px solid ${item.fire?accent+"44":C.border}`,borderRadius:10,padding:"10px 14px"}}>
-            <div style={{fontSize:13,fontWeight:700,color:item.fire?accent:C.pri,fontFamily:F.h,letterSpacing:"0.5px"}}>{item.icon} {item.action.toUpperCase()}</div>
-            <div style={{fontSize:12,color:C.mut,marginTop:3,lineHeight:1.6,fontFamily:F.b}}>{item.detail}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+const SLabel = ({children,col=C.mut}) => (
+  <div style={{fontSize:11,color:col,textTransform:"uppercase",letterSpacing:"0.12em",
+    fontWeight:700,fontFamily:F.b,marginBottom:12}}>{children}</div>
+);
+const SHead = ({label,accent=C.blue,right}) => (
+  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,paddingTop:24}}>
+    <div style={{width:3,height:18,background:accent,borderRadius:2}}/>
+    <span style={{fontSize:12,fontFamily:F.h,fontWeight:700,color:accent,
+      textTransform:"uppercase",letterSpacing:"0.14em",flex:1}}>{label}</span>
+    {right && <span style={{fontSize:10,fontFamily:F.m,color:C.mut}}>{right}</span>}
+  </div>
+);
+const Divider = () => <div style={{height:1,background:C.bdr}}/>;
+function IBar({val,color,h=4}){
+  return <div style={{height:h,background:C.bdr,borderRadius:2}}>
+    <div style={{height:"100%",width:`${val*100}%`,background:color,borderRadius:2}}/>
+  </div>;
 }
 
-// ── Latest Run — Shakeout + Strides Mar 10 2026 ──
+/* ════════════════════════════════════════
+   DATA
+════════════════════════════════════════ */
+
+/* — Latest run HR stream (Mar 10) — */
 const latestRunHR = [
-  {d:0,hr:99},{d:0.67,hr:123},{d:1.33,hr:134},{d:1.99,hr:142},{d:2.65,hr:145},
+  {d:0,hr:99},{d:0.66,hr:123},{d:1.33,hr:134},{d:1.99,hr:142},{d:2.65,hr:145},
   {d:3.31,hr:145},{d:3.99,hr:142},{d:4.66,hr:142},{d:5.31,hr:145},{d:5.98,hr:147},
   {d:6.63,hr:144},{d:7.30,hr:146},{d:7.97,hr:149},{d:8.62,hr:149},{d:9.28,hr:146},
   {d:9.97,hr:149},{d:10.62,hr:152},{d:11.28,hr:151},{d:11.95,hr:152},{d:12.60,hr:150},
-  {d:13.28,hr:148},{d:13.93,hr:149},{d:14.59,hr:150},{d:15.25,hr:151},{d:15.92,hr:148},
-  {d:16.59,hr:150},{d:17.25,hr:149},{d:17.91,hr:152},{d:18.59,hr:149},{d:19.25,hr:146},
-  {d:19.92,hr:150},{d:20.57,hr:150},{d:21.23,hr:152},{d:21.91,hr:148},{d:22.55,hr:151},
-  {d:23.22,hr:152},{d:23.88,hr:150},{d:24.55,hr:153},{d:25.22,hr:152},{d:25.88,hr:154},
-  {d:26.55,hr:152},{d:27.22,hr:150},{d:27.87,hr:150},{d:28.54,hr:152},{d:29.20,hr:154},
-  {d:29.87,hr:155},{d:30.52,hr:151},{d:31.19,hr:152},{d:31.85,hr:150},{d:32.52,hr:154},
-  {d:33.17,hr:150},{d:33.85,hr:154},{d:34.50,hr:155},{d:35.16,hr:154},{d:35.82,hr:152},
-  {d:36.50,hr:151},{d:37.15,hr:151},{d:37.82,hr:152},{d:38.49,hr:155},{d:39.14,hr:152},
-  /* strides start ~km 4.1 */
-  {d:40.47,hr:161},{d:41.14,hr:161},{d:44.47,hr:164},{d:44.79,hr:166},{d:45.11,hr:167},
-  {d:45.79,hr:167},{d:46.44,hr:168},{d:47.78,hr:172},{d:48.43,hr:171},{d:49.10,hr:169},
-  {d:49.77,hr:164},{d:50.43,hr:161},{d:51.09,hr:154},{d:51.76,hr:152},{d:52.43,hr:153},
-  /* cooldown */
-  {d:53.76,hr:156},{d:54.43,hr:156},{d:54.09,hr:156},{d:55.41,hr:154},{d:56.08,hr:160},
-  {d:56.75,hr:162},{d:57.41,hr:160},{d:58.08,hr:152},{d:58.75,hr:147},{d:59.41,hr:151},
-  {d:60.75,hr:161},{d:61.68,hr:168},{d:62.04,hr:172},{d:62.39,hr:170},{d:63.03,hr:162},
-  {d:63.69,hr:161},{d:64.36,hr:162},{d:65.03,hr:166},{d:65.69,hr:170},
+  {d:16.59,hr:150},{d:17.25,hr:149},{d:17.91,hr:152},{d:22.55,hr:151},{d:23.22,hr:152},
+  {d:29.20,hr:154},{d:29.87,hr:155},{d:30.52,hr:151},{d:35.16,hr:154},{d:38.49,hr:155},
+  {d:40.47,hr:161},{d:41.14,hr:161},{d:44.47,hr:164},{d:45.11,hr:167},{d:46.44,hr:168},
+  {d:47.78,hr:172},{d:48.43,hr:171},{d:49.10,hr:169},{d:49.77,hr:164},{d:50.43,hr:161},
+  {d:51.09,hr:154},{d:51.76,hr:152},{d:53.76,hr:156},{d:56.08,hr:160},{d:57.41,hr:160},
+  {d:58.75,hr:147},{d:60.75,hr:161},{d:62.04,hr:172},{d:63.69,hr:161},{d:65.69,hr:170},
 ];
 
-function LatestRunCard() {
-  const accent = "#818CF8";
-  const daysToNamma = 5;
-  return (
-    <div style={{background:"linear-gradient(135deg,#080A18,#0A0C1A,#080E12)",borderBottom:`1px solid ${accent}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(129,140,248,0.08) 0%,transparent 50%)`}}/>
-      <div style={{position:"relative"}}>
-        {/* Header */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
-          <div>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-              <div style={{width:7,height:7,borderRadius:"50%",background:accent,boxShadow:`0 0 8px ${accent}`}}/>
-              <span style={{fontSize:11,color:accent,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Run · Today</span>
-              <div style={{background:"#13152A",border:`1px solid ${accent}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>Mar 10</div>
-              <div style={{background:"#0A1A0A",border:`1px solid ${C.green}44`,borderRadius:20,padding:"1px 8px",fontSize:10,color:C.green,fontWeight:700,fontFamily:F.b}}>⚡ STRIDES</div>
-            </div>
-            <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>SHAKEOUT + 4 STRIDES 💨</div>
-            <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>{daysToNamma} days to Namma Power Run · 👟 Novablast 5</div>
-          </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px",lineHeight:1}}>6.57<span style={{fontSize:14,color:C.mut}}> km</span></div>
-            <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>46:43 · 7:07/km</div>
-          </div>
-        </div>
-        {/* Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:12}}>
-          {[["❤️","Avg HR","153 bpm"],["📈","Max HR","173 bpm"],["⚡","Power","188W"],["💨","Top Speed","16.9 km/h"],["🔥","Calories","537"]].map(([icon,l,v])=>(
-            <div key={l} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
-              <div style={{fontSize:13,marginBottom:2}}>{icon}</div>
-              <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
-              <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.05em"}}>{l}</div>
-            </div>
-          ))}
-        </div>
-        {/* Stride breakdown */}
-        <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Stride Breakdown · 4×80m</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:12}}>
-          {[
-            {n:"S1",speed:"12.8",cad:88, hr:160,color:C.green},
-            {n:"S2",speed:"10.7",cad:86, hr:167,color:C.green},
-            {n:"S3",speed:"15.8",cad:91, hr:168,color:C.yellow},
-            {n:"S4",speed:"11.1",cad:85, hr:173,color:C.yellow},
-          ].map(s=>(
-            <div key={s.n} style={{background:"#080B14",border:`1px solid ${s.color}33`,borderRadius:8,padding:"7px 8px",textAlign:"center"}}>
-              <div style={{fontSize:10,color:s.color,fontWeight:700,fontFamily:F.h,letterSpacing:"0.5px",marginBottom:3}}>{s.n}</div>
-              <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h}}>{s.speed}<span style={{fontSize:9,color:C.mut}}> km/h</span></div>
-              <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>cad {s.cad} · {s.hr}bpm</div>
-            </div>
-          ))}
-        </div>
-        {/* HR chart */}
-        <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Heart Rate · Distance</div>
-        <ResponsiveContainer width="100%" height={72}>
-          <AreaChart data={latestRunHR} margin={{left:0,right:0,top:4,bottom:0}}>
-            <defs>
-              <linearGradient id="lrf" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={accent} stopOpacity={0.4}/>
-                <stop offset="100%" stopColor={accent} stopOpacity={0.02}/>
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`} ticks={[0,1.5,3,4.5,6,6.57]}/>
-            <YAxis domain={[90,180]} hide/>
-            <Tooltip content={({active,payload})=>{if(active&&payload?.length)return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 9px",fontSize:11,fontFamily:F.b}}><div style={{color:C.sec}}>{payload[0].payload.d}km</div><div style={{color:accent}}>{payload[0].value} bpm</div></div>);return null;}}/>
-            <ReferenceLine y={153} stroke={accent} strokeDasharray="3 3" strokeOpacity={0.4}/>
-            <ReferenceLine x={41.14} stroke={C.green} strokeDasharray="2 2" strokeOpacity={0.5}/>
-            <Area type="monotone" dataKey="hr" stroke={accent} strokeWidth={2} fill="url(#lrf)" dot={false} activeDot={{r:3,fill:accent}}/>
-          </AreaChart>
-        </ResponsiveContainer>
-        {/* Coach note — POSITIVE! */}
-        <div style={{marginTop:10,padding:"9px 12px",background:"rgba(52,211,153,0.06)",borderRadius:8,border:`1px solid ${C.green}33`}}>
-          <div style={{fontSize:12,color:"#86EFAC",lineHeight:1.6,fontFamily:F.b}}>
-            ✅ <strong>Coach note:</strong> This is exactly right. 30-min easy base (avg HR 149 — Z2!) + 4 strides hitting <strong style={{color:C.white}}>up to 16.9 km/h & cadence 91 spm</strong>. HR down from 171 yesterday to 153 today — <strong style={{color:C.white}}>legs are responding and recovering.</strong> Strides activate fast-twitch without fatigue. <strong style={{color:C.green}}>5 days out: perfect execution. Tomorrow — full rest.</strong>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Athlete Profile + VO2max + Recovery Card ──
-function AthleteProfileCard() {
-  const vo2max = 38; // Jack Daniels VDOT from 10K 58:53 → ~38 mL/kg/min
-  const vo2pct = (vo2max / 60) * 100; // % of elite (60 mL/kg/min ceiling)
-  // Recovery: today TL=131, cumulative week ~637, 5 days to race
-  const sessionRecovery = 20; // hours for today's TL 131
-  const weekLoad = 637;
-  const hrZones = [
-    {z:"Z1",range:"0–118",name:"Recovery",   color:"#1E3A5F"},
-    {z:"Z2",range:"118–147",name:"Aerobic",  color:C.green},
-    {z:"Z3",range:"147–162",name:"Tempo",    color:C.yellow},
-    {z:"Z4",range:"162–177",name:"Threshold",color:C.tcs},
-    {z:"Z5",range:"177+",   name:"Max",      color:C.namma},
-  ];
-  return (
-    <div style={{background:"linear-gradient(135deg,#06080F,#080A12)",borderBottom:`1px solid ${C.border}`,padding:"14px 18px"}}>
-      {/* Header */}
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
-        <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#818CF8,#6366F1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>S</div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:14,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.8px"}}>SACHIN K G</div>
-          <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>📍 Bangalore, Karnataka · 75kg · Strava since 2022</div>
-        </div>
-        <div style={{textAlign:"right"}}>
-          <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Strava ID</div>
-          <div style={{fontSize:12,color:"#818CF8",fontFamily:F.h,letterSpacing:"0.5px"}}>99703920</div>
-        </div>
-      </div>
-
-      {/* Stats grid */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:14}}>
-        {[
-          ["🫁","VO2 Max","~38","mL/kg/min","#818CF8"],
-          ["📅","4-wk Runs","155 km","19 activities",C.green],
-          ["📈","YTD","286 km","39 runs",C.yellow],
-          ["🏆","All-Time","695 km","100 runs",C.tcs],
-        ].map(([icon,label,val,sub,col])=>(
-          <div key={label} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${col}22`,borderRadius:10,padding:"9px 7px",textAlign:"center"}}>
-            <div style={{fontSize:14,marginBottom:3}}>{icon}</div>
-            <div style={{fontSize:14,fontWeight:700,color:col,fontFamily:F.h,letterSpacing:"0.3px",lineHeight:1.1}}>{val}</div>
-            <div style={{fontSize:9,color:C.mut,fontFamily:F.b,marginTop:2,lineHeight:1.4}}>{sub}</div>
-            <div style={{fontSize:8,color:"#283040",fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.05em"}}>{label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* VO2max visual */}
-      <div style={{background:C.card,border:"1px solid #818CF833",borderRadius:10,padding:"12px 14px",marginBottom:12}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-          <div>
-            <div style={{fontSize:11,color:"#818CF8",fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em"}}>🫁 Estimated VO2 Max</div>
-            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:1}}>Calculated from Police Run 10K PR (58:53) via Jack Daniels VDOT</div>
-          </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontSize:24,fontFamily:F.h,color:"#818CF8",letterSpacing:"1px",lineHeight:1}}>38</div>
-            <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>mL/kg/min</div>
-          </div>
-        </div>
-        {/* Scale bar */}
-        <div style={{position:"relative",height:10,background:"#0D1117",borderRadius:5,overflow:"hidden",marginBottom:6}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to right,#1E3A5F,#22C55E,#EAB308,#F97316,#EF4444,#818CF8)",opacity:0.3,borderRadius:5}}/>
-          <div style={{position:"absolute",top:0,bottom:0,left:0,width:`${vo2pct}%`,background:"linear-gradient(to right,#4F46E5,#818CF8)",borderRadius:5}}/>
-          <div style={{position:"absolute",top:-1,bottom:-1,left:`${vo2pct}%`,width:3,background:"#fff",borderRadius:2,transform:"translateX(-50%)"}}/>
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.mut,fontFamily:F.b}}>
-          {[["20","Beginner"],["35","Fair"],["45","Good"],["55","Excellent"],["60+","Elite"]].map(([v,l])=>(
-            <div key={v} style={{textAlign:"center"}}><div style={{fontWeight:600,color:vo2max>=parseInt(v)?C.sec:"#283040"}}>{v}</div><div>{l}</div></div>
-          ))}
-        </div>
-        <div style={{marginTop:8,padding:"7px 10px",background:"#0A0A18",borderRadius:6,border:"1px solid #818CF822"}}>
-          <div style={{fontSize:11,color:"#A5B4FC",lineHeight:1.6,fontFamily:F.b}}>
-            VO2 38 puts you in the <strong style={{color:C.white}}>"Fair–Good" bracket</strong> for recreational male runners. Your Police Run pace of 5:53/km confirms real aerobic capacity. Every month of consistent training adds ~1–2 points. At 40+ you unlock competitive age-group territory.
-          </div>
-        </div>
-      </div>
-
-      {/* HR Zones from Strava */}
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
-        <div style={{fontSize:11,color:C.mut,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>❤️ Your HR Zones · Live from Strava</div>
-        {hrZones.map((z,i)=>(
-          <div key={z.z} style={{display:"flex",alignItems:"center",gap:8,marginBottom:i<hrZones.length-1?7:0}}>
-            <div style={{width:24,fontSize:11,fontWeight:700,color:z.color,fontFamily:F.h,flexShrink:0}}>{z.z}</div>
-            <div style={{flex:1,height:6,background:"#0D1117",borderRadius:3,overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${[20,30,25,35,40][i]}%`,background:z.color,borderRadius:3,opacity:0.85}}/>
-            </div>
-            <div style={{fontSize:11,color:C.sec,fontFamily:F.b,width:65,flexShrink:0}}>{z.range} bpm</div>
-            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,width:60,flexShrink:0}}>{z.name}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recovery meter */}
-      <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}33`,borderRadius:10,padding:"12px 14px"}}>
-        <div style={{fontSize:11,color:C.green,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>⚡ Recovery Status · Race Week</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-          <div style={{background:"#080B12",borderRadius:8,padding:"10px 12px",textAlign:"center"}}>
-            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginBottom:4}}>Session Recovery Needed</div>
-            <div style={{fontSize:22,fontFamily:F.h,color:C.green,letterSpacing:"0.5px"}}>{sessionRecovery}h</div>
-            <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>from today's TL 131</div>
-          </div>
-          <div style={{background:"#080B12",borderRadius:8,padding:"10px 12px",textAlign:"center"}}>
-            <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginBottom:4}}>Week Training Load</div>
-            <div style={{fontSize:22,fontFamily:F.h,color:C.yellow,letterSpacing:"0.5px"}}>{weekLoad}</div>
-            <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>5 sessions this week</div>
-          </div>
-        </div>
-        {/* Freshness bar */}
-        <div style={{marginBottom:8}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-            <span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Leg Freshness for Race Day</span>
-            <span style={{fontSize:11,fontWeight:700,color:C.green,fontFamily:F.b}}>Projected: HIGH ✅</span>
-          </div>
-          <div style={{height:8,background:"#0D1117",borderRadius:4,overflow:"hidden"}}>
-            <div style={{height:"100%",width:"72%",background:`linear-gradient(to right,${C.tcs},${C.green})`,borderRadius:4}}/>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.mut,fontFamily:F.b,marginTop:3}}>
-            <span>Now (tired)</span><span>Race Day (fresh)</span>
-          </div>
-        </div>
-        {/* 5-day recovery plan */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:4}}>
-          {[
-            {day:"Wed 11",plan:"🛌 Full Rest",color:C.green,note:"24h off"},
-            {day:"Thu 12",plan:"🤸 Shakeout",color:C.yellow,note:"20min easy"},
-            {day:"Fri 13",plan:"🛌 Full Rest",color:C.green,note:"Carb load"},
-            {day:"Sat 14",plan:"👟 Light jog",color:C.yellow,note:"BIB pickup"},
-            {day:"Sun 15",plan:"🏅 RACE",    color:C.namma, note:"6:00 AM"},
-          ].map((d,i)=>(
-            <div key={i} style={{background:"#080B12",border:`1px solid ${d.color}33`,borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
-              <div style={{fontSize:8,color:C.mut,fontFamily:F.b,marginBottom:3}}>{d.day}</div>
-              <div style={{fontSize:10,lineHeight:1.2,marginBottom:3}}>{d.plan}</div>
-              <div style={{fontSize:8,color:d.color,fontFamily:F.b,fontWeight:600}}>{d.note}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Weather + Coach tips strip ──
-function WeatherCoachCard() {
-  const [showTips, setShowTips] = useState(false);
-  const raceTemp = 33;
-  const tempColor = raceTemp >= 33 ? C.namma : raceTemp >= 30 ? C.tcs : C.yellow;
-  // Updated live forecast: Mar 10 30°C, 11→32°C, 12→33°C, 13→33°C, 14→33°C, 15→33°C race day
-  const liveForecast = [
-    { day:"Tue Mar 10",high:30,icon:"☀️",rain:0,  done:true },
-    { day:"Wed Mar 11",high:32,icon:"☀️",rain:0  },
-    { day:"Thu Mar 12",high:33,icon:"☀️",rain:0  },
-    { day:"Fri Mar 13",high:33,icon:"☀️",rain:0  },
-    { day:"Sat Mar 14",high:33,icon:"🌤️",rain:5  },
-    { day:"Sun Mar 15",high:33,icon:"🔥",rain:0,  race:true},
-  ];
-  return (
-    <div style={{background:"linear-gradient(135deg,#080C10,#060A0E)",borderBottom:`1px solid ${C.border}`,padding:"14px 18px"}}>
-      {/* Weather + run conditions row */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-        <div style={{flex:1}}>
-          <div style={{fontSize:11,color:C.mut,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Bengaluru · Live Weather</div>
-          <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.b}}>☀️ 27°C now · Sunny · <span style={{color:tempColor}}>Race day: {raceTemp}°C 🔥</span></div>
-          <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:3}}>🏃 Today's run conditions: ~22°C at 6:40 AM · ideal race-prep temp</div>
-        </div>
-        <button onClick={()=>setShowTips(v=>!v)} style={{padding:"4px 12px",background:showTips?"#1A0D00":"transparent",border:`1px solid ${showTips?C.tcs+"55":C.border}`,borderRadius:20,fontSize:10,color:showTips?C.tcs:C.mut,cursor:"pointer",fontFamily:F.b,fontWeight:600,flexShrink:0,marginLeft:8}}>
-          {showTips ? "Hide Tips ▲" : "Heat Tips ▼"}
-        </button>
-      </div>
-      {/* 6-day forecast strip */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:4,marginBottom:showTips?12:0}}>
-        {liveForecast.map((d,i)=>(
-          <div key={i} style={{background:d.race?"linear-gradient(135deg,#1A0800,#2A1000)":d.done?"rgba(52,211,153,0.05)":"rgba(255,255,255,0.03)",border:`1px solid ${d.race?C.tcs+"55":d.done?C.green+"33":"rgba(255,255,255,0.06)"}`,borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
-            <div style={{fontSize:8,color:d.race?C.tcs:d.done?C.green:C.mut,fontFamily:F.b,fontWeight:600,marginBottom:2,lineHeight:1.3}}>{d.day.replace("Mar ","")}</div>
-            <div style={{fontSize:14}}>{d.done?"✅":d.icon}</div>
-            <div style={{fontSize:12,fontWeight:700,color:d.high>=32?tempColor:C.sec,fontFamily:F.h,letterSpacing:"0.3px"}}>{d.high}°</div>
-            {d.race&&<div style={{fontSize:8,color:C.tcs,fontFamily:F.b,fontWeight:700,marginTop:2}}>RACE</div>}
-            {d.done&&<div style={{fontSize:8,color:C.green,fontFamily:F.b,fontWeight:700,marginTop:2}}>DONE</div>}
-          </div>
-        ))}
-      </div>
-      {/* Coach tips panel */}
-      {showTips && (
-        <div style={{background:"rgba(249,115,22,0.05)",border:`1px solid ${C.tcs}33`,borderRadius:10,padding:14}}>
-          <div style={{fontSize:11,color:C.tcs,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>🌡️ Heat Tips — Final 5 Days</div>
-          {[
-            ["Run conditions done","Today's 6:40 AM run at ~22°C was textbook. Cool morning air, strides felt fast. Perfect stimulus."],
-            ["Hydration now","4L water/day through Saturday. Add a pinch of salt to every meal from Thu onwards."],
-            ["Race morning pre-cool","At the start line: pour cold water on wrists, neck, head. Drops core temp ~0.5°C = ~30 sec saved."],
-            ["Pacing in heat","33°C at 6 AM start. Add 10–15 sec/km vs cool-day targets. Don't panic — it's conditions, not fitness."],
-            ["Electrolytes","Grab every water station. If sachets available at km 5, take one — prevents cramps on 2nd climb."],
-          ].map(([title,tip],i,arr)=>(
-            <div key={i} style={{display:"flex",gap:10,paddingBottom:i<arr.length-1?9:0,marginBottom:i<arr.length-1?9:0,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-              <div style={{width:3,background:C.tcs,borderRadius:2,flexShrink:0,opacity:0.7,marginTop:3}}/>
-              <div>
-                <div style={{fontSize:12,fontWeight:700,color:"#FED7AA",fontFamily:F.b}}>{title}</div>
-                <div style={{fontSize:11,color:"#78350F",marginTop:2,lineHeight:1.6,fontFamily:F.b}}>{tip}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Police Run HR data ──
-const policeHRData=[
+/* — Police Run data — */
+const policeHRData = [
   {d:0,hr:117},{d:0.3,hr:141},{d:0.7,hr:153},{d:1.0,hr:159},{d:1.5,hr:162},{d:2.0,hr:168},
   {d:2.5,hr:170},{d:3.0,hr:170},{d:3.5,hr:174},{d:4.0,hr:176},{d:4.5,hr:178},{d:5.0,hr:180},
   {d:5.5,hr:180},{d:6.0,hr:181},{d:6.5,hr:183},{d:7.0,hr:183},{d:7.5,hr:185},{d:8.0,hr:185},
   {d:8.5,hr:187},{d:9.0,hr:188},{d:9.5,hr:190},{d:10.0,hr:188},
 ];
-
-const policePaceData=[
+const policePaceData = [
   {km:"1",pace:5.78,hr:158},{km:"2",pace:5.90,hr:168},{km:"3",pace:5.85,hr:172},
   {km:"4",pace:5.82,hr:174},{km:"5",pace:5.88,hr:178},{km:"6",pace:5.90,hr:180},
   {km:"7",pace:5.95,hr:182},{km:"8",pace:6.05,hr:184},{km:"9",pace:6.08,hr:187},{km:"10",pace:5.72,hr:190},
 ];
-
-const policeHRZones=[
-  {zone:"Z1",name:"Recovery",  bpm:"0–118",   pct:2,  color:"#1E3A5F"},
-  {zone:"Z2",name:"Aerobic",   bpm:"118–147",  pct:5,  color:C.green},
-  {zone:"Z3",name:"Tempo",     bpm:"147–162",  pct:8,  color:C.yellow},
-  {zone:"Z4",name:"Threshold", bpm:"162–177",  pct:28, color:C.tcs},
-  {zone:"Z5",name:"Max",       bpm:"177+",     pct:57, color:C.namma},
+const policeZones = [
+  {zone:"Z1",name:"Recovery", bpm:"0–118",  pct:2,  color:"#1E3A5F"},
+  {zone:"Z2",name:"Aerobic",  bpm:"118–147",pct:5,  color:C.green},
+  {zone:"Z3",name:"Tempo",    bpm:"147–162",pct:8,  color:C.yellow},
+  {zone:"Z4",name:"Threshold",bpm:"162–177",pct:28, color:C.blue},
+  {zone:"Z5",name:"Max",      bpm:"177+",   pct:57, color:C.indigo},
 ];
 
-const POLICE_TABS=["Race Stats","Heart Rate","Pace Analysis","Takeaways"];
-function PoliceRun(){
-  const [tab,setTab]=useState(0);
-  const accent=C.police;
-  return(
-    <>
-      <div style={{background:"#0A1A0A",padding:"10px 18px",borderBottom:`1px solid ${accent}22`}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{width:8,height:8,borderRadius:"50%",background:accent,boxShadow:`0 0 8px ${accent}`}}/>
-          <span style={{fontSize:12,color:accent,fontFamily:F.b,fontWeight:600}}>COMPLETED — Mar 1, 2026 · Bengaluru</span>
-          <div style={{marginLeft:"auto",background:"#0D2010",border:`1px solid ${accent}44`,borderRadius:20,padding:"3px 10px",fontSize:11,color:accent,fontWeight:700,fontFamily:F.b}}>✓ SUB-60 ACHIEVED</div>
-        </div>
-      </div>
-      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.border}`,overflowX:"auto"}}>
-        {POLICE_TABS.map((t,i)=>(
-          <button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"11px 6px",background:"transparent",border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>
-        ))}
-      </div>
-      <div style={{padding:"20px 18px"}}>
-        {tab===0&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("Official Race Results")}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-                {[["🏁 Finish","58:53"],["⚡ Pace","5:53/km"],["📏 Distance","10.02 km"]].map(([l,v])=>(
-                  <div key={l} style={{background:"#080B12",borderRadius:8,padding:12,textAlign:"center"}}>
-                    <div style={{fontSize:11,color:C.mut,marginBottom:4,fontFamily:F.b}}>{l}</div>
-                    <div style={{fontSize:20,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{v}</div>
-                  </div>
-                ))}
-              </div>
-              {sLabel("Performance Metrics")}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-                {[["Avg HR","180 bpm"],["Max HR","190 bpm"],["Cadence","85 spm"],["Power","228W"]].map(([l,v])=>(
-                  <div key={l} style={{background:"#080B12",borderRadius:8,padding:"9px 8px",textAlign:"center"}}>
-                    <div style={{fontSize:15,fontWeight:700,color:accent,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
-                    <div style={{fontSize:10,color:C.mut,marginTop:2,fontFamily:F.b}}>{l}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("Activity Details")}
-              {[["📍 Location","Bengaluru, Karnataka"],["⏱️ Moving Time","58 min 53 sec (zero stopped time)"],["🔥 Calories","889 kcal"],["⬆️ Elevation","39m (mostly flat course)"],["⚡ Max Speed","14.4 km/h (final sprint)"],["🎯 Training Load","336 (COROS — high intensity)"],["👟 Gear","ASICS Novablast 5 Daily trainers"],["💪 Norm. Power","229W"],].map(([l,v],i,arr)=>(
-                <div key={l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:13,color:C.sec,fontFamily:F.b}}>{l}</span>
-                  <span style={{fontSize:13,fontWeight:600,color:C.pri,fontFamily:F.b,textAlign:"right",maxWidth:"55%"}}>{v}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{background:"#0A1A0A",border:`1px solid ${accent}33`,borderRadius:12,padding:16}}>
-              {sLabel("🏆 Achievement Unlocked", accent)}
-              <div style={{fontSize:16,fontWeight:700,color:C.white,marginBottom:6,fontFamily:F.b}}>First official sub-60 minute 10K!</div>
-              <div style={{fontSize:13,color:C.sec,lineHeight:1.7,fontFamily:F.b}}>Finished in 58:53 — <strong style={{color:accent}}>1 min 7 sec under the 60-minute barrier</strong>. Average HR of 180 bpm shows you raced at near-max effort all the way. Cadence of 85 spm held steady. This is the baseline all future plans are built on.</div>
-            </div>
-          </div>
-        )}
-        {tab===1&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("HR Over Distance")}
-              <div style={{fontSize:12,color:C.mut,marginBottom:12,fontFamily:F.b}}>Avg 180 bpm · Max 190 bpm · Almost entirely in Z4–Z5</div>
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={policeHRData} margin={{left:0,right:0,top:8,bottom:0}}>
-                  <defs><linearGradient id="hrFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={accent} stopOpacity={0.4}/><stop offset="100%" stopColor={accent} stopOpacity={0.02}/></linearGradient></defs>
-                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`}/>
-                  <YAxis domain={[90,195]} tick={{fill:C.mut,fontSize:10}} axisLine={false} tickLine={false} width={32}/>
-                  <Tooltip content={({active,payload})=>{if(active&&payload?.length)return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white}}>{payload[0].payload.d}km</div><div style={{color:C.red}}>HR: {payload[0].value} bpm</div></div>);return null;}}/>
-                  <ReferenceLine y={177} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.6}/>
-                  <ReferenceLine y={162} stroke={C.yellow} strokeDasharray="4 3" strokeOpacity={0.5}/>
-                  <Area type="monotone" dataKey="hr" stroke={accent} strokeWidth={2} fill="url(#hrFill)" dot={false} activeDot={{r:4,fill:accent}}/>
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("HR Zone Distribution")}
-              {policeHRZones.map((z,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                  <div style={{width:28,fontSize:11,fontWeight:700,color:z.color,fontFamily:F.b}}>{z.zone}</div>
-                  <div style={{flex:1}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                      <span style={{fontSize:12,color:C.pri,fontFamily:F.b}}>{z.name}</span>
-                      <span style={{fontSize:11,color:C.mut,fontFamily:F.b}}>{z.bpm} bpm</span>
-                    </div>
-                    <div style={{height:6,background:C.border,borderRadius:3}}><div style={{height:"100%",width:`${z.pct}%`,background:z.color,borderRadius:3,opacity:0.85}}/></div>
-                  </div>
-                  <div style={{width:36,textAlign:"right",fontSize:13,fontWeight:700,color:z.color,fontFamily:F.h,letterSpacing:"0.3px"}}>{z.pct}%</div>
-                </div>
-              ))}
-              <div style={{marginTop:10,padding:"10px 12px",background:"#080B12",borderRadius:8}}>
-                <div style={{fontSize:12,color:"#FED7AA",fontFamily:F.b,lineHeight:1.6}}>⚠️ <strong>57% in Z5 (max effort)</strong> — unsustainable for negative splits. For TCS, targeting 40% Z4 / 20% Z5 will unlock a faster finish.</div>
-              </div>
-            </div>
-          </div>
-        )}
-        {tab===2&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14,paddingBottom:8}}>
-              {sLabel("Km-by-Km Pace")}
-              <ResponsiveContainer width="100%" height={140}>
-                <BarChart data={policePaceData} barSize={26}>
-                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false}/>
-                  <YAxis domain={[5.5,6.2]} hide/>
-                  <Tooltip cursor={{fill:"#1A1F2E"}} content={({active,payload})=>{if(active&&payload?.length){const p=payload[0].payload;return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white,fontWeight:700}}>Km {p.km}</div><div style={{color:accent}}>{p.pace.toFixed(2).replace(".",":")} /km</div><div style={{color:C.red}}>HR ~{p.hr}</div></div>);}return null;}}/>
-                  <Bar dataKey="pace" radius={[4,4,0,0]}>
-                    {policePaceData.map((d,i)=><Cell key={i} fill={d.pace>5.9?C.yellow:d.pace<5.75?accent:C.blue}/>)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("Split Analysis")}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-                {[["First 5km","29:15","5:51/km avg"],["Second 5km","29:38","5:56/km avg"]].map(([l,t,p])=>(
-                  <div key={l} style={{background:"#080B12",borderRadius:8,padding:12,textAlign:"center"}}>
-                    <div style={{fontSize:11,color:C.mut,marginBottom:4,fontFamily:F.b}}>{l}</div>
-                    <div style={{fontSize:22,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{t}</div>
-                    <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{p}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{padding:"10px 12px",background:"#0A1A0A",borderRadius:8,border:`1px solid ${accent}22`}}>
-                <div style={{fontSize:12,color:C.sec,fontFamily:F.b,lineHeight:1.7}}><strong style={{color:accent}}>+23 sec positive split</strong> — slowed in second half due to Z5 HR saturation. For Namma, managing the first climb conservatively will enable a more even split.</div>
-              </div>
-            </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18}}>
-              {sLabel("Power & Cadence")}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-                {[["Avg Power","228W"],["Norm Power","229W"],["Avg Cadence","85 spm"]].map(([l,v])=>(
-                  <div key={l} style={{background:"#080B12",borderRadius:8,padding:"9px 8px",textAlign:"center"}}>
-                    <div style={{fontSize:15,fontWeight:700,color:accent,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
-                    <div style={{fontSize:10,color:C.mut,marginTop:2,fontFamily:F.b}}>{l}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-        {tab===3&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("What Went Right ✅", accent)}
-              {[["Consistency","58:53 moving = 58:53 elapsed. Zero wasted seconds."],["Cadence","85 spm held entire race. Target is 85–90 — you're already there."],["Even Splits","5:51 first half, 5:56 second half. Near-perfect pacing for a first 10K race."],["Gear","Novablast 5 held up perfectly. Use same shoes for Namma + TCS."]].map(([t,d],i,arr)=>(
-                <div key={t} style={{display:"flex",gap:10,padding:"9px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:16,width:22,flexShrink:0}}>✅</span>
-                  <div><div style={{fontSize:13,fontWeight:600,color:C.pri,fontFamily:F.b}}>{t}</div><div style={{fontSize:12,color:C.sec,fontFamily:F.b,lineHeight:1.5}}>{d}</div></div>
-                </div>
-              ))}
-            </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("What To Improve ⚡")}
-              {[["HR Control","57% in Z5. For TCS, aim 40% Z4 / 20% Z5 to sustain speed longer."],["Km 8–9 Fade","Pace dropped to 6:05–6:08 late race due to HR saturation. Fix: intervals + hill training."],["Distance Ceiling","Longest run = 10km. Push long runs to 12–15km to improve race-pace endurance."],["Surge Timing","Strong sprint at km 10 shows tank still had fuel. Start the surge at km 8.5 next time."]].map(([t,d],i,arr)=>(
-                <div key={t} style={{display:"flex",gap:10,padding:"9px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:16,width:22,flexShrink:0}}>⚡</span>
-                  <div><div style={{fontSize:13,fontWeight:600,color:C.pri,fontFamily:F.b}}>{t}</div><div style={{fontSize:12,color:C.sec,fontFamily:F.b,lineHeight:1.5}}>{d}</div></div>
-                </div>
-              ))}
-            </div>
-            <div style={{background:"linear-gradient(135deg,#0A1A0A,#0D1A10)",border:`1px solid ${accent}44`,borderRadius:12,padding:16}}>
-              {sLabel("🚀 Season Progression", accent)}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-                {[["Police Run","58:53","✓ Done",C.police],["Namma Power","57:30","Mar 15",C.namma],["TCS Open","54:50","Apr 26",C.tcs]].map(([r,t,d,col],i)=>(
-                  <div key={r} style={{background:i===0?"#0D2010":"#080B12",borderRadius:8,padding:10,textAlign:"center",border:`1px solid ${col}44`}}>
-                    <div style={{fontSize:10,color:col,fontFamily:F.b,fontWeight:600,marginBottom:3}}>{r}</div>
-                    <div style={{fontSize:19,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{t}</div>
-                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{d}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{marginTop:12,height:6,background:C.border,borderRadius:3}}>
-                <div style={{height:"100%",width:"33%",background:`linear-gradient(to right,${C.police},${C.namma})`,borderRadius:3}}/>
-              </div>
-              <div style={{fontSize:11,color:C.mut,marginTop:6,fontFamily:F.b,textAlign:"center"}}>4 min 3 sec improvement target across 3 races</div>
-            </div>
-          </div>
-        )}
-      </div>
-    </>
-  );
-}
-
-// ── Namma Power Run ───────────────────────────────────────────────────────────
-const nammaSegments=[
-  {km:"0–1 km",  terrain:"Flat Start",       pace:"6:10/km",      hr:"~155",intensity:0.35,color:C.green,tip:"Don't surge with the crowd. Start easy, HR under 160."},
-  {km:"1–2.5 km",terrain:"⬆️ The Climb",      pace:"6:30–6:40/km", hr:"~172",intensity:0.75,color:C.tcs,  tip:"5.7% avg grade, max 13%. Shorten stride, keep cadence 85+."},
-  {km:"2.5–5 km",terrain:"Flat / Rolling",    pace:"5:50/km",      hr:"~168",intensity:0.60,color:C.blue, tip:"Recover on the flat. Gentle downhill — bank the time here."},
-  {km:"5–7 km",  terrain:"Turnaround + Flat", pace:"5:45/km",      hr:"~172",intensity:0.65,color:C.blue, tip:"Fastest stretch. Feel strong. Push now."},
-  {km:"7–8.5 km",terrain:"⬆️ Climb Again",    pace:"6:20–6:30/km", hr:"~182",intensity:0.90,color:C.namma,tip:"Most runners blow up here. Shorten stride. Keep moving. Cadence 88+."},
-  {km:"8.5–10 km",terrain:"⬇️ Downhill Finish",pace:"5:30–5:40/km",hr:"~185",intensity:0.85,color:C.namma,tip:"Gravity is your friend. Open up and empty the tank."},
+/* — SBI analysis — */
+const sbiKmData = [
+  {km:"Km 1",pace:6.17,hr:160,elev:0,  flag:false},{km:"Km 2",pace:6.88,hr:174,elev:27, flag:false},
+  {km:"Km 3",pace:6.35,hr:171,elev:-3, flag:false},{km:"Km 4",pace:5.30,hr:178,elev:-2, flag:true},
+  {km:"Km 5",pace:6.00,hr:178,elev:0,  flag:false},{km:"Km 6",pace:6.42,hr:178,elev:5,  flag:false},
+  {km:"Km 7",pace:7.08,hr:182,elev:24, flag:true}, {km:"Km 8",pace:6.68,hr:175,elev:-3, flag:false},
+  {km:"Km 9",pace:5.77,hr:177,elev:-1, flag:false},{km:"Km 10",pace:5.52,hr:176,elev:-2,flag:false},
 ];
 
-const nammaTraining=[
-  {date:"Fri Mar 6", emoji:"🏸",label:"Badminton ✓",      light:C.green, isRace:false,isKey:false,done:true,
-   desc:"67 min · Avg HR 133 · Max 157 · 547 kcal. Cross-training instead of rest — legs fresh, heart rate controlled. ✅"},
-  {date:"Sat Mar 7", emoji:"✅",label:"Long Run ✓",        light:"#818CF8",isRace:false,isKey:false,done:true,
-   desc:"14.08 km · 1:40:20 · 7:08/km · HR avg 159 · 150m elevation · 1244 kcal. EXCEEDED plan (10–12km target). Big aerobic base work. ✅"},
-  {date:"Sun Mar 8", emoji:"🏸",label:"Badminton ✓",        light:C.green, isRace:false,isKey:false,done:true,
-   desc:"1:44:11 · Avg HR 132 · Max 161 · 822 kcal. Planned rest day → smart active recovery instead. Legs stayed fresh. ✅"},
-  {date:"Mon Mar 9", emoji:"✅",label:"Morning Run ✓",     light:C.green, isRace:false,isKey:false,done:true,
-   desc:"5.15km · 31:00 · 6:01/km · Avg HR 171 · 221W · 435 kcal. Faster than planned easy pace — HR ran at Z4 avg (171). Legs felt good. 6 days to race: taper mode from here. ✅"},
-  {date:"Tue Mar 10",emoji:"✅",label:"Shakeout + Strides ✓",light:C.green, isRace:false,isKey:true, done:true,
-   desc:"6.57km · 46:43 · 7:07/km · Avg HR 153 · 4 strides (top speed 16.9 km/h, cadence 91 spm!) · 188W · 537 kcal. HR down from 171 yesterday to 153 — legs responding well. Perfect neuromuscular activation without fatigue. ✅"},
-  {date:"Wed Mar 11",emoji:"🏃",label:"Recovery Run",      light:C.green, isRace:false,isKey:false,done:false,
-   desc:"5 km @ 8:00/km or full rest if legs feel heavy."},
-  {date:"Thu Mar 12",emoji:"💨",label:"Shakeout + Strides",light:C.purple,isRace:false,isKey:false,done:false,
-   desc:"4 km easy + 4×80m strides at race effort. Stay sharp, don't tire."},
-  {date:"Fri Mar 13",emoji:"🛌",label:"Full Rest",         light:C.sec,   isRace:false,isKey:false,done:false,
-   desc:"Nothing. Carb load at dinner: rice + dal + curd. Sleep by 10pm."},
-  {date:"Sat Mar 14",emoji:"🎽",label:"Shakeout + BIB",    light:C.blue,  isRace:false,isKey:false,done:false,
-   desc:"20 min very easy + 2 strides at race pace. Collect BIB at Swaasthya Fitness, Whitefield."},
-  {date:"Sun Mar 15",emoji:"🏅",label:"RACE DAY",          light:C.namma, isRace:true, isKey:false,done:false,
-   desc:"Namma Power Run 2026 · Target: 57:30–58:30 · NICE Road, Hoskerehalli"},
+/* — Namma segments — */
+const nammaSegs = [
+  {km:"0–1 km",   terrain:"Flat Start",       pace:"6:10",  hr:"~155",intensity:0.35,color:C.green, tip:"Don't surge with the crowd. Start easy, HR under 160."},
+  {km:"1–2.5 km", terrain:"⬆️ The Climb",     pace:"6:35",  hr:"~172",intensity:0.75,color:C.orange,tip:"5.7% avg grade, max 13%. Shorten stride, keep cadence 85+."},
+  {km:"2.5–5 km", terrain:"Flat/Rolling",      pace:"5:50",  hr:"~168",intensity:0.60,color:C.sky,   tip:"Recover on the flat. Gentle downhill — bank the time here."},
+  {km:"5–7 km",   terrain:"Turnaround+Flat",   pace:"5:45",  hr:"~172",intensity:0.65,color:C.sky,   tip:"Fastest stretch. Feel strong. Push now."},
+  {km:"7–8.5 km", terrain:"⬆️ Climb Again",    pace:"6:25",  hr:"~182",intensity:0.90,color:C.indigo,tip:"Shorten stride. Keep moving. Cadence 88+."},
+  {km:"8.5–10 km",terrain:"⬇️ Downhill Finish",pace:"5:35",  hr:"~185",intensity:0.85,color:C.indigo,tip:"Gravity is your friend. Open up and empty the tank."},
 ];
+const nammaTraining = [
+  {date:"Fri Mar 6", emoji:"🏸",label:"Badminton ✓",        light:C.green, done:true,  isRace:false,
+   desc:"67 min · HR 133 · 547 kcal. Cross-training, legs fresh. ✅"},
+  {date:"Sat Mar 7", emoji:"✅",label:"Long Run ✓",          light:C.sky,   done:true,  isRace:false,
+   desc:"14.08 km · 1:40:20 · 7:08/km · HR 159 · 150m elev · 1244 kcal. EXCEEDED 10–12km plan. ✅"},
+  {date:"Sun Mar 8", emoji:"🏸",label:"Badminton ✓",          light:C.green, done:true,  isRace:false,
+   desc:"1:44:11 · HR 132 · 822 kcal. Active recovery. ✅"},
+  {date:"Mon Mar 9", emoji:"✅",label:"Morning Run ✓",        light:C.green, done:true,  isRace:false,
+   desc:"5.15km · 31:00 · 6:01/km · HR 171 · 221W. Taper mode from here. ✅"},
+  {date:"Tue Mar 10",emoji:"✅",label:"Shakeout + Strides ✓", light:C.green, done:true,  isRace:false,
+   desc:"6.57km · 46:43 · HR 153 · 4 strides (top 16.9 km/h, cad 91!) · 188W. ✅"},
+  {date:"Wed Mar 11",emoji:"🏃",label:"Recovery Run",          light:C.green, done:false, isRace:false,
+   desc:"5km @ 8:00/km or full rest if legs feel heavy."},
+  {date:"Thu Mar 12",emoji:"💨",label:"Shakeout + Strides",    light:C.sky,   done:false, isRace:false,
+   desc:"4km easy + 4×80m strides at race effort."},
+  {date:"Fri Mar 13",emoji:"🛌",label:"Full Rest",              light:C.sec,   done:false, isRace:false,
+   desc:"Nothing. Carb load at dinner. Sleep by 10pm."},
+  {date:"Sat Mar 14",emoji:"🎽",label:"Shakeout + BIB",         light:C.blue,  done:false, isRace:false,
+   desc:"20 min easy + 2 strides. BIB at Swaasthya Fitness, Whitefield."},
+  {date:"Sun Mar 15",emoji:"🏅",label:"RACE DAY",               light:C.namma, done:false, isRace:true,
+   desc:"Namma Power Run · Target: 57:30–58:30 · NICE Road, Hoskerehalli"},
+];
+const NAMMA_ELEV=[0,3,6,12,22,35,45,52,58,62,65,67,68,66,63,58,52,45,38,30,24,18,14,10,7,5,4,3,2,2,2,3,5,8,12,18,25,33,42,50,57,63,67,68,67,65,62,58,53,47,40,33,26,20,15,10,7,4,2,0];
 
-const NAMMA_ELEV_PTS=[0,3,6,12,22,35,45,52,58,62,65,67,68,66,63,58,52,45,38,30,24,18,14,10,7,5,4,3,2,2,2,3,5,8,12,18,25,33,42,50,57,63,67,68,67,65,62,58,53,47,40,33,26,20,15,10,7,4,2,0];
-
-function NammaElevSVG(){
-  const W2=560,H2=80,pad=10,mx=Math.max(...NAMMA_ELEV_PTS),n=NAMMA_ELEV_PTS.length;
-  const pts=NAMMA_ELEV_PTS.map((v,i)=>[pad+(i/(n-1))*(W2-2*pad),H2-pad-(v/mx)*(H2-2*pad)]);
-  return(
-    <svg viewBox={`0 0 ${W2} ${H2+20}`} style={{width:"100%",height:"auto"}}>
-      <defs><linearGradient id="ng2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.namma} stopOpacity="0.35"/><stop offset="100%" stopColor={C.namma} stopOpacity="0.03"/></linearGradient></defs>
-      {[[8,18],[38,50]].map(([s,e],i)=>{const x1=pad+(s/(n-1))*(W2-2*pad),x2=pad+(e/(n-1))*(W2-2*pad);return <rect key={i} x={x1} y={pad} width={x2-x1} height={H2-2*pad} fill={C.namma} opacity="0.08" rx="2"/>;})}
-      <path d={`M ${pad},${H2-pad} L ${pts.map(p=>p.join(",")).join(" L ")} L ${W2-pad},${H2-pad} Z`} fill="url(#ng2)"/>
-      <path d={`M ${pts.map(p=>p.join(",")).join(" L ")}`} fill="none" stroke={C.namma} strokeWidth="2" strokeLinejoin="round"/>
-      {[0,2.5,5,7.5,10].map((km,i)=>(<text key={km} x={pad+(i/4)*(W2-2*pad)} y={H2+14} textAnchor="middle" fill={C.mut} fontSize="9" fontFamily="monospace">{km}km</text>))}
-      <text x={(pad+(8/(n-1))*(W2-2*pad)+pad+(18/(n-1))*(W2-2*pad))/2} y={H2+14} textAnchor="middle" fill="#FF6B6B" fontSize="9" fontFamily="monospace">Climb ↑</text>
-      <text x={(pad+(38/(n-1))*(W2-2*pad)+pad+(50/(n-1))*(W2-2*pad))/2} y={H2+14} textAnchor="middle" fill="#FF6B6B" fontSize="9" fontFamily="monospace">Climb ↑</text>
-    </svg>
-  );
-}
-
-const NAMMA_TABS=["Race Plan","SBI Analysis","Route & Elev","Training Week","Race Morning"];
-function NammaRun(){
-  const [tab,setTab]=useState(0);
-  const accent=C.namma;
-  return(
-    <>
-      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.border}`,overflowX:"auto"}}>
-        {NAMMA_TABS.map((t,i)=>(<button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"11px 6px",background:"transparent",border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>))}
-      </div>
-      <div style={{padding:"20px 18px"}}>
-        {tab===0&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("Km-by-Km Race Strategy")}
-              {nammaSegments.map((seg,i)=>(
-                <div key={i} style={{background:"#080B12",borderRadius:10,padding:"13px 14px",marginBottom:8,borderLeft:`3px solid ${seg.color}`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
-                    <div style={{display:"flex",gap:10,alignItems:"center"}}>
-                      <span style={{fontSize:13,fontWeight:700,color:seg.color,minWidth:78,fontFamily:F.h,letterSpacing:"0.3px"}}>{seg.km}</span>
-                      <span style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{seg.terrain}</span>
-                    </div>
-                    <div style={{textAlign:"right"}}>
-                      <div style={{fontSize:16,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{seg.pace}</div>
-                      <div style={{fontSize:11,color:C.mut}}>HR {seg.hr}</div>
-                    </div>
-                  </div>
-                  <IntBar val={seg.intensity} color={seg.color}/>
-                  <div style={{height:6}}/>
-                  <div style={{fontSize:12,color:C.sec,lineHeight:1.6,fontFamily:F.b}}>{seg.tip}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{background:"linear-gradient(135deg,#1A0800,#0D0500)",border:`1px solid ${accent}33`,borderRadius:12,padding:16}}>
-              {sLabel("⚡ Mental Cue — Km 7–8",accent)}
-              <div style={{fontSize:17,fontWeight:700,color:C.white,lineHeight:1.5,fontFamily:F.b}}>"Shorten stride. Keep cadence 88+. Keep moving."</div>
-              <div style={{fontSize:12,color:C.sec,marginTop:8,lineHeight:1.6,fontFamily:F.b}}>Your HR will be 182–185. Every other runner feels the same. The ones who hold form here win.</div>
-            </div>
-          </div>
-        )}
-        {tab===1&&<SBIAnalysis/>}
-        {tab===2&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("NICE Road Elevation Profile (Out & Back)")}
-              <NammaElevSVG/>
-            </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18}}>
-              {sLabel("Route Facts")}
-              {[["📍","Start/Finish","Hoskerehalli Toll Junction, NICE Road"],["↕️","Key Climb","0.83km at 5.7% avg grade, max 13%"],["📏","Total Elev","~80–100m (climb appears TWICE — out & back)"],["🛣️","Surface","Smooth expressway — zero potholes"],["🔄","Format","Out-and-back — you face the hill both ways"],["🌡️","Weather","~24°C at 6am · Heats up fast after 7am"]].map(([icon,l,v],i,arr)=>(
-                <div key={l} style={{display:"flex",gap:12,alignItems:"flex-start",paddingBottom:10,marginBottom:10,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:18}}>{icon}</span>
-                  <div style={{flex:1}}><div style={{fontSize:11,color:C.mut,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,fontFamily:F.b}}>{l}</div><div style={{fontSize:13,color:"#CBD5E1",marginTop:3,fontWeight:600,fontFamily:F.b}}>{v}</div></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {tab===3&&(
-          <div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div style={{fontSize:11,color:C.mut,textTransform:"uppercase",letterSpacing:"0.12em",fontWeight:700,fontFamily:F.b}}>9-Day Countdown to Race Day</div>
-              <div style={{display:"flex",gap:10}}>
-                <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Done</span></div>
-                <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:2,background:"#283040"}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Planned</span></div>
-              </div>
-            </div>
-            {nammaTraining.map((day,i)=>(
-              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:8,padding:"12px 14px",
-                background:day.isRace?"linear-gradient(135deg,#1A0000,#2A0000)":day.done?"linear-gradient(135deg,#060F08,#080E0A)":C.card,
-                border:`1px solid ${day.isRace?accent+"55":day.done?day.light+"44":day.isKey?"#F9731633":C.border}`,
-                borderRadius:10,borderLeft:`3px solid ${day.light}`,
-                opacity:(!day.done&&!day.isRace&&i>1)?0.72:1,
-              }}>
-                <div style={{fontSize:22,lineHeight:1,paddingTop:2}}>{day.emoji}</div>
-                <div style={{flex:1}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:15,fontWeight:700,color:day.light,textTransform:"uppercase",fontFamily:F.h,letterSpacing:"0.5px"}}>{day.label}</span>
-                      {day.done&&<div style={{background:"#0A1F0D",border:`1px solid ${C.green}55`,borderRadius:10,padding:"1px 7px",fontSize:9,color:C.green,fontWeight:700,fontFamily:F.b,letterSpacing:"0.05em"}}>✓ DONE</div>}
-                    </div>
-                    <span style={{fontSize:12,color:C.mut,fontFamily:F.b}}>{day.date}</span>
-                  </div>
-                  <div style={{fontSize:12,color:day.done?"#86EFAC99":C.sec,marginTop:3,lineHeight:1.6,fontFamily:F.b}}>{day.desc}</div>
-                </div>
-              </div>
-            ))}
-            <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}33`,borderRadius:12,padding:14,marginTop:6}}>
-              <div style={{fontSize:12,color:"#86EFAC",fontFamily:F.b,lineHeight:1.7}}>
-                📊 <strong>Week progress: 5/9 days done</strong> · <strong style={{color:C.white}}>25.8km</strong> running + 2 badminton sessions · <strong style={{color:C.green}}>✅ HR trending down — legs recovering well</strong> · <strong style={{color:C.white}}>5 days to race</strong>. Next: 🛌 full rest tomorrow (Wed). 🎯
-              </div>
-            </div>
-          </div>
-        )}
-        {tab===4&&(
-          <div>
-            {sLabel("Mar 15 Morning Timeline")}
-            <Timeline accent={accent} items={[
-              {time:"4:45 AM",action:"Wake Up",       icon:"💧",detail:"Drink 400ml water immediately.",fire:false},
-              {time:"5:00 AM",action:"Pre-race Fuel", icon:"🍌",detail:"2 bananas + pinch of salt in 200ml water.",fire:false},
-              {time:"5:20 AM",action:"Leave Home",    icon:"🚗",detail:"Arrive early. Beat traffic, beat heat.",fire:false},
-              {time:"5:40 AM",action:"Dynamic Warmup",icon:"🤸",detail:"Leg swings → hip circles → high knees → A-skips.",fire:false},
-              {time:"5:50 AM",action:"Race Strides",  icon:"⚡",detail:"80m × 2 at 5:50/km.",fire:false},
-              {time:"5:55 AM",action:"Seed Yourself", icon:"🏁",detail:"58–60 min pace group. Don't go to the front.",fire:false},
-              {time:"6:00 AM",action:"🏅 RACE START", icon:"🔥",detail:"Namma Power Run 2026.",fire:true},
-            ]}/>
-            <div style={{background:"#080B0A",border:`1px solid ${C.green}33`,borderRadius:12,padding:16,marginTop:8}}>
-              {sLabel("💧 Hydration Plan",C.green)}
-              {[["Night before","500ml water before sleep"],["4:45 AM","400ml water on waking"],["5:00 AM","200ml with pinch of salt"],["Mid-race","Grab-and-go at stations — DON'T stop"],["Finish line","Coconut water or ORS immediately"]].map(([w,v],i,arr)=>(
-                <div key={i} style={{display:"flex",gap:12,paddingBottom:9,marginBottom:9,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:12,color:C.green,width:90,flexShrink:0,fontWeight:600,fontFamily:F.b}}>{w}</span>
-                  <span style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{v}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </>
-  );
-}
-
-// ── TCS Open 10K ─────────────────────────────────────────────────────────────
-const tcsElevData=[
+/* — TCS data — */
+const tcsElev = [
   {d:0,alt:908,grade:0},{d:0.3,alt:904,grade:-1.3},{d:0.7,alt:900,grade:-1.1},{d:1.0,alt:897,grade:-1.0},
   {d:1.4,alt:893,grade:-1.0},{d:1.8,alt:889,grade:-1.1},{d:2.0,alt:889,grade:0},{d:2.3,alt:892,grade:1.0},
   {d:2.7,alt:896,grade:1.3},{d:3.0,alt:895,grade:-0.3},{d:3.5,alt:895,grade:0},{d:4.0,alt:894,grade:-0.2},
@@ -736,73 +159,261 @@ const tcsElevData=[
   {d:8.0,alt:901,grade:-0.5},{d:8.3,alt:899,grade:-0.7},{d:8.6,alt:901,grade:0.7},{d:9.0,alt:905,grade:1.0},
   {d:9.3,alt:903,grade:-0.7},{d:9.6,alt:901,grade:-0.7},{d:10.0,alt:899,grade:-0.5},
 ];
-const tcsKmData=[
-  {km:"Km 1",loc:"Cubbon Rd → Dickenson → Ulsoor",terrain:"Net Downhill",  grade:"-1.1%",pace:"5:45",hr:158,cadence:83,elev:-11,color:C.green,intensity:0.35,turns:2,tip:"Cruise the downhill. Resist the wave start surge."},
-  {km:"Km 2",loc:"Ulsoor Lake, Bhaskaran Rd",      terrain:"Down then Up",  grade:"+4m",  pace:"5:35",hr:163,cadence:85,elev:0,  color:C.green,intensity:0.45,turns:1,tip:"Short sharp uphill in latter half — don't fight it."},
-  {km:"Km 3",loc:"Bhaskaran Rd U-turn",            terrain:"Uphill+Headwind",grade:"+7m", pace:"5:35",hr:168,cadence:85,elev:7,  color:C.yellow,intensity:0.55,turns:1,tip:"U-turn #1. Headwinds on return. Maintain cadence."},
-  {km:"Km 4",loc:"Gangadhar Chetty Road",          terrain:"FLATTEST 🔑",  grade:"-1m",  pace:"5:20",hr:170,cadence:87,elev:-1, color:C.blue, intensity:0.65,turns:3,tip:"Surge here! Flattest km — bank 10–15 seconds."},
-  {km:"Km 5",loc:"Dickenson → Kamaraj Rd",         terrain:"HARDEST KM ⚠", grade:"+19m", pace:"5:45",hr:178,cadence:86,elev:19, color:C.red,  intensity:0.90,turns:2,tip:"Short sharp up → protracted uphill. Shorten stride. Cadence 88+. Survive."},
-  {km:"Km 6",loc:"Cubbon Rd, Chinnaswamy",         terrain:"Recovery",      grade:"-5m",  pace:"5:25",hr:172,cadence:86,elev:-5, color:C.purple,intensity:0.55,turns:1,tip:"Mental reset. Recover here."},
-  {km:"Km 7",loc:"Minsk Sq → Rajbhavan → GPO",    terrain:"Down then Up",  grade:"+4m",  pace:"5:25",hr:173,cadence:86,elev:4,  color:C.blue, intensity:0.60,turns:1,tip:"Vidhana Soudha, Cubbon Park, High Court. Draw from the crowd."},
-  {km:"Km 8",loc:"Dr Ambedkar → KR Circle",        terrain:"Down → U-turn", grade:"-7m",  pace:"5:25",hr:174,cadence:87,elev:-7, color:C.yellow,intensity:0.65,turns:1,tip:"Steady downhill — don't surge yet. U-turn #3 at KR Circle."},
-  {km:"Km 9",loc:"Dr Ambedkar uphill → GPO",       terrain:"Up then Down",  grade:"+6m",  pace:"5:30",hr:179,cadence:87,elev:6,  color:C.red,  intensity:0.85,turns:2,tip:"Grunt time. Steady uphill. At top → gentle downhill. Dig deep."},
-  {km:"Km 10",loc:"Cubbon Rd → Manekshaw",         terrain:"Straight SPRINT",grade:"-2m", pace:"5:05",hr:185,cadence:91,elev:-2, color:C.tcs,  intensity:1.00,turns:0,tip:"THE STRAIGHTAWAY. Empty every last reserve."},
+const tcsKms = [
+  {km:"Km 1",terrain:"Net Downhill",  pace:"5:45",hr:158,elev:-11,color:C.green, intensity:0.35,tip:"Cruise the downhill. Resist the wave-start surge."},
+  {km:"Km 2",terrain:"Down then Up",  pace:"5:35",hr:163,elev:0,  color:C.green, intensity:0.45,tip:"Short sharp uphill in latter half."},
+  {km:"Km 3",terrain:"Uphill+Headwind",pace:"5:35",hr:168,elev:7, color:C.yellow,intensity:0.55,tip:"U-turn #1. Headwinds on return. Maintain cadence."},
+  {km:"Km 4",terrain:"FLATTEST 🔑",   pace:"5:20",hr:170,elev:-1, color:C.sky,   intensity:0.65,tip:"Surge here! Flattest km — bank 10–15 seconds."},
+  {km:"Km 5",terrain:"HARDEST KM ⚠",  pace:"5:45",hr:178,elev:19, color:C.red,   intensity:0.90,tip:"Short sharp up → protracted uphill. Shorten stride. Cadence 88+. Survive."},
+  {km:"Km 6",terrain:"Recovery",       pace:"5:25",hr:172,elev:-5, color:C.blue,  intensity:0.55,tip:"Mental reset. Recover here."},
+  {km:"Km 7",terrain:"Down then Up",   pace:"5:25",hr:173,elev:4,  color:C.sky,   intensity:0.60,tip:"Vidhana Soudha, Cubbon Park. Draw from the crowd."},
+  {km:"Km 8",terrain:"Down→U-turn",    pace:"5:25",hr:174,elev:-7, color:C.yellow,intensity:0.65,tip:"Steady downhill. U-turn #3 at KR Circle."},
+  {km:"Km 9",terrain:"Up then Down",   pace:"5:30",hr:179,elev:6,  color:C.red,   intensity:0.85,tip:"Grunt time. Steady uphill. At top → gentle downhill."},
+  {km:"Km 10",terrain:"SPRINT",        pace:"5:05",hr:185,elev:-2, color:C.indigo,intensity:1.00,tip:"THE STRAIGHTAWAY. Empty every last reserve."},
 ];
-const tcsWeeks=[
-  {week:"Wk 1",dates:"Mar 16–22",label:"Recovery",    km:16,color:C.green, intensity:0.15,sessions:["Mon: REST","Tue: REST","Wed: 5km easy","Thu: REST","Fri: 5km easy","Sat: REST","Sun: 6km easy"]},
-  {week:"Wk 2",dates:"Mar 23–29",label:"Rebuild",     km:33,color:C.blue,  intensity:0.40,sessions:["Mon: 6km easy","Tue: REST","Wed: 8km easy","Thu: 5km tempo @5:20","Fri: REST","Sat: 6km","Sun: 8km easy"]},
-  {week:"Wk 3",dates:"Mar 30–Apr 5",label:"Speed 🔑", km:42,color:C.tcs,   intensity:0.70,sessions:["Mon: 6km easy","Tue: 6x800m @5:10/km","Wed: REST","Thu: 8km easy","Fri: 5km tempo","Sat: REST","Sun: 12km long"]},
-  {week:"Wk 4",dates:"Apr 6–12", label:"Race Sim 🔑", km:40,color:C.tcs,   intensity:0.75,sessions:["Mon: REST","Tue: 8km easy","Wed: 6x800m intervals","Thu: REST","Fri: 8km","Sat: REST","Sun: Run TCS course"]},
-  {week:"Wk 5",dates:"Apr 13–19",label:"Sharpening",  km:29,color:C.yellow,intensity:0.50,sessions:["Mon: 6km easy","Tue: 8km @5:25","Wed: REST","Thu: 4km+strides","Fri: REST","Sat: 5km easy","Sun: 6km easy"]},
-  {week:"Wk 6",dates:"Apr 20–26",label:"Taper 🏁",    km:17,color:C.red,   intensity:0.20,sessions:["Mon: 5km easy","Tue: 4km+strides","Wed: 5km easy","Thu: REST","Fri: REST","Sat: 3km shakeout","Sun: RACE DAY"]},
+const tcsWeeks = [
+  {week:"Wk 1",dates:"Mar 16–22",label:"Recovery",   km:16,color:C.green, intensity:0.15},
+  {week:"Wk 2",dates:"Mar 23–29",label:"Rebuild",    km:33,color:C.sky,   intensity:0.40},
+  {week:"Wk 3",dates:"Mar 30–Apr 5",label:"Speed 🔑",km:42,color:C.blue,  intensity:0.70},
+  {week:"Wk 4",dates:"Apr 6–12", label:"Race Sim 🔑",km:40,color:C.indigo,intensity:0.75},
+  {week:"Wk 5",dates:"Apr 13–19",label:"Sharpening", km:32,color:C.blue,  intensity:0.65},
+  {week:"Wk 6",dates:"Apr 20–26",label:"Race Week",  km:18,color:C.indigo,intensity:0.20},
 ];
-const TCS_TABS=["Overview","Km Breakdown","Elevation","Training Plan","Race Morning"];
-function TCSRun(){
-  const [tab,setTab]=useState(0);
-  const [activeKm,setActiveKm]=useState(null);
-  const [hovWk,setHovWk]=useState(null);
-  const accent=C.tcs;
-  const totalGain=tcsKmData.reduce((s,k)=>s+Math.max(0,k.elev),0);
+
+/* — Season / stats data — */
+const MONTHLY = [
+  {m:"Nov '25",km:78.7, runs:10,avgPace:"6:48",color:C.sky   },
+  {m:"Dec '25",km:90.1, runs:9, avgPace:"7:40",color:C.indigo},
+  {m:"Jan '26",km:106.3,runs:15,avgPace:"7:25",color:C.sky   },
+  {m:"Feb '26",km:133.9,runs:18,avgPace:"7:22",color:C.blue  },
+  {m:"Mar '26",km:51.1, runs:7, avgPace:"6:45",color:C.cyan  },
+];
+const WEEKLY = [
+  {w:"Jan W1",km:22.0},{w:"Jan W2",km:32.1},{w:"Jan W3",km:29.1},{w:"Jan W4",km:23.1},
+  {w:"Feb W1",km:17.9},{w:"Feb W2",km:14.6},{w:"Feb W3",km:24.3},{w:"Feb W4",km:46.6},
+  {w:"Mar W1",km:53.9},{w:"Mar W2",km:11.7},
+];
+const PACE_TREND = [
+  {r:"Nov 16",pace:6.55,hr:178,km:10.3,tag:"TRAIL"},{r:"Nov 26",pace:5.90,hr:175,km:9.2, tag:"TEMPO"},
+  {r:"Dec 21",pace:7.67,hr:161,km:25.0,tag:"ULTRA"},{r:"Dec 31",pace:7.05,hr:162,km:12.5,tag:"LONG"},
+  {r:"Jan 19",pace:6.95,hr:157,km:8.1, tag:"EASY"}, {r:"Feb 6", pace:6.13,hr:168,km:5.5, tag:"TEMPO"},
+  {r:"Feb 13",pace:6.93,hr:162,km:10.1,tag:"EASY"}, {r:"Feb 26",pace:7.47,hr:155,km:10.0,tag:"LONG"},
+  {r:"Mar 1", pace:5.88,hr:180,km:10.0,tag:"RACE"}, {r:"Mar 5", pace:7.32,hr:162,km:8.2, tag:"EASY"},
+  {r:"Mar 7", pace:7.13,hr:159,km:14.1,tag:"LONG"}, {r:"Mar 9", pace:6.02,hr:171,km:5.2, tag:"TEMPO"},
+  {r:"Mar 10",pace:7.12,hr:153,km:6.6, tag:"STRIDES"},
+];
+const RACE_HISTORY = [
+  {name:"Kaveri Trail 10K",    date:"Nov 16 '25",dist:"10.3 km",time:"1:07:25",pace:"6:33/km",hr:"178/192",elev:"+5m",  temp:"~26°C",color:C.indigo,status:"done",kcal:840, note:"Trail debut. HR 192 all-time max. Fast training 10K."},
+  {name:"SBI Green 10K",       date:"Nov 30 '25",dist:"10.14 km",time:"1:03:09",pace:"6:14/km",hr:"175/187",elev:"+111m",temp:"~22°C",color:C.mut,   status:"done",kcal:760, note:"Season benchmark. Km 4 surge → km 7 blowup. Key lessons."},
+  {name:"Bengaluru Ultra 25K", date:"Dec 21 '25",dist:"25.04 km",time:"3:12:04",pace:"7:40/km",hr:"161/188",elev:"+169m",temp:"~20°C",color:C.yellow,status:"done",kcal:2582,note:"Longest race ever. 169m elev, 3h12m. Massive aerobic base."},
+  {name:"Karnataka Police Run",date:"Mar 1 '26", dist:"10.02 km",time:"58:53",  pace:"5:53/km",hr:"180/190",elev:"+39m", temp:"~24°C",color:C.green, status:"done",kcal:889, note:"Season opener. Sub-60 smashed. PR by 4:16. 57% in Z5."},
+  {name:"Namma Power Run",     date:"Mar 15 '26",dist:"10K",     time:"Target 57:30",pace:"5:45/km",hr:"—",  elev:"+90m", temp:"~33°C",color:C.sky,   status:"next",kcal:"~870",note:"NICE Road. Double climb. 5 days out."},
+  {name:"TCS World 10K",       date:"Apr 26 '26",dist:"10K",     time:"Target 54:50",pace:"5:29/km",hr:"—",  elev:"+50m", temp:"~32°C",color:C.indigo,status:"goal",kcal:"~850",note:"Season goal. Sub-55 = redemption complete."},
+];
+const ACTIVITY_LOG = [
+  {date:"Mar 10",name:"Shakeout + 4 Strides",km:6.57, time:"46:43",pace:"7:07",hr:153,tl:131,gear:"Novablast 5",tag:"STRIDES"},
+  {date:"Mar 9", name:"Morning Run",          km:5.15, time:"31:00",pace:"6:01",hr:171,tl:153,gear:"Nimbus 27",  tag:"TEMPO"},
+  {date:"Mar 7", name:"NICE Road Long Run",   km:14.08,time:"1:40:20",pace:"7:08",hr:159,tl:353,gear:"Novablast 5",tag:"LONG"},
+  {date:"Mar 5", name:"Evening Run",          km:8.21, time:"1:00:00",pace:"7:19",hr:162,tl:197,gear:"Nimbus 27",  tag:"EASY"},
+  {date:"Mar 4", name:"Evening Slow Run",     km:7.02, time:"51:56",pace:"7:24",hr:155,tl:165,gear:"Novablast 5",tag:"EASY"},
+  {date:"Mar 1", name:"Karnataka Police Run", km:10.02,time:"58:53",pace:"5:53",hr:180,tl:336,gear:"Novablast 5",tag:"RACE"},
+  {date:"Feb 27",name:"Evening Training",     km:10.05,time:"1:21:00",pace:"8:04",hr:148,tl:198,gear:"Nimbus 27", tag:"EASY"},
+  {date:"Feb 26",name:"Evening Slow Run",     km:10.04,time:"1:15:00",pace:"7:28",hr:155,tl:189,gear:"Novablast 5",tag:"LONG"},
+  {date:"Feb 25",name:"Morning Run",          km:9.07, time:"1:15:00",pace:"8:16",hr:149,tl:175,gear:"Nimbus 27", tag:"EASY"},
+  {date:"Feb 24",name:"Morning Run",          km:9.01, time:"1:10:00",pace:"7:46",hr:155,tl:181,gear:"Nimbus 27", tag:"EASY"},
+  {date:"Feb 20",name:"Strides Session",      km:6.52, time:"53:42",pace:"8:14",hr:142,tl:130,gear:"Novablast 5",tag:"STRIDES"},
+  {date:"Feb 19",name:"Evening Run",          km:10.15,time:"1:13:00",pace:"7:11",hr:161,tl:221,gear:"Nimbus 27", tag:"LONG"},
+];
+const HR_ZONES = [
+  {z:"Z1",name:"Recovery",  bpm:"0–118",  pct:4, hrs:"6.2h",  c:"#1E3A5F"},
+  {z:"Z2",name:"Aerobic",   bpm:"118–147",pct:18,hrs:"27.8h", c:C.green  },
+  {z:"Z3",name:"Tempo",     bpm:"147–162",pct:24,hrs:"37.1h", c:C.yellow },
+  {z:"Z4",name:"Threshold", bpm:"162–177",pct:37,hrs:"57.2h", c:C.blue   },
+  {z:"Z5",name:"Max",       bpm:"177+",   pct:17,hrs:"26.3h", c:C.indigo },
+];
+const CLUBS = [
+  {name:"Bengaluru Runners",        n:13267,  local:true,  icon:"🏃"},
+  {name:"ODONA BANNI",              n:1204,   local:true,  icon:"🏃"},
+  {name:"Doddakallasandra Runners", n:30,     local:true,  icon:"🏃"},
+  {name:"2026 TCS World 10K",       n:1859,   local:true,  icon:"🏅"},
+  {name:"Red Bull India",           n:45417,  local:false, icon:"⚡"},
+  {name:"The Strava Club",          n:6864548,local:false, icon:"📱"},
+];
+const RACE_PHOTOS = [
+  "https://dgtzuqphqg23d.cloudfront.net/vxKiGn2oacikweuoUL6yH9DUXfycHTzayJZRHNTG0m0-768x576.jpg",
+  "https://dgtzuqphqg23d.cloudfront.net/II20MgiGijGy_lyVGhq7aHQ1-D8gVd-EgNMlphYE0mk-576x768.jpg",
+  "https://dgtzuqphqg23d.cloudfront.net/zDiERLmR--Ct0HfiMArXUUpc_UT1s8FQdAYjurCibYU-768x576.jpg",
+  "https://dgtzuqphqg23d.cloudfront.net/YyOPrZ7I5cLQIgm0fjK-RAtl3N-Ta64XbiNqZlnLVoI-576x768.jpg",
+  "https://dgtzuqphqg23d.cloudfront.net/Yekpedx4fhIPOlthemrgoA4QFB2BCVyX1nVyMFEz2mw-576x768.jpg",
+];
+
+const tagColor = t=>({RACE:C.red,TEMPO:C.orange,LONG:C.indigo,STRIDES:C.green,EASY:C.sky,ULTRA:C.yellow,TRAIL:C.cyan}[t]||C.mut);
+const fmtPace = p=>{const m=Math.floor(p);const s=Math.round((p-m)*60);return`${m}:${s<10?"0"+s:s}`;};
+const fmtK = n=>n>=1000?`${(n/1000).toFixed(1)}K`:`${n}`;
+
+/* ════════════════════════════════════════
+   COMPONENTS
+════════════════════════════════════════ */
+
+/* — Photo Gallery — */
+function PhotoGallery(){
+  const [active,setActive]=useState(0);
   return(
-    <>
-      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.border}`,overflowX:"auto"}}>
-        {TCS_TABS.map((t,i)=>(<button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"11px 6px",background:"transparent",border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>))}
+    <div>
+      <div style={{height:240,overflow:"hidden",position:"relative",background:"#000"}}>
+        <img src={RACE_PHOTOS[active]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",opacity:.85}}
+          onError={e=>{e.target.style.display="none"}}/>
+        <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(5,8,16,0.88) 0%,transparent 50%)"}}/>
+        <div style={{position:"absolute",bottom:14,left:18}}>
+          <div style={{fontSize:9,color:C.green,fontFamily:F.m,fontWeight:700,letterSpacing:"0.15em",marginBottom:4}}>📸 KARNATAKA POLICE RUN · MAR 1, 2026</div>
+          <div style={{fontSize:24,fontFamily:F.h,color:C.white,fontWeight:700,letterSpacing:"1px"}}>{active+1} / {RACE_PHOTOS.length}</div>
+        </div>
+        {[-1,1].map(d=>(
+          <button key={d} onClick={()=>setActive(a=>(a+d+RACE_PHOTOS.length)%RACE_PHOTOS.length)}
+            style={{position:"absolute",top:"50%",transform:"translateY(-50%)",
+              [d<0?"left":"right"]:12,background:"rgba(0,0,0,0.5)",
+              border:`1px solid ${C.bdr2}`,color:C.white,width:34,height:34,
+              borderRadius:"50%",fontSize:13,cursor:"pointer",display:"flex",
+              alignItems:"center",justifyContent:"center"}}>
+            {d<0?"◀":"▶"}
+          </button>
+        ))}
       </div>
-      <div style={{padding:"20px 18px"}}>
-        {tab===0&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("Full Season — All 3 Races")}
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-                {[[C.police,"Police Run","Mar 1","58:53","5:53","✓ Done","39m"],[C.namma,"Namma Power","Mar 15","~57:30","5:45","Mar 15","~90m"],[C.tcs,"TCS Open","Apr 26","54:50","5:29","Apr 26","~50m"]].map(([col,r,d,t,p,s,e],i)=>(
-                  <div key={r} style={{background:i===0?"linear-gradient(135deg,#0A1A0A,#081208)":i===2?"linear-gradient(135deg,#1A0D00,#0D0800)":"#080B12",border:`1px solid ${col}44`,borderRadius:10,padding:12}}>
-                    <div style={{fontSize:10,color:col,fontWeight:700,letterSpacing:"0.08em",marginBottom:3,fontFamily:F.b}}>{r}</div>
-                    <div style={{fontSize:10,color:C.mut,marginBottom:5,fontFamily:F.b}}>{d}</div>
-                    <div style={{fontSize:20,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{t}</div>
-                    <div style={{fontSize:11,color:C.sec,fontFamily:F.b}}>{p}/km</div>
-                    <div style={{height:1,background:C.border,margin:"7px 0"}}/>
-                    <div style={{fontSize:10,color:col,fontWeight:600,fontFamily:F.b}}>{s}</div>
-                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Elev {e}</div>
-                  </div>
-                ))}
+      <div style={{display:"flex",gap:3,padding:3,background:C.bg}}>
+        {RACE_PHOTOS.map((p,i)=>(
+          <div key={i} onClick={()=>setActive(i)} style={{flex:1,height:48,overflow:"hidden",
+            cursor:"pointer",border:`2px solid ${i===active?C.blue:"transparent"}`,
+            borderRadius:4,opacity:i===active?1:0.45,transition:"opacity .2s"}}>
+            <img src={p} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}
+              onError={e=>{e.target.parentElement.style.background=C.card}}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* — Namma elevation SVG — */
+function NammaElevSVG(){
+  const W=560,H=80,pad=10,mx=Math.max(...NAMMA_ELEV),n=NAMMA_ELEV.length;
+  const pts=NAMMA_ELEV.map((v,i)=>[pad+(i/(n-1))*(W-2*pad),H-pad-(v/mx)*(H-2*pad)]);
+  return(
+    <svg viewBox={`0 0 ${W} ${H+18}`} style={{width:"100%",height:"auto"}}>
+      <defs><linearGradient id="ne" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor={C.sky} stopOpacity="0.35"/>
+        <stop offset="100%" stopColor={C.sky} stopOpacity="0.03"/>
+      </linearGradient></defs>
+      {[[8,18],[38,50]].map(([s,e],i)=>{
+        const x1=pad+(s/(n-1))*(W-2*pad),x2=pad+(e/(n-1))*(W-2*pad);
+        return <rect key={i} x={x1} y={pad} width={x2-x1} height={H-2*pad} fill={C.indigo} opacity=".12" rx="2"/>;
+      })}
+      <path d={`M ${pad},${H-pad} L ${pts.map(p=>p.join(",")).join(" L ")} L ${W-pad},${H-pad} Z`} fill="url(#ne)"/>
+      <path d={`M ${pts.map(p=>p.join(",")).join(" L ")}`} fill="none" stroke={C.sky} strokeWidth="2" strokeLinejoin="round"/>
+      {[0,2.5,5,7.5,10].map((km,i)=>(
+        <text key={km} x={pad+(i/4)*(W-2*pad)} y={H+14} textAnchor="middle" fill={C.mut} fontSize="9" fontFamily="monospace">{km}km</text>
+      ))}
+    </svg>
+  );
+}
+
+/* — SBI Analysis content — */
+function SBIContent(){
+  return(
+    <div>
+      <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+        <SLabel children="Km-by-Km Blueprint" col={C.sky}/>
+        {sbiKmData.map((d,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",
+            borderBottom:i<sbiKmData.length-1?`1px solid ${C.bdr}`:"none"}}>
+            <div style={{width:38,fontSize:13,fontFamily:F.h,color:d.flag?C.red:C.sec,fontWeight:700,flexShrink:0}}>{d.km}</div>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                <span style={{fontSize:13,fontFamily:F.h,color:C.white}}>{fmtPace(d.pace)}/km</span>
+                <span style={{fontSize:11,color:d.hr>178?C.red:d.hr>170?C.orange:C.sec,fontFamily:F.b}}>❤️ {d.hr}</span>
+              </div>
+              <div style={{height:4,background:C.bdr,borderRadius:2}}>
+                <div style={{height:"100%",width:`${Math.min(100,d.elev>0?d.elev/30*100:5)}%`,
+                  background:d.elev>20?C.red:d.elev>0?C.orange:C.green,borderRadius:2}}/>
               </div>
             </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("TCS Course — What to Expect")}
-              {[["⬇️","Km 1–2","Net downhill start. Cruise.","CRUISE","#064E3B",C.green],["🔄","Km 3","U-turn, headwinds. Maintain cadence.","HOLD","#1C1400",C.yellow],["⚡","Km 4","Gangadhar Chetty — flattest. Surge!","SURGE","#0C1A30",C.blue],["⚠️","Km 5","Steepest km — sharp uphill to Kamaraj.","SURVIVE","#1A0600",C.red],["🌿","Km 6","Back on Cubbon Rd. Recover.","RECOVER","#120A20",C.purple],["🏛️","Km 7–9","Vidhana Soudha, KR Circle U-turn, grind.","GRIND","#1A0600",C.red],["🏅","Km 10","The straightaway. Empty everything.","SPRINT","#1A0A00",C.tcs]].map(([icon,km,desc,badge,bc,tc],i,arr)=>(
-                <div key={km} style={{display:"flex",gap:10,alignItems:"center",padding:"9px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:18,width:22,textAlign:"center",flexShrink:0}}>{icon}</span>
-                  <div style={{flex:1}}><div style={{fontSize:13,fontWeight:600,color:"#CBD5E1",fontFamily:F.b}}>{km}</div><div style={{fontSize:12,color:C.mut,lineHeight:1.5,fontFamily:F.b}}>{desc}</div></div>
-                  <div style={{background:bc,border:`1px solid ${tc}44`,borderRadius:6,padding:"3px 8px",fontSize:10,color:tc,fontWeight:700,flexShrink:0,fontFamily:F.b}}>{badge}</div>
+            {d.flag&&<div style={{width:22,height:22,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,flexShrink:0}}>⚠</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{background:"rgba(248,113,113,0.06)",border:`1px solid ${C.red}33`,borderRadius:12,padding:14,marginBottom:12}}>
+        <SLabel children="3 Mistakes at SBI" col={C.red}/>
+        {[["Km 4 surge (5:18)","Ran 30+ sec/km faster than the rest. Burned matches early."],
+          ["Km 7 blowup (7:05)","Direct consequence of km 4. HR hit 182+ on the climb."],
+          ["Km 8 power collapse (198W)","Lowest wattage of the race. Tank was empty."]].map(([t,d],i)=>(
+          <div key={i} style={{display:"flex",gap:10,padding:"8px 0",borderBottom:i<2?`1px solid ${C.bdr}`:"none"}}>
+            <span style={{color:C.red,fontWeight:700,fontFamily:F.b,minWidth:22}}>#{i+1}</span>
+            <div><div style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b}}>{t}</div>
+            <div style={{fontSize:12,color:C.sec,fontFamily:F.b,lineHeight:1.5,marginTop:2}}>{d}</div></div>
+          </div>
+        ))}
+      </div>
+      <div style={{background:`rgba(96,165,250,0.06)`,border:`1px solid ${C.sky}33`,borderRadius:12,padding:14}}>
+        <SLabel children="The One Rule for Namma" col={C.sky}/>
+        <div style={{fontSize:16,fontWeight:700,color:C.white,lineHeight:1.5,fontFamily:F.b}}>
+          "At km 4, do NOT run faster than 5:50/km — no matter how good you feel."
+        </div>
+        <div style={{marginTop:10,display:"flex",justifyContent:"space-between",
+          padding:"10px 14px",background:C.faint,borderRadius:8}}>
+          <div style={{textAlign:"center"}}><div style={{fontSize:18,fontFamily:F.h,color:C.red}}>63:09</div><div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>SBI (mistakes)</div></div>
+          <div style={{fontSize:20,color:C.mut,alignSelf:"center"}}>→</div>
+          <div style={{textAlign:"center"}}><div style={{fontSize:18,fontFamily:F.h,color:C.sky}}>58:30</div><div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>Namma (fixed)</div></div>
+          <div style={{fontSize:20,color:C.mut,alignSelf:"center"}}>→</div>
+          <div style={{textAlign:"center"}}><div style={{fontSize:18,fontFamily:F.h,color:C.indigo}}>54:50</div><div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>TCS (goal)</div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* — Police Run component — */
+function PoliceRun(){
+  const [tab,setTab]=useState(0);
+  const tabs=["Race Stats","Heart Rate","Pace Analysis","Takeaways"];
+  const accent=C.police;
+  return(
+    <>
+      <div style={{background:"#081410",padding:"8px 16px",borderBottom:`1px solid ${accent}22`}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{width:7,height:7,borderRadius:"50%",background:accent,boxShadow:`0 0 8px ${accent}`}}/>
+          <span style={{fontSize:11,color:accent,fontFamily:F.b,fontWeight:600}}>COMPLETED — Mar 1, 2026 · Bengaluru</span>
+          <div style={{marginLeft:"auto",background:"#0D2010",border:`1px solid ${accent}44`,borderRadius:20,
+            padding:"2px 10px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>✓ SUB-60 ACHIEVED</div>
+        </div>
+      </div>
+      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.bdr}`,overflowX:"auto"}}>
+        {tabs.map((t,i)=>(<button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"10px 6px",background:"transparent",
+          border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",
+          color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",
+          letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>))}
+      </div>
+      <div style={{padding:"18px 16px"}}>
+        {tab===0&&(
+          <div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
+              {[["🏁","Distance","10.02 km"],["⏱","Official Time","58:53"],["⚡","Avg Pace","5:53/km"],
+                ["❤️","Avg HR","180 bpm"],["🔥","Max HR","190 bpm"],["💪","Power","228W NP"]].map(([ic,l,v])=>(
+                <div key={l} style={{background:C.faint,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+                  <div style={{fontSize:15,marginBottom:4}}>{ic}</div>
+                  <div style={{fontSize:16,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{v}</div>
+                  <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",marginTop:2}}>{l}</div>
                 </div>
               ))}
             </div>
-            <div style={{background:"#100800",border:`1px solid ${accent}22`,borderRadius:12,padding:16}}>
-              {sLabel("🌡️ April Heat — Critical",accent)}
-              {[["Pre-cool at start","Pour cold water on wrists + neck before start."],["Every station: grab & go","Sip ~150ml while running. Don't stop."],["Accept 5–8 bpm higher HR","April heat: chase pace, not heart rate."],["Salt at km 5","Electrolyte if available — prevents late-race cramping."]].map(([t,d],i,arr)=>(
-                <div key={t} style={{display:"flex",gap:8,marginBottom:i<arr.length-1?10:0}}>
-                  <div style={{width:3,background:accent,borderRadius:2,flexShrink:0,opacity:0.6}}/>
-                  <div><div style={{fontSize:13,fontWeight:600,color:"#FED7AA",fontFamily:F.b}}>{t}</div><div style={{fontSize:12,color:"#92400E",marginTop:2,lineHeight:1.5,fontFamily:F.b}}>{d}</div></div>
+            <div style={{background:C.card,border:`1px solid ${accent}33`,borderRadius:12,padding:14}}>
+              <SLabel children="HR Zone Distribution" col={accent}/>
+              {policeZones.map((z,i)=>(
+                <div key={z.zone} style={{display:"flex",alignItems:"center",gap:10,marginBottom:i<4?8:0}}>
+                  <span style={{width:22,fontSize:11,fontFamily:F.h,color:z.color,fontWeight:700}}>{z.zone}</span>
+                  <div style={{flex:1,height:6,background:C.bdr,borderRadius:3,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${z.pct}%`,background:z.color,borderRadius:3}}/>
+                  </div>
+                  <span style={{width:28,textAlign:"right",fontSize:12,fontFamily:F.h,color:z.color}}>{z.pct}%</span>
+                  <span style={{width:55,fontSize:10,color:C.mut,fontFamily:F.b}}>{z.bpm}</span>
                 </div>
               ))}
             </div>
@@ -810,89 +421,129 @@ function TCSRun(){
         )}
         {tab===1&&(
           <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,paddingBottom:8,marginBottom:14}}>
-              {sLabel("Pace Target per Km")}
-              <ResponsiveContainer width="100%" height={90}>
-                <BarChart data={tcsKmData} barSize={28}>
-                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={d=>d.replace("Km ","")}/>
-                  <YAxis domain={[4.8,6.0]} hide/>
-                  <Tooltip cursor={{fill:"#1A1F2E"}} content={({active,payload})=>{if(active&&payload?.length){const pv=parseFloat(payload[0].value);const pm=Math.floor(pv);const ps=Math.round((pv-pm)*100);return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:payload[0].payload.color,fontWeight:700}}>{pm}:{ps<10?"0"+ps:ps}/km</div></div>);}return null;}}/>
-                  <Bar dataKey={d=>parseFloat(d.pace.replace(":",".") )} radius={[4,4,0,0]}>
-                    {tcsKmData.map((d,i)=><Cell key={i} fill={i===activeKm?d.color:d.color+"66"}/>)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            {tcsKmData.map((km,i)=>(
-              <div key={i} onClick={()=>setActiveKm(i===activeKm?null:i)} style={{background:activeKm===i?C.card:"#09090F",border:`1px solid ${activeKm===i?km.color+"55":C.border}`,borderLeft:`3px solid ${km.color}`,borderRadius:10,marginBottom:8,cursor:"pointer"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <div style={{width:32,height:32,borderRadius:"50%",background:km.color+"22",border:`1px solid ${km.color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:km.color,fontFamily:F.h,letterSpacing:"0.3px"}}>{i+1}</div>
-                    <div><div style={{fontSize:14,fontWeight:700,color:C.pri,fontFamily:F.b}}>{km.km}</div><div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>{km.loc}</div></div>
-                  </div>
-                  <div style={{textAlign:"right"}}><div style={{fontSize:18,fontFamily:F.h,color:km.color,letterSpacing:"0.5px"}}>{km.pace}/km</div><div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{km.terrain}</div></div>
-                </div>
-                <div style={{height:3,background:C.border,margin:"0 14px"}}><div style={{height:"100%",width:`${km.intensity*100}%`,background:km.color,borderRadius:2}}/></div>
-                {activeKm===i&&(
-                  <div style={{padding:"12px 14px 14px"}}>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-                      {[["Pace",km.pace+"/km"],["HR","~"+km.hr],["Cadence",km.cadence+" spm"],["Elev",(km.elev>0?"+":"")+km.elev+"m"]].map(([l,v])=>(
-                        <div key={l} style={{background:"#080B12",borderRadius:8,padding:"8px",textAlign:"center"}}><div style={{fontSize:14,fontWeight:700,color:km.color,fontFamily:F.h}}>{v}</div><div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{l}</div></div>
-                      ))}
-                    </div>
-                    <div style={{fontSize:13,color:C.sec,lineHeight:1.7,background:"#080B12",borderRadius:8,padding:"10px 12px",fontFamily:F.b}}>💬 {km.tip}</div>
-                    {km.turns>0&&<div style={{marginTop:8,fontSize:11,color:C.mut,fontFamily:F.b}}>🔄 {km.turns} turn{km.turns>1?"s":""} — slow for turns, re-accelerate out</div>}
-                  </div>
-                )}
-              </div>
-            ))}
+            <SLabel children="Heart Rate · Full Race" col={accent}/>
+            <ResponsiveContainer width="100%" height={180}>
+              <AreaChart data={policeHRData} margin={{left:0,right:0,top:4,bottom:0}}>
+                <defs><linearGradient id="phr" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={accent} stopOpacity={0.4}/>
+                  <stop offset="100%" stopColor={accent} stopOpacity={0.02}/>
+                </linearGradient></defs>
+                <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`}/>
+                <YAxis domain={[110,195]} hide/>
+                <Tooltip content={({active,payload})=>{if(!active||!payload?.length)return null;return(<div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"5px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.sec}}>{payload[0].payload.d}km</div><div style={{color:accent}}>{payload[0].value} bpm</div></div>);}}/>
+                <ReferenceLine y={180} stroke={accent} strokeDasharray="3 3" strokeOpacity={0.4}/>
+                <Area type="monotone" dataKey="hr" stroke={accent} strokeWidth={2} fill="url(#phr)" dot={false} activeDot={{r:3,fill:accent}}/>
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         )}
         {tab===2&&(
           <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("Elevation Profile — TCS Course")}
-              <div style={{fontSize:12,color:C.mut,marginBottom:12,fontFamily:F.b}}>826m–908m range · Total gain +{totalGain}m · Max grade 7.5%</div>
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={tcsElevData} margin={{left:0,right:0,top:8,bottom:0}}>
-                  <defs><linearGradient id="tef2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={accent} stopOpacity={0.35}/><stop offset="100%" stopColor={accent} stopOpacity={0.03}/></linearGradient></defs>
-                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`}/>
-                  <YAxis domain={[880,915]} tick={{fill:C.mut,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}m`} width={38}/>
-                  <Tooltip content={({active,payload})=>{if(active&&payload?.length){const d=payload[0].payload;return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white,fontWeight:600}}>{d.label||`${d.d}km`}</div><div style={{color:C.blue}}>Alt: {d.alt}m</div><div style={{color:d.grade>1?C.red:d.grade<-0.5?C.green:C.sec}}>{d.grade>0?"+":""}{d.grade}%</div></div>);}return null;}}/>
-                  <ReferenceLine x={4.3} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.5}/>
-                  <ReferenceLine x={5.0} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.5}/>
-                  <ReferenceLine x={8.5} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.5}/>
-                  <ReferenceLine x={9.2} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.5}/>
-                  <Area type="monotone" dataKey="alt" stroke={accent} strokeWidth={2.5} fill="url(#tef2)" dot={false} activeDot={{r:4,fill:accent}}/>
-                </AreaChart>
-              </ResponsiveContainer>
+            <SLabel children="Pace per Km" col={accent}/>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={policePaceData} barSize={28}>
+                <XAxis dataKey="km" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`km ${v}`}/>
+                <YAxis hide domain={[5.5,6.3]}/>
+                <Tooltip content={({active,payload,label})=>{if(!active||!payload?.length)return null;const d=policePaceData.find(p=>p.km===label);return(<div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"7px 12px",fontSize:12,fontFamily:F.b}}><div style={{color:C.sec}}>Km {label}</div><div style={{color:accent}}>{fmtPace(payload[0].value)}/km</div><div style={{color:C.pink}}>HR {d?.hr} bpm</div></div>);}}/>
+                <ReferenceLine y={5.88} stroke={accent} strokeDasharray="3 3" strokeOpacity={0.5}/>
+                <Bar dataKey="pace" radius={[4,4,0,0]}>{policePaceData.map((d,i)=><Cell key={i} fill={d.pace<5.9?accent:d.pace<6.0?C.sky:C.mut}/>)}</Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {tab===3&&(
+          <div>
+            <div style={{background:C.card,border:`1px solid ${accent}33`,borderRadius:12,padding:14,marginBottom:12}}>
+              <SLabel children="What Worked ✅" col={accent}/>
+              {[["Even splits","First 5km: 29:15 · Second 5km: 29:38. Only 23 sec positive split — textbook."],
+                ["Power output","228W Normalized Power. Highest ever race watt. Cardio aerobic base is there."],
+                ["Race execution","Started controlled, built pace, finished strong. HR management excellent."]].map(([t,d],i,arr)=>(
+                <div key={t} style={{display:"flex",gap:10,padding:"8px 0",borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:"none"}}>
+                  <span style={{fontSize:16,width:20}}>✅</span>
+                  <div><div style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b}}>{t}</div>
+                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b,lineHeight:1.5,marginTop:2}}>{d}</div></div>
+                </div>
+              ))}
             </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,marginBottom:14}}>
-              {sLabel("Grade % Per Section")}
-              <ResponsiveContainer width="100%" height={110}>
-                <BarChart data={tcsElevData} barSize={8}>
-                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`}/>
-                  <YAxis domain={[-2,3]} hide/>
-                  <ReferenceLine y={0} stroke="#2A2D3A" strokeWidth={1}/>
-                  <Bar dataKey="grade" radius={[2,2,0,0]}>{tcsElevData.map((d,i)=><Cell key={i} fill={d.grade>1.5?C.red:d.grade>0.3?C.yellow:d.grade<-0.5?C.green:"#2A2D3A"}/>)}</Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div style={{display:"flex",justifyContent:"center",gap:14,marginTop:10,flexWrap:"wrap"}}>
-                {[[C.red,"Steep ↑"],[C.yellow,"Mild ↑"],["#2A2D3A","Flat"],[C.green,"Downhill ↓"]].map(([c,l])=>(
-                  <div key={l} style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:10,height:10,borderRadius:2,background:c}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{l}</span></div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:14}}>
+              <SLabel children="Season Progression"/>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                {[["Police Run","58:53","✓ Done",C.police],["Namma Power","57:30","Mar 15",C.namma],["TCS Open","54:50","Apr 26",C.tcs]].map(([r,t,d,col])=>(
+                  <div key={r} style={{background:C.faint,borderRadius:8,padding:10,textAlign:"center",border:`1px solid ${col}44`}}>
+                    <div style={{fontSize:10,color:col,fontFamily:F.b,fontWeight:600,marginBottom:3}}>{r}</div>
+                    <div style={{fontSize:19,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{t}</div>
+                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{d}</div>
+                  </div>
                 ))}
               </div>
+              <div style={{marginTop:10,height:5,background:C.bdr,borderRadius:3}}>
+                <div style={{height:"100%",width:"33%",background:`linear-gradient(to right,${C.police},${C.namma})`,borderRadius:3}}/>
+              </div>
             </div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18}}>
-              {sLabel("Elevation by Km")}
-              {tcsKmData.map((km,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"7px 0",borderBottom:i<9?`1px solid ${C.border}`:"none"}}>
-                  <div style={{width:40,fontSize:13,fontWeight:700,color:km.color,fontFamily:F.h,letterSpacing:"0.3px",flexShrink:0}}>{i+1}</div>
-                  <div style={{flex:1,height:6,background:C.border,borderRadius:3,overflow:"hidden"}}>
-                    {km.elev>0?<div style={{height:"100%",width:`${Math.min(100,km.elev/20*100)}%`,background:C.red,borderRadius:3}}/>:<div style={{height:"100%",width:`${Math.min(100,Math.abs(km.elev)/15*100)}%`,background:C.green,borderRadius:3}}/>}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* — Namma Run component — */
+function NammaRun(){
+  const [tab,setTab]=useState(0);
+  const tabs=["Race Plan","SBI Analysis","Route & Elev","Training Week","Race Morning"];
+  const accent=C.namma;
+  return(
+    <>
+      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.bdr}`,overflowX:"auto"}}>
+        {tabs.map((t,i)=>(<button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"10px 6px",background:"transparent",
+          border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",
+          color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",
+          letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>))}
+      </div>
+      <div style={{padding:"18px 16px"}}>
+        {tab===0&&(
+          <div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="Km-by-Km Race Strategy"/>
+              {nammaSegs.map((s,i)=>(
+                <div key={i} style={{background:C.faint,borderRadius:10,padding:"12px 14px",marginBottom:8,borderLeft:`3px solid ${s.color}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                    <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                      <span style={{fontSize:13,fontWeight:700,color:s.color,minWidth:78,fontFamily:F.h,letterSpacing:"0.3px"}}>{s.km}</span>
+                      <span style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{s.terrain}</span>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:16,fontFamily:F.h,color:C.white}}>{s.pace}/km</div>
+                      <div style={{fontSize:11,color:C.mut}}>HR {s.hr}</div>
+                    </div>
                   </div>
-                  <div style={{width:48,textAlign:"right",fontSize:13,fontWeight:700,color:km.elev>0?C.red:km.elev<0?C.green:C.mut,fontFamily:F.b}}>{km.elev>0?"+":""}{km.elev}m</div>
-                  <div style={{width:55,fontSize:11,color:C.mut,fontFamily:F.b}}>{km.grade}</div>
+                  <IBar val={s.intensity} color={s.color}/>
+                  {sp(5)}
+                  <div style={{fontSize:12,color:C.sec,lineHeight:1.6,fontFamily:F.b}}>{s.tip}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:`rgba(96,165,250,0.06)`,border:`1px solid ${accent}33`,borderRadius:12,padding:14}}>
+              <SLabel children="⚡ Mental Cue — Km 7–8" col={accent}/>
+              <div style={{fontSize:16,fontWeight:700,color:C.white,lineHeight:1.5,fontFamily:F.b}}>"Shorten stride. Keep cadence 88+. Keep moving."</div>
+              <div style={{fontSize:12,color:C.sec,marginTop:8,lineHeight:1.6,fontFamily:F.b}}>Your HR will be 182–185. Every other runner feels the same. The ones who hold form here win.</div>
+            </div>
+          </div>
+        )}
+        {tab===1&&<SBIContent/>}
+        {tab===2&&(
+          <div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="NICE Road Elevation Profile (Out & Back)"/>
+              <NammaElevSVG/>
+            </div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16}}>
+              <SLabel children="Route Facts"/>
+              {[["📍","Start/Finish","Hoskerehalli Toll Junction, NICE Road"],["↕️","Key Climb","0.83km at 5.7% avg grade, max 13%"],["🔄","Format","Out-and-back — climb appears twice"],["🌡️","Weather","~33°C at 6am start · Heats up fast"]].map(([ic,l,v],i,arr)=>(
+                <div key={l} style={{display:"flex",gap:12,padding:"10px 0",borderBottom:i<arr.length-1?`1px solid ${C.bdr}`:"none"}}>
+                  <span style={{fontSize:18}}>{ic}</span>
+                  <div><div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,fontFamily:F.b}}>{l}</div>
+                  <div style={{fontSize:13,color:C.pri,marginTop:2,fontFamily:F.b}}>{v}</div></div>
                 </div>
               ))}
             </div>
@@ -900,61 +551,57 @@ function TCSRun(){
         )}
         {tab===3&&(
           <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:18,paddingBottom:8,marginBottom:14}}>
-              {sLabel("6-Week Volume (km/week)")}
-              <ResponsiveContainer width="100%" height={110}>
-                <BarChart data={tcsWeeks} barSize={40}>
-                  <XAxis dataKey="week" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false}/>
-                  <YAxis hide/>
-                  <Tooltip cursor={{fill:"#1A1F2E"}} content={({active,payload})=>{if(active&&payload?.length){const d=payload[0].payload;return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",fontSize:12,fontFamily:F.b}}><div style={{color:d.color,fontWeight:700}}>{d.label}</div><div style={{color:C.sec}}>{d.km} km · {d.dates}</div></div>);}return null;}}/>
-                  <Bar dataKey="km" radius={[6,6,0,0]}>{tcsWeeks.map((w,i)=><Cell key={i} fill={hovWk===i?w.color:w.color+"77"}/>)}</Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            {tcsWeeks.map((wk,i)=>(
-              <div key={i} onMouseEnter={()=>setHovWk(i)} onMouseLeave={()=>setHovWk(null)} style={{background:C.card,border:`1px solid ${hovWk===i?wk.color+"44":C.border}`,borderLeft:`3px solid ${wk.color}`,borderRadius:10,padding:14,marginBottom:10}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:10}}>
-                  <div><span style={{fontSize:16,fontWeight:700,color:wk.color,fontFamily:F.h,letterSpacing:"0.5px",marginRight:8}}>{wk.week}</span><span style={{fontSize:14,fontWeight:600,color:C.pri,fontFamily:F.b}}>{wk.label}</span></div>
-                  <div style={{textAlign:"right"}}><span style={{fontSize:20,fontFamily:F.h,color:C.white,letterSpacing:"0.3px"}}>{wk.km}km</span><div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{wk.dates}</div></div>
+            {nammaTraining.map((day,i)=>(
+              <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:8,padding:"12px 14px",
+                background:day.isRace?`rgba(96,165,250,0.06)`:day.done?`rgba(52,211,153,0.04)`:C.card,
+                border:`1px solid ${day.isRace?accent+"55":day.done?day.light+"44":C.bdr}`,
+                borderRadius:10,borderLeft:`3px solid ${day.light}`,opacity:(!day.done&&!day.isRace&&i>4)?.72:1}}>
+                <div style={{fontSize:20,lineHeight:1,paddingTop:2}}>{day.emoji}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{fontSize:15,fontWeight:700,color:day.light,fontFamily:F.h,letterSpacing:"0.5px"}}>{day.label}</span>
+                      {day.done&&<Pill c={C.green}>✓ Done</Pill>}
+                      {day.isRace&&<Pill c={accent}>Race Day</Pill>}
+                    </div>
+                    <span style={{fontSize:11,color:C.mut,fontFamily:F.b}}>{day.date}</span>
+                  </div>
+                  <div style={{fontSize:12,color:day.done?"#86EFAC88":C.sec,marginTop:2,lineHeight:1.6,fontFamily:F.b}}>{day.desc}</div>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:3}}>
-                  {wk.sessions.map((s,j)=><div key={j} style={{fontSize:12,color:s.includes("REST")?"#334155":s.includes("RACE")||s.includes("DAY")?C.tcs:s.includes("x")||s.includes("tempo")?C.yellow:C.mut,padding:"2px 0",fontFamily:F.b}}>{s}</div>)}
-                </div>
-                <div style={{marginTop:10}}><IntBar val={wk.intensity} color={wk.color}/></div>
               </div>
             ))}
-            <div style={{background:"#0A1205",border:`1px solid ${C.green}33`,borderRadius:12,padding:16}}>
-              {sLabel("🔑 Key Workout: 6×800m Intervals",C.green)}
-              <div style={{fontSize:13,color:C.sec,lineHeight:1.7,fontFamily:F.b}}>Warmup 2km → 6 reps × 800m @ <strong style={{color:C.white}}>5:10/km</strong> with 90sec jog recovery → cooldown 1km. This cracks the 5:30/km barrier.</div>
+            <div style={{background:`rgba(52,211,153,0.05)`,border:`1px solid ${C.green}33`,borderRadius:12,padding:12,marginTop:4}}>
+              <div style={{fontSize:12,color:"#86EFAC",fontFamily:F.b,lineHeight:1.7}}>
+                📊 <strong>Week progress: 5/9 done</strong> · <strong style={{color:C.white}}>25.8km</strong> running + 2 badminton · <strong style={{color:C.green}}>✅ HR trending down — legs recovering</strong> · <strong style={{color:C.white}}>5 days to race</strong>. Next: 🛌 full rest Wed.
+              </div>
             </div>
           </div>
         )}
         {tab===4&&(
           <div>
-            {sLabel("Apr 26 — Race Day Timeline")}
-            <Timeline accent={accent} items={[
-              {time:"4:30 AM",action:"Wake Up",       icon:"⏰",detail:"400ml water immediately.",fire:false},
-              {time:"4:45 AM",action:"Pre-race Fuel", icon:"🍌",detail:"2 bananas + 2 dates + salt in 200ml water.",fire:false},
-              {time:"5:15 AM",action:"Leave Home",    icon:"🚗",detail:"Arrive by 5:30 AM. April traffic near Cubbon Rd.",fire:false},
-              {time:"5:30 AM",action:"Warmup",        icon:"🤸",detail:"Leg swings, A-skips × 10 min. 2 strides at 5:20/km.",fire:false},
-              {time:"5:55 AM",action:"Seed Yourself", icon:"🏁",detail:"55–57 min corral. Wave start — don't go front row.",fire:false},
-              {time:"6:10 AM",action:"🔥 WAVE FIRES", icon:"🏃",detail:"TCS Open 10K 2026. Sub-55 is yours.",fire:true},
-            ]}/>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginTop:14}}>
-              {sLabel("🍽️ Race Day Nutrition")}
-              {[["Apr 25 dinner","Rice + dal + curd. No fried food. Sleep by 9:30 PM."],["4:30 AM","400ml water on waking."],["4:45 AM","2 bananas + 2 dates + salt in 200ml water."],["Km 5 station","Electrolyte if available."],["Km 8 station","Last water. Grab and go."],["Finish","Coconut water or ORS + 2 boiled eggs within 30 min."]].map(([w,v],i,arr)=>(
-                <div key={i} style={{display:"flex",gap:12,paddingBottom:9,marginBottom:9,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:12,color:accent,width:100,flexShrink:0,fontWeight:600,fontFamily:F.b}}>{w}</span>
-                  <span style={{fontSize:12,color:C.sec,lineHeight:1.5,fontFamily:F.b}}>{v}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{background:"#0A0D1A",border:`1px solid ${C.blue}33`,borderRadius:12,padding:16,marginTop:14}}>
-              {sLabel("📋 Race Logistics",C.blue)}
-              {[["BIB Collection","Apr 23–24 at Get Active Expo. No race-day pickup."],["Wave Start","Submit Namma Power Run result for fast wave."],["Parking","Metro to MG Road or Cubbon Park station."],["Finisher Tee","Top 1,500 men. Sub-55 puts you there comfortably."]].map(([l,v],i,arr)=>(
-                <div key={i} style={{display:"flex",gap:10,paddingBottom:9,marginBottom:9,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <span style={{fontSize:12,color:C.blue,width:110,flexShrink:0,fontWeight:600,fontFamily:F.b}}>{l}</span>
-                  <span style={{fontSize:12,color:C.sec,lineHeight:1.5,fontFamily:F.b}}>{v}</span>
+            <SLabel children="Mar 15 Morning Timeline"/>
+            <div style={{position:"relative"}}>
+              <div style={{position:"absolute",left:52,top:16,bottom:16,width:1,background:`linear-gradient(to bottom,${accent}44,${accent},${accent}44)`}}/>
+              {[{t:"4:45 AM",a:"Wake Up",ic:"💧",d:"Drink 400ml water immediately.",fire:false},
+                {t:"5:00 AM",a:"Pre-race Fuel",ic:"🍌",d:"2 bananas + pinch of salt in 200ml water.",fire:false},
+                {t:"5:20 AM",a:"Leave Home",ic:"🚗",d:"Arrive early. Beat traffic, beat heat.",fire:false},
+                {t:"5:40 AM",a:"Dynamic Warmup",ic:"🤸",d:"Leg swings → hip circles → high knees → A-skips.",fire:false},
+                {t:"5:50 AM",a:"Race Strides",ic:"⚡",d:"80m × 2 at 5:50/km.",fire:false},
+                {t:"5:55 AM",a:"Seed Yourself",ic:"🏁",d:"58–60 min pace group. Don't go to the front.",fire:false},
+                {t:"6:00 AM",a:"🏅 RACE START",ic:"🔥",d:"Namma Power Run 2026.",fire:true},
+              ].map((item,i)=>(
+                <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:14,position:"relative"}}>
+                  <div style={{width:52,textAlign:"right",fontSize:11,color:C.sec,fontWeight:600,paddingTop:8,flexShrink:0,fontFamily:F.b}}>{item.t}</div>
+                  <div style={{width:20,height:20,borderRadius:"50%",flexShrink:0,zIndex:1,marginTop:6,
+                    background:item.fire?accent:C.bdr2,border:`2px solid ${item.fire?accent:"#334155"}`,
+                    boxShadow:item.fire?`0 0 14px ${accent}88`:"none",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {item.fire&&<div style={{width:7,height:7,borderRadius:"50%",background:"#fff"}}/>}
+                  </div>
+                  <div style={{flex:1,background:item.fire?`rgba(96,165,250,0.08)`:C.card,
+                    border:`1px solid ${item.fire?accent+"44":C.bdr}`,borderRadius:10,padding:"10px 14px"}}>
+                    <div style={{fontSize:13,fontWeight:700,color:item.fire?accent:C.pri,fontFamily:F.h,letterSpacing:"0.5px"}}>{item.ic} {item.a.toUpperCase()}</div>
+                    <div style={{fontSize:12,color:C.mut,marginTop:3,lineHeight:1.6,fontFamily:F.b}}>{item.d}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -965,425 +612,702 @@ function TCSRun(){
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-//  SBI GREEN 10K — COMPARISON & SUB-60 PLAN
-// ══════════════════════════════════════════════════════════════════════════════
-
-const SBI_COLOR = "#38BDF8"; // sky blue
-
-// Real Strava lap data from SBI Green 10K
-const sbiLaps = [
-  {km:1, time:"6:10", pace:6.17, hr:160, elev:13,  power:223, cad:84},
-  {km:2, time:"6:53", pace:6.88, hr:174, elev:27,  power:221, cad:83},
-  {km:3, time:"6:21", pace:6.35, hr:171, elev:16,  power:223, cad:83},
-  {km:4, time:"5:18", pace:5.30, hr:178, elev:0,   power:227, cad:86},
-  {km:5, time:"6:00", pace:6.00, hr:178, elev:0,   power:225, cad:85},
-  {km:6, time:"6:25", pace:6.42, hr:178, elev:9,   power:218, cad:85},
-  {km:7, time:"7:05", pace:7.08, hr:182, elev:24,  power:217, cad:83},
-  {km:8, time:"6:41", pace:6.68, hr:175, elev:12,  power:198, cad:83},
-  {km:9, time:"5:46", pace:5.77, hr:177, elev:4,   power:213, cad:85},
-  {km:10,time:"5:31", pace:5.52, hr:176, elev:2,   power:237, cad:85},
-];
-
-// Namma target blueprint derived from SBI analysis
-const nammaPlan = [
-  {km:1,  zone:"Flat Start",       sbiPace:6.17, targetPace:6.17, targetHR:155, elev:0,  color:C.green,
-   issue:null, fix:"Roll out easy. Match SBI km1. HR under 158."},
-  {km:2,  zone:"⬆️ Climb (out)",   sbiPace:6.88, targetPace:6.75, targetHR:170, elev:13, color:C.tcs,
-   issue:"SBI km2 HR spiked to 174 on the first climb.", fix:"Same climb at NICE Road. Shorten stride. HR 168–172 max."},
-  {km:3,  zone:"Flat Recovery",    sbiPace:6.35, targetPace:5.58, targetHR:165, elev:0,  color:C.blue,
-   issue:"SBI km3: still recovering at 6:21.", fix:"NICE km 2.5–5 is flat — capitalise. Bank 30–40 sec here."},
-  {km:4,  zone:"⚠️ DON'T SURGE",   sbiPace:5.30, targetPace:5.50, targetHR:170, elev:0,  color:C.red,
-   issue:"SBI km4: SURGED to 5:18 — fastest km of race. Burned ALL your matches.", fix:"Hold 5:45–5:50. Save legs. The 2nd climb is 3km away."},
-  {km:5,  zone:"Turnaround+Flat",  sbiPace:6.00, targetPace:5.50, targetHR:172, elev:0,  color:C.blue,
-   issue:"SBI km5 dropped back to 6:00 after the surge.",fix:"Steady 5:45–5:50. No yo-yo pacing like SBI."},
-  {km:6,  zone:"Flat Push",        sbiPace:6.42, targetPace:5.55, targetHR:174, elev:9,  color:C.blue,
-   issue:"SBI km6 slowed to 6:25 — fatigue from km4 surge showing.", fix:"You'll have energy here because you didn't surge at km4. Push to 5:45."},
-  {km:7,  zone:"⬆️ Climb (back)",  sbiPace:7.08, targetPace:6.58, targetHR:180, elev:24, color:C.namma,
-   issue:"SBI km7: DISASTER — 7:05, HR 187. Power fell to 217W. Tanks empty from km4.", fix:"With controlled km4–6, you hit this climb with fuel. Target 6:30–6:40. Cadence 88+."},
-  {km:8,  zone:"Recovery Downhill",sbiPace:6.68, targetPace:6.25, targetHR:176, elev:12, color:C.yellow,
-   issue:"SBI km8: still suffering at 6:41. Power dropped to 198W (lowest of race).", fix:"Downhill on NICE Road. Let gravity work. 6:00–6:15."},
-  {km:9,  zone:"Final Push",       sbiPace:5.77, targetPace:5.58, targetHR:178, elev:4,  color:C.green,
-   issue:"SBI km9 finally recovered at 5:46 — but too late.", fix:"You'll have legs here. Target sub-5:45. Start surging."},
-  {km:10, zone:"Sprint Finish",    sbiPace:5.52, targetPace:5.25, targetHR:185, elev:2,  color:C.namma,
-   issue:"SBI km10: 5:31 finish sprint.", fix:"Aim for 5:10–5:20. You'll have more left than SBI."},
-];
-
-// Time saved per km vs SBI
-const timeSavings = nammaPlan.map(d=>({
-  km: `Km ${d.km}`,
-  saved: Math.round((d.sbiPace - d.targetPace) * 60),
-  color: d.sbiPace > d.targetPace ? C.green : C.red,
-}));
-
-const SBI_TABS = ["Race Comparison","Km Blueprint","Sub-60 Plan","Key Mistakes"];
-function SBIAnalysis() {
-  const [tab, setTab] = useState(0);
-  const accent = SBI_COLOR;
-
-  return (
+/* — TCS Run component — */
+function TCSRun(){
+  const [tab,setTab]=useState(0);
+  const [hovWk,setHovWk]=useState(null);
+  const tabs=["Km Breakdown","Elevation","6-Week Plan","Race Morning"];
+  const accent=C.tcs;
+  return(
     <>
-      {/* Banner */}
-      <div style={{background:"#080C14",padding:"10px 18px",borderBottom:`1px solid ${accent}22`,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-        <div style={{width:8,height:8,borderRadius:"50%",background:accent,flexShrink:0}}/>
-        <span style={{fontSize:12,color:accent,fontWeight:700,fontFamily:F.b}}>SBI Green 10K — Nov 30, 2025 · Bengaluru</span>
-        <div style={{marginLeft:"auto",display:"flex",gap:8,flexWrap:"wrap"}}>
-          <div style={{background:"#0A1020",border:`1px solid ${accent}44`,borderRadius:20,padding:"2px 10px",fontSize:10,color:accent,fontWeight:700,fontFamily:F.b}}>63:09 → TARGET: SUB-60</div>
+      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.bdr}`,overflowX:"auto"}}>
+        {tabs.map((t,i)=>(<button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"10px 6px",background:"transparent",
+          border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",
+          color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",
+          letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>))}
+      </div>
+      <div style={{padding:"18px 16px"}}>
+        {tab===0&&(
+          <div>
+            {tcsKms.map((km,i)=>(
+              <div key={i} style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,
+                padding:"12px 14px",marginBottom:8,borderLeft:`3px solid ${km.color}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                  <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                    <span style={{fontSize:13,fontWeight:700,color:km.color,minWidth:52,fontFamily:F.h}}>{km.km}</span>
+                    <span style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{km.terrain}</span>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:16,fontFamily:F.h,color:C.white}}>{km.pace}/km</div>
+                    <div style={{fontSize:11,color:C.mut}}>HR ~{km.hr}</div>
+                  </div>
+                </div>
+                <IBar val={km.intensity} color={km.color} h={5}/>
+                {sp(6)}
+                <div style={{display:"flex",gap:12}}>
+                  <div style={{fontSize:11,color:km.elev>0?C.red:km.elev<0?C.green:C.mut,fontFamily:F.b}}>
+                    {km.elev>0?`+${km.elev}m ↑`:km.elev<0?`${km.elev}m ↓`:"Flat"}
+                  </div>
+                </div>
+                <div style={{fontSize:12,color:C.sec,marginTop:6,lineHeight:1.6,fontFamily:F.b}}>💬 {km.tip}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {tab===1&&(
+          <div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="Elevation Profile — TCS Course"/>
+              <div style={{fontSize:11,color:C.mut,marginBottom:10,fontFamily:F.b}}>826m–908m range · +50m total gain · Max grade 7.5%</div>
+              <ResponsiveContainer width="100%" height={170}>
+                <AreaChart data={tcsElev} margin={{left:0,right:0,top:8,bottom:0}}>
+                  <defs><linearGradient id="te" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={accent} stopOpacity={0.3}/>
+                    <stop offset="100%" stopColor={accent} stopOpacity={0.02}/>
+                  </linearGradient></defs>
+                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`}/>
+                  <YAxis domain={[880,915]} tick={{fill:C.mut,fontSize:9}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}m`} width={36}/>
+                  <Tooltip content={({active,payload})=>{if(!active||!payload?.length)return null;const d=payload[0].payload;return(<div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white}}>{d.d}km</div><div style={{color:accent}}>Alt: {d.alt}m</div><div style={{color:d.grade>1?C.red:d.grade<-.5?C.green:C.sec}}>{d.grade>0?"+":""}{d.grade}%</div></div>);}}/>
+                  <ReferenceLine x={4.3} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.5}/>
+                  <ReferenceLine x={5.0} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.5}/>
+                  <Area type="monotone" dataKey="alt" stroke={accent} strokeWidth={2.5} fill="url(#te)" dot={false} activeDot={{r:4,fill:accent}}/>
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16}}>
+              <SLabel children="Grade % Per Section"/>
+              <ResponsiveContainer width="100%" height={100}>
+                <BarChart data={tcsElev} barSize={7}>
+                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`}/>
+                  <YAxis domain={[-2,3]} hide/>
+                  <ReferenceLine y={0} stroke={C.bdr2} strokeWidth={1}/>
+                  <Bar dataKey="grade" radius={[2,2,0,0]}>{tcsElev.map((d,i)=><Cell key={i} fill={d.grade>1.5?C.red:d.grade>.3?C.orange:d.grade<-.5?C.green:C.bdr2}/>)}</Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+        {tab===2&&(
+          <div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="6-Week Volume (km/week)"/>
+              <ResponsiveContainer width="100%" height={100}>
+                <BarChart data={tcsWeeks} barSize={36}>
+                  <XAxis dataKey="week" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false}/>
+                  <YAxis hide/>
+                  <Tooltip content={({active,payload})=>{if(!active||!payload?.length)return null;const d=payload[0].payload;return(<div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"8px 12px",fontSize:12,fontFamily:F.b}}><div style={{color:d.color,fontWeight:700}}>{d.label}</div><div style={{color:C.sec}}>{d.km} km · {d.dates}</div></div>);}}/>
+                  <Bar dataKey="km" radius={[5,5,0,0]}>{tcsWeeks.map((w,i)=><Cell key={i} fill={hovWk===i?w.color:w.color+"88"}/>)}</Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {tcsWeeks.map((wk,i)=>(
+              <div key={i} onMouseEnter={()=>setHovWk(i)} onMouseLeave={()=>setHovWk(null)}
+                style={{background:C.card,border:`1px solid ${hovWk===i?wk.color+"44":C.bdr}`,
+                  borderLeft:`3px solid ${wk.color}`,borderRadius:10,padding:12,marginBottom:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
+                  <div><span style={{fontSize:15,fontWeight:700,color:wk.color,fontFamily:F.h,marginRight:8}}>{wk.week}</span>
+                    <span style={{fontSize:13,fontWeight:600,color:C.pri,fontFamily:F.b}}>{wk.label}</span></div>
+                  <div style={{textAlign:"right"}}><span style={{fontSize:18,fontFamily:F.h,color:C.white}}>{wk.km}km</span>
+                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{wk.dates}</div></div>
+                </div>
+                <div style={{marginTop:6}}><IBar val={wk.intensity} color={wk.color}/></div>
+              </div>
+            ))}
+          </div>
+        )}
+        {tab===3&&(
+          <div>
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:14,marginBottom:12}}>
+              <SLabel children="Apr 26 Morning Timeline"/>
+              {[{t:"4:30 AM",a:"Wake Up",      d:"400ml water. Light stretch."},
+                {t:"5:00 AM",a:"Pre-race Fuel", d:"2 bananas + salt water. Oats optional."},
+                {t:"5:45 AM",a:"Leave Home",    d:"Cubbon Park area. Arrive 6:00 AM."},
+                {t:"6:00 AM",a:"Dynamic Warmup",d:"Leg swings, A-skips, short strides."},
+                {t:"6:10 AM",a:"WAVE START",    d:"TCS World 10K 2026. Target: Sub-55:00."},
+              ].map((it,i)=>(
+                <div key={i} style={{display:"flex",gap:10,padding:"8px 0",
+                  borderBottom:i<4?`1px solid ${C.bdr}`:"none"}}>
+                  <span style={{width:55,fontSize:11,color:C.sec,fontFamily:F.b,fontWeight:600,flexShrink:0}}>{it.t}</span>
+                  <div><div style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b}}>{it.a}</div>
+                    <div style={{fontSize:12,color:C.mut,fontFamily:F.b,marginTop:2}}>{it.d}</div></div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:`rgba(129,140,248,0.06)`,border:`1px solid ${accent}33`,borderRadius:12,padding:14}}>
+              <SLabel children="BIB Info" col={accent}/>
+              <div style={{fontSize:13,color:C.sec,lineHeight:1.7,fontFamily:F.b}}>
+                Apr 23–24 at <strong style={{color:C.white}}>Get Active Expo</strong> · Submit Namma result for wave seeding.
+                Register under Open category. Aim for the 55–60 min wave. Wear COROS and Novablast 5.
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+/* ════════════════════════════════════════
+   ROOT APP
+════════════════════════════════════════ */
+const TOP_TABS = ["TODAY","RACES","SEASON","LOG","STATS","PROFILE"];
+const RACE_SWITCHER = [
+  {id:0,short:"Police Run",  sub:"Mar 1 · Done",   badge:"✓ COMPLETED",  accent:C.police,bgGrad:"linear-gradient(135deg,#060F0A,#081208)",target:"58:53",pace:"5:53/km",
+   stats:[["🏁","Distance","10.02 km"],["⏱","Time","58:53"],["❤️","Avg HR","180"],["💪","Power","228W"]]},
+  {id:1,short:"Namma Power", sub:"Mar 15 · 5 days", badge:"⚡ 5 DAYS OUT",  accent:C.namma, bgGrad:"linear-gradient(135deg,#060A18,#08101A)",target:"57:30",pace:"5:45/km",
+   stats:[["📅","Date","Mar 15"],["📍","Course","NICE Road"],["⛰","Elev","+90m"],["🌡","Temp","~33°C"]]},
+  {id:2,short:"TCS Open",    sub:"Apr 26 · Goal",   badge:"🎯 GOAL RACE",   accent:C.tcs,   bgGrad:"linear-gradient(135deg,#060A18,#080A1A)",target:"54:50",pace:"5:29/km",
+   stats:[["📅","Date","Apr 26"],["📍","Course","Cubbon Rd"],["⛰","Elev","+50m"],["🌡","Temp","~32°C"]]},
+];
+
+export default function App(){
+  const [topTab,setTopTab] = useState(0);
+  const [race,setRace]     = useState(0);
+  const r = RACE_SWITCHER[race];
+
+  return(
+    <div style={{background:C.bg,minHeight:"100vh",color:C.pri,fontFamily:F.b,maxWidth:800,margin:"0 auto",paddingBottom:48,
+      backgroundImage:"radial-gradient(ellipse 70% 40% at 100% 0%,rgba(61,139,248,0.06),transparent),radial-gradient(ellipse 50% 40% at 0% 80%,rgba(129,140,248,0.04),transparent)"}}>
+
+      {/* ── HERO HEADER ── */}
+      <div style={{background:"linear-gradient(160deg,#060A14 0%,#0A1028 60%,#060C10 100%)",
+        padding:"26px 20px 0",borderBottom:`1px solid ${C.bdr}`,position:"relative",overflow:"hidden"}}>
+        {/* Grid texture */}
+        <div style={{position:"absolute",inset:0,opacity:0.025,
+          backgroundImage:"linear-gradient(rgba(96,165,250,1) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,1) 1px,transparent 1px)",
+          backgroundSize:"36px 36px"}}/>
+        {/* Glow */}
+        <div style={{position:"absolute",top:-80,right:-80,width:240,height:240,borderRadius:"50%",
+          background:"rgba(61,139,248,0.1)",filter:"blur(70px)"}}/>
+        <div style={{position:"relative"}}>
+          <div style={{fontSize:10,color:C.blue,fontFamily:F.m,fontWeight:700,letterSpacing:"0.2em",marginBottom:10}}>
+            ● ATHLETE · STRAVA #99703920 · 2026 SEASON
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16,marginBottom:20}}>
+            <div>
+              <h1 style={{margin:0,fontFamily:F.h,fontSize:52,lineHeight:.88,letterSpacing:"2px",color:C.white,marginBottom:8}}>
+                SACHIN<br/>
+                <span style={{WebkitTextStroke:`1.5px ${C.blue}`,WebkitTextFillColor:"transparent",color:"transparent"}}>K G</span>
+              </h1>
+              <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>📍 Bangalore, Karnataka · ♂ 75 kg · ASICS · COROS · Strava Summit</div>
+            </div>
+            {/* VO2 badge */}
+            <div style={{background:"rgba(61,139,248,0.08)",border:`1px solid ${C.blue}33`,borderRadius:14,
+              padding:"14px 20px",textAlign:"center",flexShrink:0,boxShadow:`0 0 40px rgba(61,139,248,0.1)`}}>
+              <div style={{fontSize:9,color:C.blue,fontFamily:F.m,fontWeight:700,letterSpacing:"0.15em",marginBottom:2}}>VO₂ MAX</div>
+              <div style={{fontSize:42,fontFamily:F.h,fontWeight:900,color:C.white,lineHeight:1,letterSpacing:"1px"}}>~38</div>
+              <div style={{fontSize:9,color:C.sec,fontFamily:F.b}}>mL/kg/min · Fair→Good</div>
+            </div>
+          </div>
+          {/* KPI strip */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:0,borderTop:`1px solid ${C.bdr}`,borderLeft:`1px solid ${C.bdr}`}}>
+            {[
+              {v:"57",   s:"",    l:"Season Runs",   sub:"Nov–Mar",   c:C.blue  },
+              {v:"460",  s:"km",  l:"Season Volume", sub:"5 months",  c:C.sky   },
+              {v:"58:53",s:"",    l:"10K PR",        sub:"Mar 1 2026",c:C.green },
+              {v:"25",   s:"km",  l:"Longest Race",  sub:"Ultra Dec", c:C.yellow},
+              {v:"100",  s:"",    l:"All-Time Runs", sub:"Since 2022",c:C.indigo},
+            ].map(k=>(
+              <div key={k.l} style={{padding:"12px 8px",textAlign:"center",borderRight:`1px solid ${C.bdr}`,borderBottom:`1px solid ${C.bdr}`}}>
+                <div style={{fontSize:20,fontFamily:F.h,fontWeight:900,color:k.c,letterSpacing:"0.5px",lineHeight:1}}>
+                  {k.v}<span style={{fontSize:11}}>{k.s}</span>
+                </div>
+                <div style={{fontSize:10,color:C.white,fontFamily:F.b,fontWeight:600,marginTop:4}}>{k.l}</div>
+                <div style={{fontSize:9,color:C.mut,fontFamily:F.b,marginTop:1}}>{k.sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.border}`,overflowX:"auto"}}>
-        {SBI_TABS.map((t,i)=>(
-          <button key={t} onClick={()=>setTab(i)} style={{flex:1,padding:"11px 6px",background:"transparent",border:"none",borderBottom:tab===i?`2px solid ${accent}`:"2px solid transparent",color:tab===i?accent:C.mut,cursor:"pointer",fontSize:11,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{t}</button>
+      {/* ── STICKY TOP NAV ── */}
+      <div style={{position:"sticky",top:0,zIndex:50,background:"rgba(5,8,16,0.95)",
+        backdropFilter:"blur(12px)",borderBottom:`1px solid ${C.bdr}`,display:"flex",overflowX:"auto"}}>
+        {TOP_TABS.map((t,i)=>(
+          <button key={t} onClick={()=>setTopTab(i)} style={{flex:1,padding:"13px 4px",background:"transparent",
+            border:"none",borderBottom:`2px solid ${topTab===i?C.blue:"transparent"}`,
+            color:topTab===i?C.blue:C.mut,fontSize:11,fontFamily:F.h,fontWeight:700,
+            letterSpacing:"0.12em",cursor:"pointer",textTransform:"uppercase",
+            whiteSpace:"nowrap",transition:"color 0.15s"}}>{t}</button>
         ))}
       </div>
 
-      <div style={{padding:"18px 18px"}}>
-
-        {/* ── TAB 0: RACE COMPARISON ── */}
-        {tab===0&&(
-          <div>
-            {/* Head-to-head stats */}
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
-              {sLabel("Head-to-Head: SBI vs Namma Target")}
-              <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:6,alignItems:"center",marginBottom:16}}>
-                {/* SBI column */}
-                <div style={{background:"#080B12",borderRadius:10,padding:12,textAlign:"center",border:`1px solid ${accent}33`}}>
-                  <div style={{fontSize:10,color:accent,fontWeight:700,fontFamily:F.b,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.1em"}}>SBI Green 10K</div>
-                  <div style={{fontSize:28,fontFamily:F.h,color:accent,letterSpacing:"1px"}}>63:09</div>
-                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>6:14/km avg</div>
-                  <div style={{height:1,background:C.border,margin:"8px 0"}}/>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
-                    {[["HR","175 bpm"],["Max HR","187 bpm"],["Power","220W"],["Cad","84 spm"],["Elev","+111m"],["Load","323"]].map(([l,v])=>(
-                      <div key={l} style={{fontSize:10,fontFamily:F.b}}><span style={{color:C.mut}}>{l}: </span><span style={{color:C.pri,fontWeight:600}}>{v}</span></div>
-                    ))}
+      {/* ══════════════════════════
+          TAB: TODAY
+      ══════════════════════════ */}
+      {topTab===0&&(
+        <div>
+          {/* Latest run card */}
+          <div style={{background:"linear-gradient(135deg,#070A18,#080C1A)",borderBottom:`1px solid ${C.blue}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(61,139,248,0.08) 0%,transparent 50%)`}}/>
+            <div style={{position:"relative"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                    <div style={{width:7,height:7,borderRadius:"50%",background:C.blue,boxShadow:`0 0 8px ${C.blue}`}}/>
+                    <span style={{fontSize:11,color:C.blue,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Run · Today</span>
+                    <Pill c={C.blue}>Mar 10</Pill>
+                    <Pill c={C.green}>⚡ Strides</Pill>
                   </div>
+                  <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>SHAKEOUT + 4 STRIDES 💨</div>
+                  <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>5 days to Namma Power Run · 👟 Novablast 5</div>
                 </div>
-                {/* VS divider */}
-                <div style={{textAlign:"center",padding:"0 6px"}}>
-                  <div style={{fontSize:18,fontFamily:F.h,color:C.mut,letterSpacing:"2px"}}>VS</div>
-                  <div style={{marginTop:8,fontSize:10,color:C.mut,fontFamily:F.b}}>3:09<br/>faster</div>
-                </div>
-                {/* Namma target */}
-                <div style={{background:"linear-gradient(135deg,#1A0500,#120300)",borderRadius:10,padding:12,textAlign:"center",border:`1px solid ${C.namma}44`}}>
-                  <div style={{fontSize:10,color:C.namma,fontWeight:700,fontFamily:F.b,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.1em"}}>Namma Target</div>
-                  <div style={{fontSize:28,fontFamily:F.h,color:C.namma,letterSpacing:"1px"}}>58:30</div>
-                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>5:51/km avg</div>
-                  <div style={{height:1,background:C.border,margin:"8px 0"}}/>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
-                    {[["HR","~172"],["Max HR","~185"],["Power","~225W"],["Cad","85+ spm"],["Elev","+90m"],["Gap","−3:39"]].map(([l,v])=>(
-                      <div key={l} style={{fontSize:10,fontFamily:F.b}}><span style={{color:C.mut}}>{l}: </span><span style={{color:C.pri,fontWeight:600}}>{v}</span></div>
-                    ))}
-                  </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:28,fontFamily:F.h,color:C.blue,letterSpacing:"1px",lineHeight:1}}>6.57<span style={{fontSize:14,color:C.mut}}> km</span></div>
+                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>46:43 · 7:07/km</div>
                 </div>
               </div>
-
-              {/* Pace bar chart comparison */}
-              {sLabel("Pace Per Km — SBI vs Namma Target")}
-              <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={nammaPlan.map(d=>({km:`${d.km}`,sbi:d.sbiPace,target:d.targetPace}))} barGap={3} barSize={16}>
-                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`Km${v}`}/>
-                  <YAxis domain={[5.0, 7.5]} hide/>
-                  <Tooltip content={({active,payload,label})=>{
-                    if(active&&payload?.length)return(
-                      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 11px",fontSize:12,fontFamily:F.b}}>
-                        <div style={{color:C.white,fontWeight:700,marginBottom:3}}>Km {label}</div>
-                        {payload.map((p,i)=>{const m=Math.floor(p.value);const s=Math.round((p.value-m)*100);return(<div key={i} style={{color:p.fill}}>{p.name}: {m}:{s<10?"0"+s:s}/km</div>);})}
-                      </div>
-                    );return null;
-                  }}/>
-                  <Bar dataKey="sbi" name="SBI" radius={[3,3,0,0]} fill={accent+"88"}/>
-                  <Bar dataKey="target" name="Target" radius={[3,3,0,0]}>
-                    {nammaPlan.map((d,i)=><Cell key={i} fill={d.color}/>)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div style={{display:"flex",gap:14,justifyContent:"center",marginTop:6}}>
-                <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:12,height:8,borderRadius:2,background:accent+"88"}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>SBI Actual</span></div>
-                <div style={{display:"flex",alignItems:"center",gap:5}}><div style={{width:12,height:8,borderRadius:2,background:C.green}}/><span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>Namma Target</span></div>
-              </div>
-            </div>
-
-            {/* HR comparison */}
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
-              {sLabel("Heart Rate Per Km")}
-              <ResponsiveContainer width="100%" height={130}>
-                <BarChart data={sbiLaps.map(d=>({km:`${d.km}`,hr:d.hr}))} barSize={28}>
-                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`Km${v}`}/>
-                  <YAxis domain={[150,190]} hide/>
-                  <Tooltip content={({active,payload,label})=>{
-                    if(active&&payload?.length)return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white}}>Km {label}</div><div style={{color:"#F87171"}}>HR: {payload[0].value} bpm</div></div>);return null;
-                  }}/>
-                  <ReferenceLine y={177} stroke={C.red} strokeDasharray="4 3" strokeOpacity={0.6}/>
-                  <Bar dataKey="hr" radius={[3,3,0,0]}>
-                    {sbiLaps.map((d,i)=><Cell key={i} fill={d.hr>=182?C.namma:d.hr>=177?C.tcs:C.blue}/>)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div style={{marginTop:10,padding:"9px 12px",background:"#080B12",borderRadius:8}}>
-                <div style={{fontSize:12,color:"#FED7AA",fontFamily:F.b,lineHeight:1.6}}>
-                  ⚠️ <strong>Km 7 peaked at 187 bpm</strong> — your highest of the race, right on the second big climb. Classic "blowup" pattern caused by the km 4 surge (5:18). Power also collapsed to just 198W at km 8 — total tank empty.
-                </div>
-              </div>
-            </div>
-
-            {/* Time savings bar */}
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
-              {sLabel("Seconds Saved Per Km vs SBI")}
-              <ResponsiveContainer width="100%" height={100}>
-                <BarChart data={timeSavings} barSize={28}>
-                  <XAxis dataKey="km" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}/>
-                  <YAxis hide/>
-                  <ReferenceLine y={0} stroke={C.border} strokeWidth={1}/>
-                  <Tooltip content={({active,payload,label})=>{
-                    if(active&&payload?.length){const v=payload[0].value;return(<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,fontFamily:F.b}}><div style={{color:C.white}}>{label}</div><div style={{color:v>0?C.green:C.red}}>{v>0?"+":""}{v}s saved</div></div>);}return null;
-                  }}/>
-                  <Bar dataKey="saved" radius={[3,3,0,0]}>
-                    {timeSavings.map((d,i)=><Cell key={i} fill={d.saved>0?C.green:C.red}/>)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:8,padding:"8px 12px",background:"#080B12",borderRadius:8}}>
-                <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>Total time saved</div>
-                <div style={{fontSize:16,fontFamily:F.h,color:C.green,letterSpacing:"0.5px"}}>~3:39 faster = <strong>59:30</strong></div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 1: KM BLUEPRINT ── */}
-        {tab===1&&(
-          <div>
-            {sLabel("Namma Km Blueprint — Learned from SBI")}
-            {nammaPlan.map((km,i)=>(
-              <div key={i} style={{background:C.card,border:`1px solid ${km.color}33`,borderLeft:`3px solid ${km.color}`,borderRadius:10,padding:"13px 14px",marginBottom:8}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                  <div style={{display:"flex",gap:10,alignItems:"center"}}>
-                    <div style={{width:28,height:28,borderRadius:"50%",background:km.color+"22",border:`1px solid ${km.color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:km.color,fontFamily:F.h,flexShrink:0}}>{km.km}</div>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:700,color:C.pri,fontFamily:F.b}}>{km.zone}</div>
-                      <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>SBI was {km.time||`${km.sbiPace.toFixed(2).replace(".",":")} /km`}</div>
-                    </div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:20,fontFamily:F.h,color:km.color,letterSpacing:"0.5px"}}>{(()=>{const m=Math.floor(km.targetPace);const s=Math.round((km.targetPace-m)*100);return `${m}:${s<10?"0"+s:s}`;})()}/km</div>
-                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>HR ~{km.targetHR}</div>
-                  </div>
-                </div>
-                {km.issue&&(
-                  <div style={{background:"#1A0B00",borderRadius:6,padding:"7px 10px",marginBottom:7,border:`1px solid ${C.tcs}22`}}>
-                    <div style={{fontSize:11,color:"#FED7AA",fontFamily:F.b,lineHeight:1.5}}>❌ <strong>SBI mistake:</strong> {km.issue}</div>
-                  </div>
-                )}
-                <div style={{background:"#060F08",borderRadius:6,padding:"7px 10px",border:`1px solid ${C.green}22`}}>
-                  <div style={{fontSize:11,color:"#86EFAC",fontFamily:F.b,lineHeight:1.5}}>✅ <strong>Namma fix:</strong> {km.fix}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ── TAB 2: SUB-60 PLAN ── */}
-        {tab===2&&(
-          <div>
-            <div style={{background:"linear-gradient(135deg,#060F08,#080E0A)",border:`1px solid ${C.green}44`,borderRadius:12,padding:16,marginBottom:14}}>
-              {sLabel("Sub-60 is already yours 🎯", C.green)}
-              <div style={{fontSize:13,color:C.sec,lineHeight:1.7,fontFamily:F.b}}>
-                You ran <strong style={{color:C.police}}>58:53 at the Police Run</strong> — you are already a sub-60 runner. The SBI Green run (63:09) was slower because of one key error: the km 4 surge. Fix that single habit and you go sub-60 at Namma comfortably.
-              </div>
-            </div>
-
-            {/* Target time splits */}
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
-              {sLabel("The Sub-58:30 Split Plan")}
-              {[
-                ["Km 1",    "6:10","6:10","Flat start. Calm. HR under 158.",           C.green],
-                ["Km 2",    "6:53","6:30","CLIMB — same as SBI km2 but 23 sec faster by not fighting it. Short stride, high cadence.", C.tcs],
-                ["Km 3–5", "18:26","17:30","Three flat kms. Steady 5:50/km. NO surge. This is 56 sec of savings.", C.blue],
-                ["Km 6",    "6:25","5:55","You have fresh legs unlike SBI. Push here.", C.blue],
-                ["Km 7",    "7:05","6:35","CLIMB BACK — but with fuel in tank. Target 6:30. Not 7:05.", C.namma],
-                ["Km 8",    "6:41","6:10","Downhill. Gravity. Let it roll.",            C.yellow],
-                ["Km 9",    "5:46","5:40","Final push. You'll have more gas than SBI.", C.green],
-                ["Km 10",   "5:31","5:10","Sprint. Empty everything.",                  C.namma],
-              ].map(([km,sbi,target,tip,col],i,arr)=>(
-                <div key={km} style={{display:"flex",gap:10,padding:"10px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none",alignItems:"flex-start"}}>
-                  <div style={{width:44,fontSize:13,fontWeight:700,color:col,fontFamily:F.h,letterSpacing:"0.5px",flexShrink:0,paddingTop:1}}>{km}</div>
-                  <div style={{flex:1}}>
-                    <div style={{display:"flex",gap:12,alignItems:"baseline",marginBottom:4}}>
-                      <span style={{fontSize:12,color:C.mut,fontFamily:F.b,textDecoration:"line-through"}}>{sbi}</span>
-                      <span style={{fontSize:16,fontWeight:700,color:col,fontFamily:F.h,letterSpacing:"0.5px"}}>→ {target}</span>
-                    </div>
-                    <div style={{fontSize:12,color:C.sec,lineHeight:1.5,fontFamily:F.b}}>{tip}</div>
-                  </div>
-                </div>
-              ))}
-              <div style={{marginTop:12,padding:"10px 12px",background:"linear-gradient(135deg,#060F08,#080E0A)",borderRadius:8,border:`1px solid ${C.green}33`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:13,color:C.sec,fontFamily:F.b}}>Projected Finish</span>
-                <span style={{fontSize:24,fontFamily:F.h,color:C.green,letterSpacing:"1px"}}>58:30 ✓</span>
-              </div>
-            </div>
-
-            {/* The single rule */}
-            <div style={{background:"linear-gradient(135deg,#1A0800,#0D0500)",border:`1px solid ${C.namma}44`,borderRadius:12,padding:16,marginBottom:14}}>
-              {sLabel("⚡ The One Rule That Unlocks Sub-60", C.namma)}
-              <div style={{fontSize:18,fontWeight:700,color:C.white,fontFamily:F.b,lineHeight:1.4,marginBottom:10}}>
-                "At km 4, <span style={{color:C.namma}}>DO NOT run faster than 5:50/km</span> — no matter how good you feel."
-              </div>
-              <div style={{fontSize:13,color:C.sec,fontFamily:F.b,lineHeight:1.7}}>
-                At SBI you ran km 4 in <strong style={{color:C.red}}>5:18</strong> — a full 90+ seconds faster than sustainable. The second climb (km 7) then cost you <strong style={{color:C.red}}>7:05</strong> — 2 full minutes slower than km 4. You net-lost 30 seconds by "going fast" on the flat. At Namma, km 5–7 is the same temptation. Resist it.
-              </div>
-            </div>
-
-            {/* Race day checklist */}
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
-              {sLabel("Namma Race Day Checklist")}
-              {[
-                [C.blue,  "Start of race","Seed in 58–60 min group. Let the fast pack go."],
-                [C.tcs,   "Km 1–2 climb","Shorten stride. Cadence 86+. HR 168–172 max."],
-                [C.red,   "Km 3–6 flat",  "HOLD 5:50. Repeat 'hold hold hold' on km 4."],
-                [C.namma, "Km 7–8 climb", "You have saved legs. 6:30–6:40. Cadence 88+."],
-                [C.green, "Km 9–10",      "Now is the time. Empty everything. Sub-5:30 finish sprint."],
-              ].map(([col,phase,tip],i,arr)=>(
-                <div key={phase} style={{display:"flex",gap:10,padding:"9px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <div style={{width:4,background:col,borderRadius:2,flexShrink:0,opacity:0.8}}/>
-                  <div>
-                    <div style={{fontSize:12,fontWeight:700,color:C.pri,fontFamily:F.b}}>{phase}</div>
-                    <div style={{fontSize:12,color:C.sec,marginTop:2,lineHeight:1.5,fontFamily:F.b}}>{tip}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 3: KEY MISTAKES ── */}
-        {tab===3&&(
-          <div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:14}}>
-              {sLabel("The 3 Mistakes That Cost 3+ Minutes at SBI")}
-              {[
-                {rank:"#1",title:"Km 4 Surge (5:18)",severity:1.0,color:C.namma,
-                 what:"Ran km 4 in 5:18 — 56 seconds faster than your race pace. It felt great. It wasn't.",
-                 why:"You'd just come off the first climb (km2–3). Legs felt light on the flat. Classic over-confidence.",
-                 cost:"Cost you the entire km 7 climb. That one km was 7:05 — the single slowest km of your race.",
-                 fix:"At Namma: glance at watch at km 3.5. If you're under 5:45/km, SLOW DOWN deliberately."},
-                {rank:"#2",title:"Km 7 Blowup (7:05, HR 187)",severity:0.85,color:C.red,
-                 what:"Your slowest km AND your highest HR of the race — at the same time. Power: 217W, your second-lowest.",
-                 why:"Tank was empty from the km 4 surge. Body had nothing left for the second major climb.",
-                 cost:"7:05 vs a manageable 6:35 = 30 seconds lost on just this km.",
-                 fix:"At Namma: second climb is km 7–8.5. If you've held pace correctly, this should feel like a grind, not a collapse."},
-                {rank:"#3",title:"Power Collapse km 8 (198W)",severity:0.65,color:C.yellow,
-                 what:"After the km 7 blowup, your power dropped to 198W — lowest of the entire race.",
-                 why:"Glycogen-depleted effort. The body physically couldn't sustain output.",
-                 cost:"Km 8 was 6:41 when you should've been recovering and building towards the finish.",
-                 fix:"At Namma: if you feel this coming (sudden HR drop + legs locking), back off 10 sec/km and eat the loss. Don't panic and surge."},
-              ].map((m,i,arr)=>(
-                <div key={i} style={{marginBottom:i<arr.length-1?16:0,paddingBottom:i<arr.length-1?16:0,borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-                    <div style={{background:m.color+"22",border:`1px solid ${m.color}55`,borderRadius:8,padding:"4px 10px",fontSize:12,fontWeight:700,color:m.color,fontFamily:F.h,letterSpacing:"0.5px"}}>{m.rank}</div>
-                    <div style={{fontSize:15,fontWeight:700,color:C.white,fontFamily:F.b}}>{m.title}</div>
-                  </div>
-                  <IntBar val={m.severity} color={m.color} h={3}/>
-                  <div style={{marginTop:10,display:"grid",gap:7}}>
-                    {[["🔍 What happened",m.what],["❓ Why it happened",m.why],["💸 What it cost",m.cost],["✅ Namma fix",m.fix]].map(([l,t])=>(
-                      <div key={l} style={{display:"flex",gap:8,fontSize:12,fontFamily:F.b}}>
-                        <span style={{color:C.mut,flexShrink:0,width:130}}>{l}</span>
-                        <span style={{color:C.sec,lineHeight:1.5,flex:1}}>{t}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Cadence note */}
-            <div style={{background:"#0A0D1A",border:`1px solid ${C.blue}33`,borderRadius:12,padding:16}}>
-              {sLabel("📊 Cadence Pattern", C.blue)}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:10}}>
-                {sbiLaps.filter((_,i)=>[1,3,6,8,9].includes(i)).map((l)=>(
-                  <div key={l.km} style={{background:"#080B12",borderRadius:8,padding:"8px 6px",textAlign:"center"}}>
-                    <div style={{fontSize:12,fontFamily:F.h,color:l.cad>=85?C.green:C.yellow,letterSpacing:"0.5px"}}>{l.cad}</div>
-                    <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>Km {l.km}</div>
+              {/* Stats row */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:12}}>
+                {[["❤️","Avg HR","153"],["📈","Max HR","173"],["⚡","Power","188W"],["💨","Top Speed","16.9 km/h"],["🔥","Calories","537"]].map(([ic,l,v])=>(
+                  <div key={l} style={{background:"rgba(255,255,255,0.02)",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
+                    <div style={{fontSize:13,marginBottom:2}}>{ic}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
+                    <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.05em"}}>{l}</div>
                   </div>
                 ))}
               </div>
-              <div style={{fontSize:12,color:C.sec,fontFamily:F.b,lineHeight:1.6}}>
-                Cadence averaged 83.9 spm across SBI — just below the optimal 85+ threshold. On the climbs (km 2, 7) it dropped to 83. At Namma: target <strong style={{color:C.white}}>86+ on the flat, 88+ on the climbs</strong>. Higher cadence = lower impact per step = less fatigue.
+              {/* Strides breakdown */}
+              <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Stride Breakdown · 4×80m</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:12}}>
+                {[{n:"S1",speed:"12.8",cad:88,hr:160,color:C.green},{n:"S2",speed:"10.7",cad:86,hr:167,color:C.green},{n:"S3",speed:"15.8",cad:91,hr:168,color:C.yellow},{n:"S4",speed:"11.1",cad:85,hr:173,color:C.yellow}].map(s=>(
+                  <div key={s.n} style={{background:C.faint,border:`1px solid ${s.color}33`,borderRadius:8,padding:"7px 8px",textAlign:"center"}}>
+                    <div style={{fontSize:10,color:s.color,fontWeight:700,fontFamily:F.h,marginBottom:3}}>{s.n}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h}}>{s.speed}<span style={{fontSize:9,color:C.mut}}> km/h</span></div>
+                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>cad {s.cad} · {s.hr}bpm</div>
+                  </div>
+                ))}
+              </div>
+              {/* HR chart */}
+              <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Heart Rate · Distance</div>
+              <ResponsiveContainer width="100%" height={68}>
+                <AreaChart data={latestRunHR} margin={{left:0,right:0,top:4,bottom:0}}>
+                  <defs><linearGradient id="lrg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={C.blue} stopOpacity={0.4}/>
+                    <stop offset="100%" stopColor={C.blue} stopOpacity={0.02}/>
+                  </linearGradient></defs>
+                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`} ticks={[0,1.5,3,4.5,6,6.57]}/>
+                  <YAxis domain={[90,180]} hide/>
+                  <Tooltip content={({active,payload})=>{if(!active||!payload?.length)return null;return(<div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"5px 10px",fontSize:11,fontFamily:F.b}}><div style={{color:C.sec}}>{payload[0].payload.d}km</div><div style={{color:C.blue}}>{payload[0].value} bpm</div></div>);}}/>
+                  <ReferenceLine y={153} stroke={C.blue} strokeDasharray="3 3" strokeOpacity={0.4}/>
+                  <Area type="monotone" dataKey="hr" stroke={C.blue} strokeWidth={2} fill="url(#lrg)" dot={false} activeDot={{r:3,fill:C.blue}}/>
+                </AreaChart>
+              </ResponsiveContainer>
+              <div style={{marginTop:10,padding:"9px 12px",background:"rgba(52,211,153,0.06)",borderRadius:8,border:`1px solid ${C.green}33`}}>
+                <div style={{fontSize:12,color:"#86EFAC",lineHeight:1.6,fontFamily:F.b}}>
+                  ✅ <strong>Coach:</strong> 30-min easy base (HR 149 — Z2!) + 4 strides hitting <strong style={{color:C.white}}>16.9 km/h & cadence 91 spm</strong>. HR down 171→153 from yesterday. <strong style={{color:C.green}}>5 days out: perfect execution. Tomorrow — full rest.</strong>
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
-    </>
-  );
-}
 
-// ── ROOT ──────────────────────────────────────────────────────────────────────
-const RACES=[
-  {id:0,name:"Karnataka State\nPolice Run",short:"Police Run",sub:"Mar 1 · Bengaluru",target:"58:53",pace:"5:53/km",badge:"Race 1 ✓",accent:C.police,bgGrad:"linear-gradient(160deg,#060F0A 0%,#0A1A0A 50%,#061205 100%)",glow1:"rgba(110,231,183,0.10)",glow2:"rgba(96,165,250,0.06)",status:"COMPLETED",statusBg:"#0D2010",stats:[["🏁","Finish","58:53"],["❤️","Avg HR","180 bpm"],["⚡","Power","228W"],["👟","Cadence","85 spm"]]},
-  {id:1,name:"Namma Power Run",short:"Namma Power",sub:"Mar 15 · NICE Road",target:"57:30",pace:"5:45/km",badge:"Race 2",accent:C.namma,bgGrad:"linear-gradient(160deg,#0A0F1A 0%,#0D1A0D 40%,#1A0500 100%)",glow1:"rgba(255,61,61,0.10)",glow2:"rgba(76,155,232,0.06)",status:"UPCOMING",statusBg:"#1A0D00",stats:[["🎯","Target","57:30"],["⬆️","Elev","~90m"],["📐","Grade","13%"],["🔄","Climbs","2"]]},
-  {id:2,name:"TCS Open 10K",short:"TCS Open",sub:"Apr 26 · Cubbon Road",target:"54:50",pace:"5:29/km",badge:"Race 3",accent:C.tcs,bgGrad:"linear-gradient(160deg,#0A0F1A 0%,#0D1A10 40%,#1A0D05 100%)",glow1:"rgba(249,115,22,0.10)",glow2:"rgba(96,165,250,0.08)",status:"UPCOMING",statusBg:"#1A0800",stats:[["🎯","Target","54:50"],["⬆️","Elev","~50m"],["📐","Grade","7.5%"],["🔄","U-Turns","3"]]},
-];
+          {/* Weather strip */}
+          <div style={{background:"linear-gradient(135deg,#060A10,#060C0E)",borderBottom:`1px solid ${C.bdr}`,padding:"14px 18px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <div>
+                <div style={{fontSize:11,color:C.mut,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>Bengaluru · Live Weather</div>
+                <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.b}}>☀️ 27°C now · <span style={{color:C.red}}>Race day: 33°C 🔥</span></div>
+                <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>🏃 Today's run: ~22°C at 6:40 AM — ideal</div>
+              </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:4}}>
+              {[{d:"Tue 10",h:30,ic:"✅",done:true},{d:"Wed 11",h:32,ic:"☀️"},{d:"Thu 12",h:33,ic:"☀️"},{d:"Fri 13",h:33,ic:"☀️"},{d:"Sat 14",h:33,ic:"🌤️"},{d:"Sun 15",h:33,ic:"🔥",race:true}].map((d,i)=>(
+                <div key={i} style={{background:d.race?"rgba(61,139,248,0.1)":d.done?"rgba(52,211,153,0.05)":"rgba(255,255,255,0.02)",
+                  border:`1px solid ${d.race?C.blue+"55":d.done?C.green+"33":C.bdr}`,borderRadius:8,padding:"6px 4px",textAlign:"center"}}>
+                  <div style={{fontSize:8,color:d.race?C.blue:d.done?C.green:C.mut,fontFamily:F.b,fontWeight:600,marginBottom:2}}>{d.d}</div>
+                  <div style={{fontSize:14}}>{d.ic}</div>
+                  <div style={{fontSize:12,fontWeight:700,color:d.h>=32?C.red:C.sec,fontFamily:F.h}}>{d.h}°</div>
+                  {d.race&&<div style={{fontSize:8,color:C.blue,fontFamily:F.b,fontWeight:700,marginTop:2}}>RACE</div>}
+                </div>
+              ))}
+            </div>
+          </div>
 
-export default function RacePlanner(){
-  const [race,setRace]=useState(0);
-  const r=RACES[race];
-  return(
-    <div style={{background:C.bg,minHeight:"100vh",color:C.pri,fontFamily:F.b,maxWidth:780,margin:"0 auto",paddingBottom:40}}>
-      {/* Latest Activity */}
-      <LatestRunCard/>
-      {/* Athlete Profile + VO2max + Recovery */}
-      <AthleteProfileCard/>
-      {/* Weather + Coach */}
-      <WeatherCoachCard/>
-      {/* Switcher */}
-      <div style={{background:"#09090F",borderBottom:`1px solid ${C.border}`,padding:"14px 16px 0"}}>
-        <div style={{fontSize:10,color:"#283040",textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:10,fontWeight:700,fontFamily:F.b}}>Sachin K G · Strava #99703920 · 2026 Race Season</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-          {RACES.map((rc)=>(
-            <button key={rc.id} onClick={()=>setRace(rc.id)} style={{padding:"10px 10px 0",background:race===rc.id?"#0D1117":"transparent",border:`1px solid ${race===rc.id?rc.accent+"55":C.border}`,borderBottom:`2px solid ${race===rc.id?rc.accent:"transparent"}`,borderRadius:"8px 8px 0 0",cursor:"pointer",textAlign:"left",transition:"all 0.2s"}}>
-              <div style={{fontSize:9,color:race===rc.id?rc.accent:"#283040",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:700,fontFamily:F.b,marginBottom:2}}>{rc.badge}</div>
-              <div style={{fontSize:13,fontWeight:700,fontFamily:F.h,letterSpacing:"0.8px",color:race===rc.id?C.white:C.mut,lineHeight:1.2,marginBottom:4}}>{rc.short.toUpperCase()}</div>
-              <div style={{fontSize:10,color:race===rc.id?C.mut:"#283040",fontFamily:F.b,marginBottom:8}}>{rc.sub}</div>
-            </button>
-          ))}
+          {/* Recovery countdown */}
+          <div style={{background:"linear-gradient(135deg,#060D0A,#060E0C)",borderBottom:`1px solid ${C.bdr}`,padding:"14px 18px"}}>
+            <div style={{fontSize:11,color:C.green,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>⚡ Race Week Recovery · 5 Days Out</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:12}}>
+              {[{d:"Wed",n:"11",ic:"🛌",l:"Full Rest",c:C.green,note:"OFF"},{d:"Thu",n:"12",ic:"🤸",l:"Shakeout",c:C.yellow,note:"20min"},{d:"Fri",n:"13",ic:"🛌",l:"Rest+Carbs",c:C.green,note:"OFF"},{d:"Sat",n:"14",ic:"👟",l:"Light Jog",c:C.sky,note:"BIB"},{d:"Sun",n:"15",ic:"🏅",l:"RACE",c:C.blue,note:"6 AM"}].map((d,i)=>(
+                <div key={i} style={{background:C.faint,border:`1px solid ${d.c}33`,borderRadius:10,padding:"9px 6px",textAlign:"center",borderTop:`2px solid ${d.c}`}}>
+                  <div style={{fontSize:8,color:C.mut,fontFamily:F.b}}>{d.d} {d.n}</div>
+                  <div style={{fontSize:18,margin:"4px 0"}}>{d.ic}</div>
+                  <div style={{fontSize:10,color:d.c,fontFamily:F.b,fontWeight:700,lineHeight:1.2}}>{d.l}</div>
+                  <div style={{fontSize:8,color:C.mut,fontFamily:F.b,marginTop:2}}>{d.note}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{height:7,background:C.bdr,borderRadius:4,overflow:"hidden"}}>
+              <div style={{height:"100%",width:"72%",background:`linear-gradient(to right,${C.blue},${C.green})`,borderRadius:4}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:4,fontSize:9,color:C.mut,fontFamily:F.b}}>
+              <span>Now (recovering)</span><span style={{color:C.green}}>Race day → HIGH freshness ✅</span>
+            </div>
+          </div>
         </div>
-      </div>
-      {/* Hero */}
-      <div style={{background:r.bgGrad,padding:"22px 18px 18px",borderBottom:`1px solid ${C.border}`,position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 85% 15%,${r.glow1} 0%,transparent 50%),radial-gradient(circle at 15% 85%,${r.glow2} 0%,transparent 50%)`}}/>
-        <div style={{position:"relative"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
-            <div>
-              <div style={{fontSize:11,color:r.accent,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:5,fontWeight:600,fontFamily:F.b}}>{r.sub}</div>
-              <h1 style={{margin:0,fontSize:30,fontFamily:F.h,letterSpacing:"1px",lineHeight:1.1,color:C.white,whiteSpace:"pre-line"}}>{r.name.toUpperCase()}</h1>
-              <div style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:6}}>
-                <div style={{background:r.statusBg,border:`1px solid ${r.accent}44`,borderRadius:20,padding:"2px 10px",fontSize:10,color:r.accent,fontWeight:700,fontFamily:F.b}}>{r.status}</div>
-              </div>
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,fontFamily:F.b}}>{race===0?"Official Time":"Target"}</div>
-              <div style={{fontSize:42,fontFamily:F.h,color:r.accent,lineHeight:1,letterSpacing:"1px"}}>{r.target}</div>
-              <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{r.pace}</div>
+      )}
+
+      {/* ══════════════════════════
+          TAB: RACES
+      ══════════════════════════ */}
+      {topTab===1&&(
+        <div>
+          {/* Race switcher */}
+          <div style={{background:"#08090F",borderBottom:`1px solid ${C.bdr}`,padding:"14px 16px 0"}}>
+            <div style={{fontSize:9,color:C.mut,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:10,fontWeight:700,fontFamily:F.b}}>Sachin K G · 2026 Race Season</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+              {RACE_SWITCHER.map(rc=>(
+                <button key={rc.id} onClick={()=>setRace(rc.id)} style={{padding:"10px 10px 0",
+                  background:race===rc.id?C.faint:"transparent",
+                  border:`1px solid ${race===rc.id?rc.accent+"55":C.bdr}`,
+                  borderBottom:`2px solid ${race===rc.id?rc.accent:"transparent"}`,
+                  borderRadius:"8px 8px 0 0",cursor:"pointer",textAlign:"left",transition:"all 0.2s"}}>
+                  <div style={{fontSize:9,color:race===rc.id?rc.accent:C.mut,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:700,fontFamily:F.b,marginBottom:2}}>{rc.badge}</div>
+                  <div style={{fontSize:13,fontWeight:700,fontFamily:F.h,letterSpacing:"0.8px",color:race===rc.id?C.white:C.mut,lineHeight:1.2,marginBottom:4}}>{rc.short.toUpperCase()}</div>
+                  <div style={{fontSize:10,color:race===rc.id?C.mut:C.faint,fontFamily:F.b,marginBottom:8}}>{rc.sub}</div>
+                </button>
+              ))}
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:`repeat(${r.stats.length},1fr)`,gap:8,marginTop:16}}>
-            {r.stats.map(([icon,lbl,val])=>(
-              <div key={lbl} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"9px 6px",textAlign:"center"}}>
-                <div style={{fontSize:16,marginBottom:3}}>{icon}</div>
-                <div style={{fontSize:14,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.5px"}}>{val}</div>
-                <div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:F.b}}>{lbl}</div>
+          {/* Race hero */}
+          <div style={{background:r.bgGrad,padding:"20px 18px 16px",borderBottom:`1px solid ${C.bdr}`,position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 85% 15%,${r.accent}18 0%,transparent 50%)`}}/>
+            <div style={{position:"relative"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12,marginBottom:16}}>
+                <div>
+                  <div style={{fontSize:11,color:r.accent,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:5,fontWeight:600,fontFamily:F.b}}>{r.sub}</div>
+                  <h2 style={{margin:0,fontSize:28,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>{r.short.toUpperCase()}</h2>
+                  <Pill c={r.accent}>{r.badge}</Pill>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,fontFamily:F.b}}>{race===0?"Official Time":"Target"}</div>
+                  <div style={{fontSize:40,fontFamily:F.h,color:r.accent,lineHeight:1,letterSpacing:"1px"}}>{r.target}</div>
+                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{r.pace}</div>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:`repeat(${r.stats.length},1fr)`,gap:8}}>
+                {r.stats.map(([ic,l,v])=>(
+                  <div key={l} style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:10,padding:"9px 6px",textAlign:"center"}}>
+                    <div style={{fontSize:15,marginBottom:3}}>{ic}</div>
+                    <div style={{fontSize:14,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.5px"}}>{v}</div>
+                    <div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.06em",fontFamily:F.b}}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {race===0&&<PoliceRun/>}
+          {race===1&&<NammaRun/>}
+          {race===2&&<TCSRun/>}
+        </div>
+      )}
+
+      {/* ══════════════════════════
+          TAB: SEASON
+      ══════════════════════════ */}
+      {topTab===2&&(
+        <div style={{padding:"0 18px"}}>
+          {/* Race photo gallery */}
+          <div style={{margin:"24px -18px 0"}}>
+            <PhotoGallery/>
+          </div>
+
+          <SHead label="Monthly Volume" accent={C.cyan} right="Nov 2025 – Mar 2026"/>
+          <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:14,padding:"16px 14px",marginBottom:20}}>
+            <ResponsiveContainer width="100%" height={155}>
+              <BarChart data={MONTHLY} barSize={36} margin={{left:0,right:0,top:4,bottom:0}}>
+                <XAxis dataKey="m" tick={{fill:C.mut,fontSize:10,fontFamily:F.b}} axisLine={false} tickLine={false}/>
+                <YAxis hide domain={[0,160]}/>
+                <Tooltip content={({active,payload,label})=>{
+                  if(!active||!payload?.length)return null;
+                  const d=MONTHLY.find(m=>m.m===label);
+                  return(<div style={{background:C.card,border:`1px solid ${C.bdr2}`,borderRadius:10,padding:"10px 14px",fontFamily:F.b,fontSize:12}}>
+                    <div style={{color:C.sec,marginBottom:4,fontWeight:600}}>{label}</div>
+                    <div style={{color:C.white}}>📏 {payload[0].value} km · {d?.runs} runs</div>
+                    <div style={{color:C.sec,marginTop:2}}>avg {d?.avgPace}/km</div>
+                  </div>);
+                }}/>
+                <Bar dataKey="km" radius={[5,5,0,0]}>{MONTHLY.map((m,i)=><Cell key={i} fill={m.color} opacity={0.85}/>)}</Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <SHead label="Season Race History" accent={C.blue}/>
+          <div style={{position:"relative",paddingLeft:20,marginBottom:24}}>
+            <div style={{position:"absolute",left:6,top:8,bottom:8,width:2,
+              background:`linear-gradient(to bottom,${C.indigo},${C.yellow},${C.green},${C.sky},${C.blue},${C.indigo})`}}/>
+            {RACE_HISTORY.map((r,i)=>(
+              <div key={i} style={{display:"flex",gap:14,marginBottom:12,position:"relative"}}>
+                <div style={{width:12,height:12,borderRadius:"50%",background:r.color,flexShrink:0,marginTop:4,
+                  position:"relative",left:-3,boxShadow:`0 0 10px ${r.color}88`,
+                  border:r.status!=="done"?`2px dashed ${r.color}`:"none"}}/>
+                <div style={{flex:1,background:C.card,border:`1px solid ${r.color}22`,borderLeft:`3px solid ${r.color}`,borderRadius:10,padding:"11px 14px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:6}}>
+                    <div>
+                      <div style={{display:"flex",gap:6,marginBottom:3,flexWrap:"wrap"}}>
+                        <Pill c={r.color}>{r.status==="done"?"✓ DONE":r.status==="next"?"5 DAYS":"GOAL"}</Pill>
+                      </div>
+                      <div style={{fontSize:15,fontFamily:F.h,fontWeight:700,color:C.white,letterSpacing:"0.5px"}}>{r.name}</div>
+                      <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginTop:1}}>{r.date} · {r.dist}</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:24,fontFamily:F.h,color:r.color,lineHeight:1}}>{r.time}</div>
+                      <div style={{fontSize:11,color:C.sec,fontFamily:F.b}}>{r.pace}</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:6}}>
+                    {[`🌡 ${r.temp}`,`⛰ ${r.elev}`,`❤️ ${r.hr}`,`🔥 ${r.kcal} kcal`].map(t=>(
+                      <span key={t} style={{fontSize:10,color:C.mut,fontFamily:F.b,background:C.faint,borderRadius:6,padding:"2px 8px"}}>{t}</span>
+                    ))}
+                  </div>
+                  <div style={{fontSize:11,color:C.sec,lineHeight:1.6,fontFamily:F.b,fontStyle:"italic"}}>{r.note}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
+      )}
+
+      {/* ══════════════════════════
+          TAB: LOG
+      ══════════════════════════ */}
+      {topTab===3&&(
+        <div style={{padding:"0 18px"}}>
+          <SHead label="Recent Activity Log" accent={C.sky} right="Last 12 runs"/>
+          {ACTIVITY_LOG.map((a,i)=>(
+            <div key={i}>
+              <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 4px",background:i%2===0?"transparent":"rgba(255,255,255,0.01)"}}>
+                <div style={{width:46,flexShrink:0,textAlign:"right"}}>
+                  <div style={{fontSize:12,fontFamily:F.m,color:C.sec}}>{a.date.split(" ")[1]}</div>
+                  <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{a.date.split(" ")[0]}</div>
+                </div>
+                <div style={{width:8,height:8,borderRadius:"50%",background:tagColor(a.tag),flexShrink:0}}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{a.name}</div>
+                  <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:1}}>👟 {a.gear} · TL {a.tl}</div>
+                </div>
+                <div style={{display:"flex",gap:12,flexShrink:0}}>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:13,fontFamily:F.m,color:C.white,fontWeight:700}}>{a.km}<span style={{fontSize:10,color:C.mut}}> km</span></div>
+                    <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>{a.time}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:13,fontFamily:F.m,color:tagColor(a.tag)}}>{a.pace}<span style={{fontSize:9,color:C.mut}}>/km</span></div>
+                    <div style={{fontSize:10,color:C.pink,fontFamily:F.b}}>♥ {a.hr}</div>
+                  </div>
+                  <div style={{width:44,display:"flex",alignItems:"center",justifyContent:"flex-end"}}>
+                    <Pill c={tagColor(a.tag)}>{a.tag}</Pill>
+                  </div>
+                </div>
+              </div>
+              {i<ACTIVITY_LOG.length-1&&<Divider/>}
+            </div>
+          ))}
+          <SHead label="Gear Tracker" accent={C.yellow}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+            {[{n:"ASICS Novablast 5",s:"Daily trainer · Race shoe",km:"~148km in 2026",c:C.blue,ic:"👟"},{n:"ASICS Gel Nimbus 27",s:"Easy & recovery runs",km:"~113km in 2026",c:C.sky,ic:"👟"}].map(g=>(
+              <div key={g.n} style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:"14px 16px",borderTop:`2px solid ${g.c}`}}>
+                <div style={{fontSize:20,marginBottom:8}}>{g.ic}</div>
+                <div style={{fontSize:14,fontWeight:700,fontFamily:F.b,color:C.white,marginBottom:2}}>{g.n}</div>
+                <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginBottom:8}}>{g.s}</div>
+                <div style={{fontSize:14,fontFamily:F.m,color:g.c,fontWeight:700}}>{g.km}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════
+          TAB: STATS
+      ══════════════════════════ */}
+      {topTab===4&&(
+        <div style={{padding:"0 18px"}}>
+          <SHead label="Weekly Mileage" accent={C.indigo} right="Jan–Mar 10"/>
+          <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:14,padding:"16px 14px",marginBottom:20}}>
+            <ResponsiveContainer width="100%" height={145}>
+              <BarChart data={WEEKLY} barSize={24} margin={{left:0,right:0,top:4,bottom:0}}>
+                <XAxis dataKey="w" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}/>
+                <YAxis hide domain={[0,65]}/>
+                <Tooltip content={({active,payload,label})=>{if(!active||!payload?.length)return null;return(<div style={{background:C.card,border:`1px solid ${C.bdr2}`,borderRadius:10,padding:"10px 14px",fontFamily:F.b,fontSize:12}}><div style={{color:C.sec,marginBottom:4,fontWeight:600}}>{label}</div><div style={{color:C.sky}}>{payload[0].value} km</div></div>);}}/>
+                <ReferenceLine y={40} stroke={C.bdr2} strokeDasharray="4 3"/>
+                <Bar dataKey="km" radius={[4,4,0,0]}>{WEEKLY.map((w,i)=><Cell key={i} fill={w.km>40?C.green:w.km>25?C.sky:C.indigo} opacity={0.85}/>)}</Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <SHead label="Pace Trend · 13 Runs" accent={C.sky}/>
+          <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:14,padding:"16px 14px",marginBottom:20}}>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:12}}>
+              {["RACE","TRAIL","ULTRA","TEMPO","LONG","STRIDES","EASY"].map(t=>(
+                <div key={t} style={{display:"flex",alignItems:"center",gap:4}}>
+                  <div style={{width:7,height:7,borderRadius:"50%",background:tagColor(t)}}/>
+                  <span style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{t}</span>
+                </div>
+              ))}
+            </div>
+            <ResponsiveContainer width="100%" height={150}>
+              <LineChart data={PACE_TREND} margin={{left:0,right:8,top:4,bottom:0}}>
+                <XAxis dataKey="r" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}/>
+                <YAxis domain={[5.5,8.5]} hide/>
+                <Tooltip content={({active,payload,label})=>{
+                  if(!active||!payload?.length)return null;
+                  const d=PACE_TREND.find(p=>p.r===label);
+                  const pv=payload[0].value;
+                  return(<div style={{background:C.card,border:`1px solid ${C.bdr2}`,borderRadius:10,padding:"10px 14px",fontFamily:F.b,fontSize:12}}>
+                    <div style={{color:C.sec,marginBottom:6,fontWeight:600}}>{label} · {d?.km}km</div>
+                    <div style={{color:tagColor(d?.tag||""),marginBottom:3}}>⚡ {fmtPace(pv)}/km</div>
+                    <div style={{color:C.pink}}>❤️ {d?.hr} bpm</div>
+                  </div>);
+                }}/>
+                <ReferenceLine y={5.88} stroke={C.green} strokeDasharray="3 3" strokeOpacity={0.6}/>
+                <Line type="monotone" dataKey="pace" stroke={C.sky} strokeWidth={2}
+                  dot={p=>{const d=PACE_TREND[p.index];return <circle key={p.key} cx={p.cx} cy={p.cy} r={5} fill={tagColor(d?.tag||"")} stroke={C.bg} strokeWidth={2}/>;}}
+                  activeDot={{r:6,fill:C.white,stroke:C.sky,strokeWidth:2}}/>
+              </LineChart>
+            </ResponsiveContainer>
+            <div style={{fontSize:10,color:C.green,fontFamily:F.b,marginTop:6}}>── PR pace ref (5:53/km · Police Run)</div>
+          </div>
+
+          <SHead label="Personal Bests" accent={C.yellow}/>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
+            {[["🏅","58:53","10K PR","5:53/km · Mar 1"],["🏃","25 km","Longest Race","Bengaluru Ultra"],["🔥","228W","Peak Power","Police Run NP"],["❤️","192","Max HR Ever","Kaveri Trail Run"],["👣","91 spm","Max Cadence","Mar 10 stride S3"],["⛰️","169m","Most Elev","Bengaluru Ultra"]].map(([ic,v,l,sub])=>(
+              <div key={l} style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:"13px 12px",borderTop:`2px solid ${C.bdr2}`}}>
+                <div style={{fontSize:18,marginBottom:6}}>{ic}</div>
+                <div style={{fontSize:18,fontFamily:F.h,fontWeight:900,color:C.white,letterSpacing:"0.5px",lineHeight:1}}>{v}</div>
+                <div style={{fontSize:11,color:C.white,fontFamily:F.b,fontWeight:600,marginTop:5}}>{l}</div>
+                <div style={{fontSize:9,color:C.mut,fontFamily:F.b,marginTop:2}}>{sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════
+          TAB: PROFILE
+      ══════════════════════════ */}
+      {topTab===5&&(
+        <div style={{padding:"0 18px"}}>
+          {/* VO2 max */}
+          <SHead label="VO₂ Max & Physiology" accent={C.blue}/>
+          <div style={{background:"linear-gradient(135deg,#08102A,#0A1230)",border:`1px solid ${C.blue}33`,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+              <div>
+                <div style={{fontSize:12,color:C.blue,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:3}}>🫁 Estimated VO2 Max</div>
+                <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>Jack Daniels VDOT · Police Run 10K (58:53)</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:42,fontFamily:F.h,color:C.blue,letterSpacing:"1px",lineHeight:1}}>~38</div>
+                <div style={{fontSize:9,color:C.sec,fontFamily:F.m}}>mL / kg / min</div>
+              </div>
+            </div>
+            <div style={{height:8,borderRadius:4,overflow:"hidden",marginBottom:6,
+              background:`linear-gradient(to right,#1E3A5F 0%,${C.cyan} 33%,${C.yellow} 55%,${C.orange} 75%,${C.red} 90%,${C.indigo} 100%)`}}>
+              <div style={{position:"relative",height:"100%"}}>
+                <div style={{position:"absolute",top:0,bottom:0,left:"63%",width:3,background:C.white,borderRadius:2,boxShadow:"0 0 8px rgba(255,255,255,0.8)"}}/>
+              </div>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.mut,fontFamily:F.b,marginBottom:14}}>
+              {[["20","Beginner"],["30","Fair"],["38","◆ You"],["50","Excellent"],["60","Elite"]].map(([v,l])=>(
+                <div key={v} style={{textAlign:"center"}}>
+                  <div style={{fontWeight:700,color:v==="38"?C.blue:C.mut}}>{v}</div>
+                  <div style={{color:v==="38"?C.sky:C.mut}}>{l}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+              {[["Easy","7:30–8:15",C.green],["Tempo","6:20–6:35",C.yellow],["Interval","5:55–6:05",C.orange],["Race","5:50–6:00",C.red]].map(([t,p,c])=>(
+                <div key={t} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${c}22`,borderRadius:8,padding:"8px",textAlign:"center"}}>
+                  <div style={{fontSize:9,color:c,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{t}</div>
+                  <div style={{fontSize:12,fontFamily:F.m,color:C.white}}>{p}</div>
+                  <div style={{fontSize:8,color:C.mut,fontFamily:F.b,marginTop:2}}>/km</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* HR Zones */}
+          <SHead label="Heart Rate Zones" accent={C.pink} right="Live from Strava"/>
+          <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
+            {HR_ZONES.map((z,i)=>(
+              <div key={z.z} style={{display:"flex",alignItems:"center",gap:12,marginBottom:i<HR_ZONES.length-1?12:0}}>
+                <div style={{width:26,fontSize:12,fontFamily:F.h,fontWeight:700,color:z.c,flexShrink:0}}>{z.z}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{fontSize:12,color:C.white,fontFamily:F.b,fontWeight:600}}>{z.name}</span>
+                    <span style={{fontSize:10,color:C.sec,fontFamily:F.m}}>{z.bpm} bpm</span>
+                  </div>
+                  <div style={{height:6,background:C.bdr,borderRadius:3,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${z.pct*2.2}%`,background:z.c,borderRadius:3}}/>
+                  </div>
+                </div>
+                <div style={{textAlign:"right",minWidth:52,flexShrink:0}}>
+                  <div style={{fontSize:16,fontFamily:F.h,fontWeight:900,color:z.c}}>{z.pct}%</div>
+                  <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{z.hrs}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Clubs */}
+          <SHead label="Running Clubs" accent={C.sky}/>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            {CLUBS.map((cl,i)=>(
+              <div key={i} style={{background:C.card,border:`1px solid ${cl.local?C.blue+"44":C.bdr}`,
+                borderRadius:12,padding:"14px 14px",borderLeft:`3px solid ${cl.local?C.blue:C.bdr2}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                  <span style={{fontSize:22}}>{cl.icon}</span>
+                  {cl.local&&<Pill c={C.sky}>LOCAL</Pill>}
+                </div>
+                <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.b,lineHeight:1.3,marginBottom:4}}>{cl.name}</div>
+                <div style={{fontSize:12,fontFamily:F.m,color:C.sec}}>{fmtK(cl.n)} members</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bangalore segments */}
+          <SHead label="Bangalore Running Spots" accent={C.cyan}/>
+          <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:14,overflow:"hidden",marginBottom:24}}>
+            {[
+              {n:"Cubbon Park Full Loop",       d:"3.73 km",g:"0%",  t:"City loop"},
+              {n:"One Mile Loop – Lalbagh",     d:"1.66 km",g:"0%",  t:"Park loop"},
+              {n:"TCS 10K Course (2018)",       d:"9.69 km",g:"0%",  t:"Race route"},
+              {n:"Sarakki Lake Loop",           d:"2.54 km",g:"-0.1%",t:"Lake loop"},
+              {n:"JP Nagar Mini Forest",        d:"2.25 km",g:"0%",  t:"Trail"},
+            ].map((s,i,arr)=>(
+              <div key={i}>
+                <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px"}}>
+                  <span style={{fontSize:18}}>📍</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b}}>{s.n}</div>
+                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:1}}>{s.t}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:13,fontFamily:F.m,color:C.sky}}>{s.d}</div>
+                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>grade {s.g}</div>
+                  </div>
+                </div>
+                {i<arr.length-1&&<Divider/>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* FOOTER */}
+      <div style={{borderTop:`1px solid ${C.bdr}`,padding:"20px 20px 32px",display:"flex",
+        justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12,background:C.faint}}>
+        <div>
+          <div style={{fontSize:28,fontFamily:F.h,fontWeight:900,color:C.white,letterSpacing:"1.5px"}}>SACHIN K G</div>
+          <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:2}}>Bangalore · 2026 Running Season · Strava #99703920</div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:10,color:C.mut,fontFamily:F.m}}>Updated Mar 10, 2026</div>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,justifyContent:"flex-end"}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}`}}/>
+            <span style={{fontSize:10,color:C.green,fontFamily:F.m}}>Strava Live</span>
+          </div>
+        </div>
       </div>
-      {/* Content */}
-      {race===0&&<PoliceRun/>}
-      {race===1&&<NammaRun/>}
-      {race===2&&<TCSRun/>}
-      <div style={{textAlign:"center",fontSize:10,color:"#1A1F2E",paddingTop:12,fontFamily:F.b}}>Powered by Strava · Sachin K G · 2026</div>
+
     </div>
   );
 }
