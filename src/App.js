@@ -178,7 +178,6 @@ function AthleteProfileCard() {
   // Recovery: today TL=131, cumulative week ~637, 5 days to race
   const sessionRecovery = 20; // hours for today's TL 131
   const weekLoad = 637;
-  const recPct = Math.min(100, Math.round((1 - weekLoad/900)*100)); // freshness %
   const hrZones = [
     {z:"Z1",range:"0–118",name:"Recovery",   color:"#1E3A5F"},
     {z:"Z2",range:"118–147",name:"Aerobic",  color:C.green},
