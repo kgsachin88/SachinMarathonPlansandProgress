@@ -84,17 +84,6 @@ const latestRunHR = [
 function LatestRunCard() {
   const accent = "#818CF8";
   const daysToNamma = 5;
-  // stride laps decoded from Strava: laps 3,5,7,9 = fast (15s each), laps 2,4,6,8,10 = recovery
-  const strideSummary = [
-    {n:1, speed:"11.1",cad:84,  hr:150, type:"rec"},
-    {n:2, speed:"12.8",cad:88,  hr:160, type:"fast"},
-    {n:3, speed:"9.9", cad:85,  hr:164, type:"rec"},
-    {n:4, speed:"10.7",cad:86,  hr:167, type:"fast"},
-    {n:5, speed:"9.5", cad:84,  hr:167, type:"rec"},
-    {n:6, speed:"15.8",cad:91,  hr:168, type:"fast"},
-    {n:7, speed:"8.9", cad:86,  hr:171, type:"rec"},
-    {n:8, speed:"last",cad:null,hr:null,type:"end"},
-  ];
   return (
     <div style={{background:"linear-gradient(135deg,#080A18,#0A0C1A,#080E12)",borderBottom:`1px solid ${accent}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(129,140,248,0.08) 0%,transparent 50%)`}}/>
