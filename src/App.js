@@ -42,20 +42,6 @@ function Timeline({items,accent}){
   );
 }
 
-// ── Weather data (live pull Mar 8 2026) ──
-const weatherData = {
-  current: { temp: 28, condition: "Sunny ☀️", humidity: 42 },
-  forecast: [
-    { day:"Sun Mar 8",  high:33, icon:"☀️",  rain:0  },
-    { day:"Mon Mar 9",  high:32, icon:"☀️",  rain:5  },
-    { day:"Tue Mar 10", high:30, icon:"🌤️",  rain:0  },
-    { day:"Wed Mar 11", high:31, icon:"☀️",  rain:0  },
-    { day:"Thu Mar 12", high:33, icon:"☀️",  rain:5  },
-    { day:"Sat Mar 14", high:32, icon:"☀️",  rain:0  },
-    { day:"Sun Mar 15 🏅",high:33,icon:"🔥", rain:0, race:true },
-  ],
-};
-
 // ── Latest Run — Shakeout + Strides Mar 10 2026 ──
 const latestRunHR = [
   {d:0,hr:99},{d:0.67,hr:123},{d:1.33,hr:134},{d:1.99,hr:142},{d:2.65,hr:145},
@@ -1034,16 +1020,6 @@ const SBI_TABS = ["Race Comparison","Km Blueprint","Sub-60 Plan","Key Mistakes"]
 function SBIAnalysis() {
   const [tab, setTab] = useState(0);
   const accent = SBI_COLOR;
-
-  const CustomTooltip = ({active, payload, label}) => {
-    if (active && payload?.length) return (
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 11px",fontSize:12,fontFamily:F.b}}>
-        <div style={{color:C.white,fontWeight:700,marginBottom:3}}>{label}</div>
-        {payload.map((p,i) => <div key={i} style={{color:p.color||accent}}>{p.name}: {p.value}</div>)}
-      </div>
-    );
-    return null;
-  };
 
   return (
     <>
