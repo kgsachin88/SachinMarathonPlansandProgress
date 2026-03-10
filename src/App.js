@@ -57,7 +57,6 @@ function IBar({val,color,h=4}){
 }
 const tagColor = t=>({RACE:C.red,TEMPO:C.orange,LONG:C.indigo,STRIDES:C.green,EASY:C.sky,ULTRA:C.yellow,TRAIL:C.cyan}[t]||C.mut);
 const fmtPace = p=>{const m=Math.floor(p);const s=Math.round((p-m)*60);return`${m}:${s<10?"0"+s:s}`;};
-const fmtK = n=>n>=1000?`${(n/1000).toFixed(1)}K`:`${n}`;
 
 /* ════════════════════ DATA ════════════════════ */
 
