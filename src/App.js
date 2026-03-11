@@ -55,17 +55,36 @@ function IBar({val,color,h=4}){
     <div style={{height:"100%",width:`${Math.min(100,val*100)}%`,background:color,borderRadius:2}}/>
   </div>;
 }
-const tagColor = t=>({RACE:C.red,TEMPO:C.orange,LONG:C.indigo,STRIDES:C.green,EASY:C.sky,ULTRA:C.yellow,TRAIL:C.cyan}[t]||C.mut);
+const tagColor = t=>({RACE:C.red,TEMPO:C.orange,LONG:C.indigo,STRIDES:C.green,EASY:C.sky,ULTRA:C.yellow,TRAIL:C.cyan,CROSS:C.pink}[t]||C.mut);
 const fmtPace = p=>{const m=Math.floor(p);const s=Math.round((p-m)*60);return`${m}:${s<10?"0"+s:s}`;};
+const fmtK = n=>n>=1000?`${(n/1000).toFixed(1)}K`:`${n}`;
 
 /* ════════════════════ DATA ════════════════════ */
 
+// Mar 11 Badminton HR stream (from Strava live pull)
 const latestRunHR=[
-  {d:0,hr:99},{d:0.66,hr:123},{d:1.33,hr:134},{d:1.99,hr:142},{d:2.65,hr:145},
-  {d:3.31,hr:145},{d:3.99,hr:142},{d:5.31,hr:145},{d:6.63,hr:144},{d:9.97,hr:149},
-  {d:12.60,hr:150},{d:16.59,hr:150},{d:22.55,hr:151},{d:29.20,hr:154},{d:35.16,hr:154},
-  {d:40.47,hr:161},{d:44.47,hr:164},{d:47.78,hr:172},{d:49.77,hr:164},{d:51.09,hr:154},
-  {d:53.76,hr:156},{d:57.41,hr:160},{d:60.75,hr:161},{d:62.04,hr:172},{d:65.69,hr:170},
+  {d:0,hr:81},{d:5,hr:86},{d:10,hr:89},{d:16,hr:92},{d:21,hr:94},{d:25,hr:97},
+  {d:31,hr:104},{d:36,hr:107},{d:41,hr:105},{d:47,hr:105},{d:51,hr:106},{d:57,hr:109},
+  {d:62,hr:112},{d:67,hr:115},{d:72,hr:114},{d:77,hr:112},{d:82,hr:111},{d:88,hr:111},
+  {d:93,hr:114},{d:98,hr:116},{d:103,hr:115},{d:108,hr:115},{d:113,hr:117},{d:118,hr:116},
+  {d:124,hr:112},{d:129,hr:111},{d:134,hr:111},{d:139,hr:106},{d:144,hr:108},{d:149,hr:110},
+  {d:154,hr:110},{d:160,hr:110},{d:165,hr:105},{d:170,hr:106},{d:175,hr:111},{d:180,hr:114},
+  {d:185,hr:118},{d:190,hr:120},{d:196,hr:125},{d:201,hr:130},{d:206,hr:130},{d:211,hr:128},
+  {d:216,hr:127},{d:221,hr:127},{d:227,hr:128},{d:232,hr:126},{d:237,hr:125},{d:242,hr:122},
+  {d:247,hr:117},{d:252,hr:113},{d:257,hr:111},{d:263,hr:110},{d:268,hr:111},{d:273,hr:112},
+  {d:278,hr:115},{d:283,hr:121},{d:288,hr:128},{d:293,hr:126},{d:299,hr:126},{d:304,hr:126},
+  {d:309,hr:126},{d:314,hr:128},{d:319,hr:133},{d:324,hr:135},{d:329,hr:136},{d:335,hr:138},
+  {d:340,hr:136},{d:345,hr:134},{d:350,hr:132},{d:356,hr:130},{d:360,hr:128},{d:365,hr:126},
+  {d:371,hr:127},{d:376,hr:127},{d:381,hr:129},{d:386,hr:131},{d:391,hr:129},{d:396,hr:126},
+  {d:402,hr:127},{d:407,hr:131},{d:412,hr:134},{d:417,hr:139},{d:422,hr:149},{d:427,hr:158},
+  {d:432,hr:162},{d:438,hr:165},{d:443,hr:167},{d:448,hr:162},{d:453,hr:158},{d:458,hr:153},
+  {d:463,hr:148},{d:468,hr:145},{d:474,hr:141},{d:479,hr:138},{d:484,hr:141},{d:489,hr:145},
+  {d:494,hr:149},{d:499,hr:152},{d:505,hr:155},{d:510,hr:157},{d:515,hr:160},{d:520,hr:163},
+  {d:525,hr:167},{d:530,hr:170},{d:535,hr:173},{d:540,hr:168},{d:545,hr:162},{d:550,hr:155},
+  {d:555,hr:148},{d:560,hr:142},{d:565,hr:138},{d:570,hr:134},{d:575,hr:131},{d:580,hr:128},
+  {d:585,hr:124},{d:590,hr:120},{d:595,hr:116},{d:600,hr:113},{d:615,hr:112},{d:630,hr:110},
+  {d:645,hr:112},{d:660,hr:115},{d:675,hr:118},{d:690,hr:121},{d:705,hr:118},{d:720,hr:114},
+  {d:735,hr:111},{d:750,hr:108},{d:765,hr:106},{d:780,hr:104},{d:795,hr:101},{d:810,hr:98},
 ];
 const policeHRData=[
   {d:0,hr:117},{d:1,hr:159},{d:2,hr:168},{d:3,hr:170},{d:4,hr:176},{d:5,hr:180},
@@ -104,7 +123,7 @@ const nammaTraining=[
   {date:"Mar 8", emoji:"🏸",label:"Badminton ✓",          light:C.green,done:true, isRace:false,desc:"1:44:11 · HR 132 · 822 kcal ✅"},
   {date:"Mar 9", emoji:"✅",label:"Morning Run ✓",        light:C.green,done:true, isRace:false,desc:"5.15km · 6:01/km · HR 171 ✅"},
   {date:"Mar 10",emoji:"✅",label:"Shakeout + Strides ✓", light:C.green,done:true, isRace:false,desc:"6.57km · HR 153 · 4 strides (16.9 km/h!) ✅"},
-  {date:"Mar 11",emoji:"🏃",label:"Recovery Run",          light:C.green,done:false,isRace:false,desc:"5km @ 8:00/km or full rest."},
+  {date:"Mar 11",emoji:"🏸",label:"Morning Badminton ✓",    light:C.green,done:true, isRace:false,desc:"1:25:43 · Avg HR 134 · Max HR 173 · 689 kcal. Active recovery instead of easy run — smart choice. Legs stay fresh. ✅"},
   {date:"Mar 12",emoji:"💨",label:"Shakeout + Strides",    light:C.sky,  done:false,isRace:false,desc:"4km easy + 4×80m strides at race effort."},
   {date:"Mar 13",emoji:"🛌",label:"Full Rest",              light:C.sec,  done:false,isRace:false,desc:"Nothing. Carb load at dinner. Sleep by 10pm."},
   {date:"Mar 14",emoji:"🎽",label:"Shakeout + BIB",         light:C.blue, done:false,isRace:false,desc:"20min easy + 2 strides. BIB at Swaasthya Fitness, Whitefield."},
@@ -258,7 +277,7 @@ const RACE_HISTORY=[
   {name:"SBI Green 10K",         date:"Nov 30 '25",dist:"10.14km",time:"1:03:09",  pace:"6:14/km",hr:"175/187",elev:"+111m",temp:"~22°C",color:C.mut,    status:"done",kcal:760, note:"Km 4 surge → km 7 blowup. Key lesson learned."},
   {name:"Bengaluru Ultra 25K",   date:"Dec 21 '25",dist:"25.04km",time:"3:12:04",  pace:"7:40/km",hr:"161/188",elev:"+169m",temp:"~20°C",color:C.yellow, status:"done",kcal:2582,note:"Longest race. 169m elev, 3h12m. Massive aerobic base."},
   {name:"Karnataka Police Run",  date:"Mar 1 '26", dist:"10.02km",time:"58:53",    pace:"5:53/km",hr:"180/190",elev:"+39m", temp:"~24°C",color:C.green,  status:"done",kcal:889, note:"Season opener. Sub-60 smashed. PR by 4:16."},
-  {name:"Namma Power Run",       date:"Mar 15 '26",dist:"10K",    time:"Target 57:30",pace:"5:45/km",hr:"—",  elev:"+90m", temp:"~33°C",color:C.namma,  status:"next",kcal:"~870",note:"NICE Road double climb. 5 days out. ⚡"},
+  {name:"Namma Power Run",       date:"Mar 15 '26",dist:"10K",    time:"Target 57:30",pace:"5:45/km",hr:"—",  elev:"+90m", temp:"~33°C",color:C.namma,  status:"next",kcal:"~870",note:"NICE Road double climb. 4 days out. ⚡"},
   {name:"TCS World 10K",         date:"Apr 26 '26",dist:"10K",    time:"Target 54:50",pace:"5:29/km",hr:"—",  elev:"+50m", temp:"~32°C",color:C.tcs,    status:"goal",kcal:"~850",note:"Season 10K goal. Cubbon Road. Sub-55 target."},
   {name:"Freedom Bengaluru HM",  date:"May 24 '26",dist:"21.1km", time:"Target 2:20:00",pace:"6:38/km",hr:"—",elev:"+190m",temp:"~30°C",color:C.freedom,status:"new", kcal:"~1800",note:"First Half Marathon! NICE Road. Kalki Sports."},
   {name:"Bengaluru Runners Jatre 10K",date:"Jun 14 '26",dist:"10K",time:"Target 54:00",pace:"5:24/km",hr:"—",elev:"+20m", temp:"~26°C",color:C.jatre,  status:"new", kcal:"~820",note:"Community fun race. Bengaluru Runners Jatre. Flat fast course."},
@@ -266,7 +285,8 @@ const RACE_HISTORY=[
   {name:"Bengaluru Ultra 25K",   date:"Jul 25 '26",dist:"25K",    time:"Target 2:55:00",pace:"7:00/km",hr:"—",elev:"+170m",temp:"~23°C",color:C.ultra,  status:"new", kcal:"~2200",note:"2-loop GKVK campus. Monsoon running. Improve on Dec 3:12:04."},
 ];
 const ACTIVITY_LOG=[
-  {date:"Mar 10",name:"Shakeout + 4 Strides",km:6.57, time:"46:43",pace:"7:07",hr:153,tl:131,gear:"Novablast 5",tag:"STRIDES"},
+  {date:"Mar 11",name:"Morning Badminton",    km:"—",  time:"1:25:43",pace:"—",   hr:134,tl:112,gear:"Court shoes",tag:"CROSS"},
+  {date:"Mar 10",name:"Shakeout + 4 Strides",km:6.57, time:"46:43",  pace:"7:07",hr:153,tl:131,gear:"Novablast 5",tag:"STRIDES"},
   {date:"Mar 9", name:"Morning Run",          km:5.15, time:"31:00",pace:"6:01",hr:171,tl:153,gear:"Nimbus 27",  tag:"TEMPO"},
   {date:"Mar 7", name:"NICE Road Long Run",   km:14.08,time:"1:40:20",pace:"7:08",hr:159,tl:353,gear:"Novablast 5",tag:"LONG"},
   {date:"Mar 5", name:"Evening Run",          km:8.21, time:"1:00:00",pace:"7:19",hr:162,tl:197,gear:"Nimbus 27",  tag:"EASY"},
@@ -297,7 +317,7 @@ const RACE_PHOTOS=[
 const RACE_SWITCHER=[
   {id:0,short:"Police Run",   sub:"Mar 1 · Done",    badge:"✓ DONE",     accent:C.police, bgGrad:"linear-gradient(135deg,#060F0A,#081208)",target:"58:53",    pace:"5:53/km",   dist:"10K",
    stats:[["🏁","Dist","10.02km"],["⏱","Time","58:53"],["❤️","Avg HR","180"],["💪","Power","228W"]]},
-  {id:1,short:"Namma Power",  sub:"Mar 15 · 5 days", badge:"⚡ 5 DAYS",   accent:C.namma,  bgGrad:"linear-gradient(135deg,#060A18,#08101A)",target:"57:30",    pace:"5:45/km",   dist:"10K",
+  {id:1,short:"Namma Power",  sub:"Mar 15 · 4 days", badge:"⚡ 4 DAYS",   accent:C.namma,  bgGrad:"linear-gradient(135deg,#060A18,#08101A)",target:"57:30",    pace:"5:45/km",   dist:"10K",
    stats:[["📅","Date","Mar 15"],["📍","Course","NICE Road"],["⛰","Elev","+90m"],["🌡","Temp","~33°C"]]},
   {id:2,short:"TCS Open",     sub:"Apr 26 · 47 days",badge:"🎯 GOAL 10K",  accent:C.tcs,    bgGrad:"linear-gradient(135deg,#060A18,#080A1A)",target:"54:50",    pace:"5:29/km",   dist:"10K",
    stats:[["📅","Date","Apr 26"],["📍","Course","Cubbon Rd"],["⛰","Elev","+50m"],["🌡","Temp","~32°C"]]},
@@ -467,6 +487,172 @@ function WeekPlan({weeks}){
           <IBar val={wk.intensity} color={wk.color}/>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ════════════════════ GPS ROUTE DATA ════════════════════ */
+// Police Run — real Strava GPS (ID: 17559390113)
+const GPS_POLICE=[[12.979042,77.591243],[12.97963,77.591873],[12.979691,77.592523],[12.979002,77.592048],[12.978337,77.591402],[12.977679,77.590781],[12.977221,77.589993],[12.976789,77.589167],[12.976371,77.588329],[12.975833,77.587595],[12.975176,77.586984],[12.974304,77.58672],[12.97341,77.586705],[12.972512,77.586799],[12.971634,77.586922],[12.970747,77.587053],[12.969847,77.587161],[12.968951,77.587295],[12.968067,77.587455],[12.967866,77.5883],[12.968084,77.589192],[12.968658,77.589937],[12.96927,77.590627],[12.969856,77.59132],[12.970469,77.592015],[12.971075,77.592705],[12.971676,77.59341],[12.97244,77.593587],[12.972957,77.592831],[12.973519,77.592116],[12.974192,77.591466],[12.9748,77.590806],[12.975469,77.590242],[12.97629,77.590617],[12.977038,77.591168],[12.976581,77.591143],[12.975814,77.591636],[12.975298,77.592392],[12.9749,77.593213],[12.97409,77.593554],[12.973181,77.593728],[12.972462,77.594097],[12.973103,77.594752],[12.973739,77.59541],[12.974319,77.596106],[12.974905,77.596811],[12.975415,77.597575],[12.975979,77.598318],[12.976552,77.59902],[12.977424,77.598882],[12.978255,77.598539],[12.979047,77.598137],[12.979901,77.597761],[12.980744,77.597411],[12.980521,77.598287],[12.980246,77.599167],[12.979978,77.600042],[12.979656,77.60094],[12.979359,77.601809],[12.97909,77.602711],[12.978794,77.60359],[12.978517,77.604465],[12.978223,77.605358],[12.97793,77.606224],[12.977636,77.607112],[12.977344,77.608006],[12.977056,77.608882],[12.97678,77.609775],[12.976499,77.610661],[12.976206,77.611525],[12.975898,77.61241],[12.975606,77.61329],[12.975355,77.614179],[12.975614,77.613296],[12.975931,77.61242],[12.976186,77.611548],[12.976493,77.610649],[12.976778,77.609765],[12.977068,77.608882],[12.977368,77.608002],[12.977668,77.607123],[12.977952,77.606254],[12.978255,77.605354],[12.978532,77.604482],[12.978811,77.603606],[12.979088,77.602697],[12.979396,77.601841],[12.97968,77.600963],[12.979984,77.600071],[12.980259,77.599193],[12.980562,77.598326],[12.980892,77.597451],[12.981201,77.59658],[12.98152,77.595691],[12.981693,77.594783],[12.981132,77.594093],[12.980476,77.593443],[12.979821,77.59282],[12.980141,77.592095],[12.980843,77.591414]];
+const ALT_POLICE=[931,931,931,930,929,927,924,921,919,919,920,919,919,919,919,919,919,919,918,916,914,913,913,913,912,912,912,912,912,913,916,917,917,919,922,922,920,918,916,914,912,911,911,911,912,914,916,918,919,921,922,922,923,924,924,924,925,925,924,923,922,922,921,921,920,919,919,917,916,915,915,914,914,914,914,915,915,916,917,918,918,919,919,919,920,920,921,922,922,921,921,921,922,923,925,925,924,923,923,923];
+
+// NICE Road — real Strava GPS (Mar 7 long run, same course as Namma/Freedom/B10K)
+const GPS_NICE=[[12.857747,77.556685],[12.856853,77.555841],[12.855965,77.554909],[12.854841,77.554326],[12.85367,77.553751],[12.852533,77.553159],[12.851404,77.552563],[12.85051,77.552101],[12.851684,77.552633],[12.852822,77.553212],[12.853925,77.553865],[12.85507,77.554446],[12.856186,77.555057],[12.857047,77.556022],[12.857531,77.556546],[12.856655,77.555609],[12.855707,77.554746],[12.85458,77.55414],[12.853443,77.553541],[12.852326,77.552933],[12.853167,77.553394],[12.854299,77.553956],[12.855341,77.553773],[12.856064,77.552716],[12.856616,77.551542],[12.857335,77.550474],[12.858337,77.549648],[12.859293,77.548808],[12.860271,77.548512],[12.861104,77.54949],[12.861957,77.550477],[12.862796,77.551461],[12.863575,77.552497],[12.86391,77.553739],[12.864743,77.554348],[12.86599,77.554577],[12.867196,77.55503],[12.868424,77.555402],[12.869637,77.555749],[12.870802,77.55632],[12.871725,77.55721],[12.872698,77.558052],[12.873748,77.558797],[12.874633,77.559695],[12.875619,77.559368],[12.876403,77.558277],[12.877163,77.557229],[12.87793,77.556174],[12.878796,77.555965],[12.87861,77.557248],[12.878993,77.558492],[12.879372,77.559623],[12.880426,77.56007],[12.880381,77.561374],[12.881247,77.560914],[12.882214,77.560089],[12.882622,77.560846],[12.883249,77.561874],[12.883346,77.562912],[12.882169,77.562547],[12.881219,77.562922],[12.880913,77.561667],[12.881402,77.560751],[12.882415,77.560026],[12.882592,77.561092],[12.88339,77.562073],[12.883144,77.562924],[12.881995,77.562724],[12.881142,77.562656],[12.880683,77.561578],[12.880343,77.560512],[12.879789,77.55976],[12.879119,77.558931],[12.878815,77.557696],[12.878683,77.556428],[12.87818,77.555907],[12.877408,77.556957],[12.876633,77.558],[12.875875,77.559052],[12.874949,77.559765],[12.874025,77.55903],[12.872979,77.558277],[12.872018,77.55743],[12.871027,77.556617],[12.869959,77.555886],[12.86877,77.555511],[12.867534,77.555163],[12.866327,77.554695],[12.8651,77.554379],[12.863922,77.554504],[12.8636,77.555762],[12.86295,77.556882],[12.862031,77.557793],[12.86111,77.558711],[12.860147,77.558994],[12.859242,77.558072],[12.858322,77.557178],[12.857316,77.556359],[12.856637,77.555552],[12.857543,77.556529]];
+const ALT_NICE=[905,904,902,900,898,894,892,892,892,894,897,899,901,902,903,901,900,898,895,892,893,895,895,885,878,872,863,869,871,879,881,884,894,902,909,906,901,898,895,898,903,907,913,918,912,906,899,889,889,887,889,890,891,896,900,900,900,899,900,900,900,899,900,900,900,900,900,900,899,899,893,890,889,887,886,887,890,900,906,912,915,908,903,900,894,892,897,900,905,904,903,899,898,904,901,900,898,895,894,895];
+
+// TCS World 10K — Cubbon Park / Race Course Road circuit (schematic)
+const GPS_TCS=[[12.9716,77.5946],[12.9722,77.5936],[12.9732,77.5921],[12.9745,77.5906],[12.9761,77.5890],[12.9778,77.5875],[12.9796,77.5863],[12.9812,77.5853],[12.9828,77.5847],[12.9840,77.5844],[12.9851,77.5844],[12.9857,77.5849],[12.9860,77.5859],[12.9856,77.5869],[12.9847,77.5877],[12.9835,77.5884],[12.9821,77.5891],[12.9806,77.5900],[12.9790,77.5911],[12.9775,77.5922],[12.9761,77.5932],[12.9749,77.5940],[12.9740,77.5947],[12.9733,77.5956],[12.9728,77.5966],[12.9725,77.5975],[12.9724,77.5985],[12.9725,77.5994],[12.9729,77.6002],[12.9735,77.6009],[12.9743,77.6014],[12.9751,77.6016],[12.9759,77.6015],[12.9764,77.6010],[12.9766,77.6003],[12.9765,77.5995],[12.9762,77.5987],[12.9757,77.5980],[12.9751,77.5974],[12.9744,77.5969],[12.9737,77.5964],[12.9729,77.5960],[12.9722,77.5955],[12.9716,77.5951],[12.9711,77.5947],[12.9708,77.5943],[12.9707,77.5937],[12.9709,77.5931],[12.9713,77.5928],[12.9719,77.5927],[12.9725,77.5929],[12.9729,77.5933],[12.9731,77.5939],[12.9730,77.5945],[12.9727,77.5951],[12.9721,77.5956],[12.9714,77.5957],[12.9706,77.5955],[12.9700,77.5950],[12.9697,77.5944],[12.9697,77.5938],[12.9700,77.5933],[12.9706,77.5930],[12.9712,77.5929],[12.9718,77.5931],[12.9722,77.5936],[12.9723,77.5941],[12.9722,77.5946]];
+const ALT_TCS=[908,907,906,905,903,901,900,899,899,900,901,902,903,904,904,904,903,902,901,900,900,899,899,899,900,901,901,902,902,903,904,904,904,903,903,902,901,900,900,899,899,899,899,900,901,902,903,904,904,905,906,907,907,907,906,905,904,903,902,901,900,900,901,902,903,904,905];
+
+// Disha Habitat Runners Jatre — flat south Bangalore neighbourhood loop (schematic)
+const GPS_JATRE=[[12.9113,77.5987],[12.9122,77.5994],[12.9132,77.6001],[12.9143,77.6006],[12.9154,77.6009],[12.9164,77.6011],[12.9174,77.6011],[12.9183,77.6009],[12.9192,77.6004],[12.9199,77.5997],[12.9203,77.5988],[12.9205,77.5979],[12.9203,77.5970],[12.9199,77.5962],[12.9192,77.5956],[12.9184,77.5951],[12.9175,77.5948],[12.9165,77.5947],[12.9155,77.5948],[12.9146,77.5952],[12.9139,77.5958],[12.9134,77.5965],[12.9132,77.5973],[12.9133,77.5981],[12.9136,77.5989],[12.9142,77.5996],[12.9150,77.6002],[12.9159,77.6006],[12.9168,77.6009],[12.9177,77.6009],[12.9186,77.6007],[12.9194,77.6002],[12.9199,77.5995],[12.9201,77.5986],[12.9200,77.5977],[12.9196,77.5969],[12.9190,77.5963],[12.9183,77.5959],[12.9174,77.5957],[12.9165,77.5957],[12.9157,77.5959],[12.9149,77.5964],[12.9144,77.5970],[12.9141,77.5978],[12.9141,77.5986],[12.9144,77.5993],[12.9150,77.5999],[12.9113,77.5987]];
+const ALT_JATRE=Array(48).fill(0).map((_,i)=>920+Math.round(Math.sin(i*0.4)*2));
+
+// Bengaluru Ultra 25K — GKVK Campus 2-loop route (schematic, Hesaraghatta Main Rd)
+const GPS_GKVK=[[13.0830,77.5640],[13.0841,77.5652],[13.0853,77.5665],[13.0864,77.5678],[13.0873,77.5692],[13.0880,77.5706],[13.0884,77.5720],[13.0886,77.5735],[13.0884,77.5749],[13.0879,77.5763],[13.0871,77.5775],[13.0861,77.5785],[13.0848,77.5792],[13.0835,77.5797],[13.0821,77.5797],[13.0808,77.5794],[13.0797,77.5788],[13.0789,77.5779],[13.0783,77.5768],[13.0780,77.5755],[13.0780,77.5742],[13.0783,77.5729],[13.0789,77.5717],[13.0798,77.5707],[13.0808,77.5699],[13.0819,77.5693],[13.0829,77.5688],[13.0839,77.5685],[13.0848,77.5683],[13.0855,77.5682],[13.0860,77.5684],[13.0863,77.5688],[13.0862,77.5694],[13.0858,77.5700],[13.0851,77.5705],[13.0842,77.5709],[13.0833,77.5711],[13.0824,77.5710],[13.0816,77.5706],[13.0810,77.5700],[13.0804,77.5691],[13.0800,77.5681],[13.0798,77.5670],[13.0798,77.5658],[13.0800,77.5647],[13.0804,77.5638],[13.0811,77.5631],[13.0819,77.5626],[13.0827,77.5625],[13.0833,77.5628],[13.0831,77.5636],[13.0830,77.5640],
+  [13.0832,77.5642],[13.0843,77.5654],[13.0855,77.5668],[13.0866,77.5681],[13.0875,77.5695],[13.0882,77.5709],[13.0886,77.5723],[13.0888,77.5738],[13.0886,77.5752],[13.0881,77.5766],[13.0873,77.5778],[13.0863,77.5788],[13.0850,77.5795],[13.0837,77.5800],[13.0823,77.5800],[13.0810,77.5797],[13.0799,77.5791],[13.0791,77.5782],[13.0785,77.5771],[13.0782,77.5758],[13.0782,77.5745],[13.0785,77.5732],[13.0791,77.5720],[13.0800,77.5710],[13.0810,77.5702],[13.0821,77.5696],[13.0831,77.5691],[13.0841,77.5688],[13.0850,77.5686],[13.0857,77.5685],[13.0862,77.5687],[13.0865,77.5691],[13.0864,77.5697],[13.0860,77.5703],[13.0853,77.5708],[13.0844,77.5712],[13.0835,77.5714],[13.0826,77.5713],[13.0818,77.5709],[13.0812,77.5703],[13.0806,77.5694],[13.0802,77.5684],[13.0800,77.5673],[13.0800,77.5661],[13.0802,77.5650],[13.0806,77.5641],[13.0813,77.5634],[13.0821,77.5629],[13.0829,77.5628],[13.0830,77.5640]];
+const ALT_GKVK=GPS_GKVK.map((_,i)=>{const t=i/GPS_GKVK.length;return Math.round(900+Math.sin(t*Math.PI*6)*14+Math.sin(t*Math.PI*12)*5);});
+
+/* ════════════════════ ROUTE MAP SVG COMPONENT ════════════════════ */
+function lerpHex(a,b,t){
+  const c=(s,e,t)=>Math.min(255,Math.max(0,Math.round(parseInt(s,16)+(parseInt(e,16)-parseInt(s,16))*t))).toString(16).padStart(2,'0');
+  return '#'+c(a.slice(1,3),b.slice(1,3),t)+c(a.slice(3,5),b.slice(3,5),t)+c(a.slice(5,7),b.slice(5,7),t);
+}
+function elevColor(t){
+  if(t<0.35) return lerpHex('#34D399','#FCD34D',t/0.35);
+  if(t<0.7)  return lerpHex('#FCD34D','#F97316',(t-0.35)/0.35);
+  return lerpHex('#F97316','#F87171',(t-0.7)/0.3);
+}
+
+function RouteMapSVG({coords,altitudes=[],accent='#3D8BF8',title='',subtitle='',kmPositions=[],hilites=[],info=[],notes=[]}){
+  const W=520,H=340,padX=42,padY=34;
+  if(!coords||coords.length<2) return null;
+  const lats=coords.map(c=>c[0]),lngs=coords.map(c=>c[1]);
+  const minLat=Math.min(...lats),maxLat=Math.max(...lats);
+  const minLng=Math.min(...lngs),maxLng=Math.max(...lngs);
+  const latSpan=maxLat-minLat||0.001,lngSpan=maxLng-minLng||0.001;
+  const cosLat=Math.cos(((minLat+maxLat)/2)*Math.PI/180);
+  const phyW=lngSpan*cosLat,phyH=latSpan;
+  const routeAR=phyW/phyH;
+  const availW=W-2*padX,availH=H-2*padY;
+  let drawW,drawH;
+  if(routeAR>availW/availH){drawW=availW;drawH=drawW/routeAR;}
+  else{drawH=availH;drawW=drawH*routeAR;}
+  const offX=padX+(availW-drawW)/2,offY=padY+(availH-drawH)/2;
+  const toX=lng=>offX+(lng-minLng)/lngSpan*drawW;
+  const toY=lat=>(offY+drawH)-(lat-minLat)/latSpan*drawH;
+  const pts=coords.map(c=>[toX(c[1]),toY(c[0])]);
+  const n=pts.length;
+  const hasAlt=altitudes.length>=n;
+  const altArr=hasAlt?altitudes:coords.map(()=>900);
+  const maxAlt=Math.max(...altArr),minAlt=Math.min(...altArr),altRange=maxAlt-minAlt||1;
+  const segs=pts.slice(0,-1).map((p,i)=>({x1:p[0],y1:p[1],x2:pts[i+1][0],y2:pts[i+1][1],t:(altArr[i]-minAlt)/altRange}));
+  const step=Math.max(4,Math.floor(n/16));
+  const arrows=[];
+  for(let i=step;i<n-2;i+=step){
+    const dx=pts[Math.min(i+2,n-1)][0]-pts[Math.max(i-2,0)][0],dy=pts[Math.min(i+2,n-1)][1]-pts[Math.max(i-2,0)][1];
+    const l=Math.sqrt(dx*dx+dy*dy);
+    if(l>2) arrows.push({mx:pts[i][0],my:pts[i][1],nx:dx/l,ny:dy/l});
+  }
+  const [s,f]=[pts[0],pts[n-1]];
+  const uid=title.replace(/\W/g,'').slice(0,8)||'map';
+  return(
+    <div style={{background:C.card,border:`1px solid ${accent}22`,borderRadius:14,overflow:'hidden',marginBottom:12}}>
+      <div style={{background:'rgba(5,8,16,0.6)',borderBottom:`1px solid ${accent}22`,padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div>
+          <div style={{fontSize:13,fontFamily:F.h,color:accent,letterSpacing:'0.8px'}}>{title}</div>
+          {subtitle&&<div style={{fontSize:10,color:C.sec,fontFamily:F.b,marginTop:2}}>{subtitle}</div>}
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          {hasAlt&&<div style={{display:'flex',alignItems:'center',gap:4}}>
+            <div style={{width:28,height:4,background:`linear-gradient(to right,#34D399,#FCD34D,#F97316,#F87171)`,borderRadius:2}}/>
+            <span style={{fontSize:8,color:C.mut,fontFamily:F.m}}>ELEV</span>
+          </div>}
+          <span style={{fontSize:9,color:C.mut,fontFamily:F.m}}>GPS ROUTE</span>
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',background:'#050810',display:'block'}}>
+        <defs>
+          <linearGradient id={`el${uid}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#34D399"/><stop offset="35%" stopColor="#FCD34D"/>
+            <stop offset="70%" stopColor="#F97316"/><stop offset="100%" stopColor="#F87171"/>
+          </linearGradient>
+          <filter id={`glow${uid}`}><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        {/* dot grid */}
+        {Array.from({length:9},(_,i)=>Array.from({length:7},(_,j)=>(
+          <circle key={`d${i}${j}`} cx={padX+i*(W-2*padX)/8} cy={padY+j*(H-2*padY)/6} r="0.8" fill={C.bdr} opacity="0.5"/>
+        )))}
+        {/* route bounding box */}
+        <rect x={offX-2} y={offY-2} width={drawW+4} height={drawH+4} fill="rgba(13,18,32,0.35)" stroke={C.bdr} strokeWidth="0.5" strokeDasharray="4,4" rx="3"/>
+        {/* glow */}
+        <polyline points={pts.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ')} fill="none" stroke={accent} strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" opacity="0.07" filter={`url(#glow${uid})`}/>
+        {/* colored route */}
+        {segs.map((s,i)=>(
+          <line key={i} x1={s.x1.toFixed(1)} y1={s.y1.toFixed(1)} x2={s.x2.toFixed(1)} y2={s.y2.toFixed(1)} stroke={elevColor(s.t)} strokeWidth="4.5" strokeLinecap="round"/>
+        ))}
+        {/* hill zone overlays */}
+        {hilites.map((h,i)=>{
+          const sp=Math.min(n-1,Math.round(h.sp*(n-1))),ep=Math.min(n-1,Math.round(h.ep*(n-1)));
+          const hp=pts.slice(Math.min(sp,ep),Math.max(sp,ep)+1);
+          return hp.length>1?<polyline key={i} points={hp.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ')} fill="none" stroke={h.c||C.red} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity="0.6"/>:null;
+        })}
+        {/* direction arrows */}
+        {arrows.map((a,i)=>(
+          <polygon key={i} points={`${(a.mx+a.nx*5).toFixed(1)},${(a.my+a.ny*5).toFixed(1)} ${(a.mx-a.nx*3.5+a.ny*3).toFixed(1)},${(a.my-a.ny*3.5-a.nx*3).toFixed(1)} ${(a.mx-a.nx*3.5-a.ny*3).toFixed(1)},${(a.my-a.ny*3.5+a.nx*3).toFixed(1)}`} fill="rgba(255,255,255,0.28)" stroke="none"/>
+        ))}
+        {/* km markers */}
+        {kmPositions.map(({idx,label},i)=>{
+          const p=pts[Math.min(Math.round(idx),n-1)];
+          return(<g key={i}>
+            <circle cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r="9.5" fill="#06090F" stroke={accent} strokeWidth="1.5" opacity="0.94"/>
+            <text x={p[0].toFixed(1)} y={(p[1]+3.5).toFixed(1)} textAnchor="middle" fill={accent} fontSize="7.5" fontFamily="monospace" fontWeight="700">{label}</text>
+          </g>);
+        })}
+        {/* START */}
+        <circle cx={s[0].toFixed(1)} cy={s[1].toFixed(1)} r="12" fill="#34D399" stroke="#050810" strokeWidth="2.5" filter={`url(#glow${uid})`}/>
+        <text x={s[0].toFixed(1)} y={(s[1]+4).toFixed(1)} textAnchor="middle" fill="#050810" fontSize="10" fontFamily="monospace" fontWeight="900">S</text>
+        {/* FINISH */}
+        <circle cx={f[0].toFixed(1)} cy={f[1].toFixed(1)} r="12" fill="#F97316" stroke="#050810" strokeWidth="2.5" filter={`url(#glow${uid})`}/>
+        <text x={f[0].toFixed(1)} y={(f[1]+4).toFixed(1)} textAnchor="middle" fill="#050810" fontSize="10" fontFamily="monospace" fontWeight="900">F</text>
+        {/* Compass */}
+        <g transform={`translate(${W-30},30)`}>
+          <circle cx="0" cy="0" r="16" fill="rgba(5,8,16,0.88)" stroke={C.bdr2} strokeWidth="1"/>
+          <text x="0" y="-4" textAnchor="middle" fill={C.white} fontSize="8" fontFamily="sans-serif" fontWeight="700">N</text>
+          <polygon points="0,-13 -4,-2 0,4 4,-2" fill={accent} opacity="0.9"/>
+          <polygon points="0,13 -4,2 0,-4 4,2" fill={C.mut} opacity="0.6"/>
+        </g>
+        {/* Elevation legend bar */}
+        <rect x={padX} y={H-18} width="84" height="5" rx="2" fill={`url(#el${uid})`} opacity="0.8"/>
+        <text x={padX} y={H-4} fill={C.mut} fontSize="7.5" fontFamily="monospace">{Math.round(minAlt)}m</text>
+        <text x={padX+84} y={H-4} fill={C.mut} fontSize="7.5" fontFamily="monospace" textAnchor="end">{Math.round(maxAlt)}m</text>
+        <text x={padX+42} y={H-4} fill={C.sec} fontSize="7" fontFamily="monospace" textAnchor="middle">ELEVATION</text>
+        {/* Legend: Start/Finish */}
+        <circle cx={W-padX-68} cy={H-11} r="5" fill="#34D399"/>
+        <text x={W-padX-60} y={H-8} fill={C.mut} fontSize="7.5" fontFamily="monospace">Start</text>
+        <circle cx={W-padX-28} cy={H-11} r="5" fill="#F97316"/>
+        <text x={W-padX-20} y={H-8} fill={C.mut} fontSize="7.5" fontFamily="monospace">Fin</text>
+      </svg>
+      {info.length>0&&(
+        <div style={{padding:'10px 14px',borderTop:`1px solid ${C.bdr}`,display:'flex',flexWrap:'wrap',gap:8}}>
+          {info.map((item,i)=>(
+            <div key={i} style={{background:C.faint,border:`1px solid ${C.bdr}`,borderRadius:8,padding:'5px 10px',display:'flex',gap:6,alignItems:'center'}}>
+              <span style={{fontSize:13}}>{item.ic}</span>
+              <div><div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:'uppercase',fontWeight:700,letterSpacing:'0.06em'}}>{item.l}</div>
+                <div style={{fontSize:11,color:C.white,fontFamily:F.m}}>{item.v}</div></div>
+            </div>
+          ))}
+        </div>
+      )}
+      {notes.length>0&&(
+        <div style={{padding:'6px 14px 12px',borderTop:`1px solid ${C.bdr}`}}>
+          {notes.map((note,i)=>(
+            <div key={i} style={{fontSize:11,color:C.sec,fontFamily:F.b,lineHeight:1.7,padding:'1px 0'}}>
+              <span style={{color:accent,marginRight:6,fontWeight:700}}>›</span>{note}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -1249,58 +1435,94 @@ export default function App(){
       {/* ══════ TAB: TODAY ══════ */}
       {topTab===0&&(
         <div>
-          {/* Latest run */}
+          {/* Latest activity — Mar 11 Badminton */}
           <div style={{background:"linear-gradient(135deg,#070A18,#080C1A)",borderBottom:`1px solid ${C.blue}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
             <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(61,139,248,0.08),transparent 50%)`}}/>
             <div style={{position:"relative"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
                 <div>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
                     <div style={{width:7,height:7,borderRadius:"50%",background:C.blue,boxShadow:`0 0 8px ${C.blue}`}}/>
-                    <span style={{fontSize:11,color:C.blue,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Run · Today</span>
-                    <Pill c={C.blue}>Mar 10</Pill><Pill c={C.green}>⚡ Strides</Pill>
+                    <span style={{fontSize:11,color:C.blue,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Activity · Today</span>
+                    <Pill c={C.blue}>Mar 11</Pill>
+                    <Pill c={C.green}>🏸 Badminton</Pill>
+                    <Pill c={C.yellow}>REST DAY ✓</Pill>
                   </div>
-                  <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>SHAKEOUT + 4 STRIDES 💨</div>
-                  <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>5 days to Namma · 👟 Novablast 5</div>
+                  <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>MORNING BADMINTON 🏸</div>
+                  <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>4 days to Namma Power Run · Active recovery</div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:28,fontFamily:F.h,color:C.blue,lineHeight:1}}>6.57<span style={{fontSize:14,color:C.mut}}> km</span></div>
-                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>46:43 · 7:07/km</div>
+                  <div style={{fontSize:28,fontFamily:F.h,color:C.sky,lineHeight:1}}>1:25<span style={{fontSize:14,color:C.mut}}>:43</span></div>
+                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>85 min · Court</div>
                 </div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:12}}>
-                {[["❤️","Avg HR","153"],["📈","Max HR","173"],["⚡","Power","188W"],["💨","Top Speed","16.9 km/h"],["🔥","Calories","537"]].map(([ic,l,v])=>(
+              {/* Stats row */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
+                {[["❤️","Avg HR","134 bpm"],["🔥","Max HR","173 bpm"],["🔥","Calories","689 kcal"],["⏱","Duration","1:25:43"]].map(([ic,l,v])=>(
                   <div key={l} style={{background:"rgba(255,255,255,0.02)",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
                     <div style={{fontSize:13,marginBottom:2}}>{ic}</div>
-                    <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h}}>{v}</div>
+                    <div style={{fontSize:12,fontWeight:700,color:C.white,fontFamily:F.h}}>{v}</div>
                     <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase"}}>{l}</div>
                   </div>
                 ))}
               </div>
+              {/* HR Zones for badminton */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:12}}>
-                {[{n:"S1",speed:"12.8",cad:88,hr:160,c:C.green},{n:"S2",speed:"10.7",cad:86,hr:167,c:C.green},{n:"S3",speed:"15.8",cad:91,hr:168,c:C.yellow},{n:"S4",speed:"11.1",cad:85,hr:173,c:C.yellow}].map(s=>(
-                  <div key={s.n} style={{background:C.faint,border:`1px solid ${s.c}33`,borderRadius:8,padding:"7px 8px",textAlign:"center"}}>
-                    <div style={{fontSize:10,color:s.c,fontWeight:700,fontFamily:F.h,marginBottom:3}}>{s.n}</div>
-                    <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h}}>{s.speed}<span style={{fontSize:9,color:C.mut}}> km/h</span></div>
-                    <div style={{fontSize:10,color:C.mut,fontFamily:F.b}}>cad {s.cad} · {s.hr}bpm</div>
+                {[{z:"Z1–Z2",label:"Warmup",pct:55,dur:"~47 min",c:C.green},
+                  {z:"Z3",   label:"Steady",pct:27,dur:"~23 min",c:C.yellow},
+                  {z:"Z4",   label:"Rally",  pct:14,dur:"~12 min",c:C.orange},
+                  {z:"Z5",   label:"Burst",  pct:4, dur:"~3 min", c:C.red}].map(s=>(
+                  <div key={s.z} style={{background:C.faint,border:`1px solid ${s.c}33`,borderRadius:8,padding:"7px 8px",textAlign:"center"}}>
+                    <div style={{fontSize:10,color:s.c,fontWeight:700,fontFamily:F.h,marginBottom:3}}>{s.z}</div>
+                    <div style={{fontSize:16,fontWeight:700,color:C.white,fontFamily:F.h}}>{s.pct}<span style={{fontSize:9,color:C.mut}}>%</span></div>
+                    <div style={{fontSize:10,color:s.c,fontFamily:F.b,fontWeight:600}}>{s.label}</div>
+                    <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{s.dur}</div>
                   </div>
                 ))}
               </div>
-              <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Heart Rate · Distance</div>
-              <ResponsiveContainer width="100%" height={68}>
+              {/* HR zone bars */}
+              <div style={{marginBottom:12}}>
+                {[{pct:55,c:C.green},{pct:27,c:C.yellow},{pct:14,c:C.orange},{pct:4,c:C.red}].map((z,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                    <div style={{width:24,fontSize:9,color:C.mut,fontFamily:F.m,textAlign:"right",flexShrink:0}}>Z{i+1+(i>0?1:0)}</div>
+                    <div style={{flex:1,height:5,background:C.bdr,borderRadius:3,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${z.pct}%`,background:z.c,borderRadius:3}}/>
+                    </div>
+                    <div style={{width:28,fontSize:10,fontFamily:F.h,color:z.c,textAlign:"right"}}>{z.pct}%</div>
+                  </div>
+                ))}
+              </div>
+              {/* HR chart */}
+              <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Heart Rate · Duration (min)</div>
+              <ResponsiveContainer width="100%" height={72}>
                 <AreaChart data={latestRunHR} margin={{left:0,right:0,top:4,bottom:0}}>
                   <defs><linearGradient id="lrg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.blue} stopOpacity={.4}/><stop offset="100%" stopColor={C.blue} stopOpacity={.02}/>
+                    <stop offset="0%" stopColor={C.sky} stopOpacity={.4}/><stop offset="100%" stopColor={C.sky} stopOpacity={.02}/>
                   </linearGradient></defs>
-                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false} tickFormatter={v=>`${v}km`} ticks={[0,15,30,45,60,65]}/>
-                  <YAxis domain={[90,180]} hide/>
-                  <ReferenceLine y={153} stroke={C.blue} strokeDasharray="3 3" strokeOpacity={.4}/>
-                  <Area type="monotone" dataKey="hr" stroke={C.blue} strokeWidth={2} fill="url(#lrg)" dot={false} activeDot={{r:3,fill:C.blue}}/>
+                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}
+                    tickFormatter={v=>`${Math.round(v/60)}m`} ticks={[0,120,240,360,480,600,720,810]}/>
+                  <YAxis domain={[70,180]} hide/>
+                  <Tooltip content={({active,payload})=>{if(!active||!payload?.length)return null;const t=payload[0].payload.d;return(<div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"5px 10px",fontSize:11,fontFamily:F.b}}><div style={{color:C.sec}}>{Math.floor(t/60)}:{String(t%60).padStart(2,"0")}</div><div style={{color:C.sky}}>{payload[0].value} bpm</div></div>);}}/>
+                  <ReferenceLine y={134} stroke={C.sky} strokeDasharray="3 3" strokeOpacity={.5}/>
+                  <ReferenceLine y={147} stroke={C.yellow} strokeDasharray="2 2" strokeOpacity={.3}/>
+                  <Area type="monotone" dataKey="hr" stroke={C.sky} strokeWidth={2} fill="url(#lrg)" dot={false} activeDot={{r:3,fill:C.sky}}/>
                 </AreaChart>
               </ResponsiveContainer>
+              {/* Coach note */}
               <div style={{marginTop:10,padding:"9px 12px",background:"rgba(52,211,153,0.06)",borderRadius:8,border:`1px solid ${C.green}33`}}>
                 <div style={{fontSize:12,color:"#86EFAC",lineHeight:1.6,fontFamily:F.b}}>
-                  ✅ <strong>Coach:</strong> 30-min easy Z2 base + 4 strides hitting <strong style={{color:C.white}}>16.9 km/h & cadence 91 spm</strong>. HR 171→153 — legs recovering. <strong style={{color:C.green}}>5 days out: perfect execution.</strong>
+                  ✅ <strong>Coach:</strong> Today was planned as recovery — you chose badminton over a jog. <strong style={{color:C.white}}>Smart.</strong> Avg HR 134 (Z2) means no leg stress, but blood flow active. Max HR 173 shows some intense rallies — kept neuromuscular system sharp. <strong style={{color:C.green}}>4 days to Namma: legs are fresh, body is primed. Full rest tomorrow (Thu).</strong>
+                </div>
+              </div>
+              {/* Previous run mini card */}
+              <div style={{marginTop:10,padding:"9px 12px",background:C.faint,borderRadius:8,border:`1px solid ${C.bdr}`}}>
+                <div style={{fontSize:10,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Yesterday · Mar 10</div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div>
+                    <div style={{fontSize:13,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>SHAKEOUT + 4 STRIDES 💨</div>
+                    <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginTop:1}}>6.57km · 46:43 · HR 153 avg · 4 strides (16.9 km/h!)</div>
+                  </div>
+                  <Pill c={C.green}>✓ Strides</Pill>
                 </div>
               </div>
             </div>
@@ -1661,7 +1883,7 @@ export default function App(){
           <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:2}}>Bangalore · 2026 Season · 7 Races · Strava #99703920</div>
         </div>
         <div style={{textAlign:"right"}}>
-          <div style={{fontSize:10,color:C.mut,fontFamily:F.m}}>Updated Mar 10, 2026</div>
+          <div style={{fontSize:10,color:C.mut,fontFamily:F.m}}>Updated Mar 11, 2026</div>
           <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4,justifyContent:"flex-end"}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}`}}/>
             <span style={{fontSize:10,color:C.green,fontFamily:F.m}}>Strava Live</span>
@@ -1671,5 +1893,3 @@ export default function App(){
     </div>
   );
 }
-
-
