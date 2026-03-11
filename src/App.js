@@ -503,7 +503,7 @@ function elevColor(t){
   return lerpHex('#F97316','#F87171',(t-0.7)/0.3);
 }
 
-function RouteMapSVG({coords,altitudes=[],accent='#3D8BF8',title='',subtitle='',kmPositions=[],hilites=[],info=[]}){
+function RouteMapSVG({coords,altitudes=[],accent='#3D8BF8',title='',subtitle='',kmPositions=[],hilites=[],info=[],notes=[]}){
   const W=520,H=340,padX=42,padY=34;
   if(!coords||coords.length<2) return null;
   const lats=coords.map(c=>c[0]),lngs=coords.map(c=>c[1]);
