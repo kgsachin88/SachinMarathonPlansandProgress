@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
   Cell, ReferenceLine
 } from "recharts";
+import {
+  getAuthURL, exchangeCode, refreshAccessToken, fetchActivities,
+  getStoredAuth, storeAuth, clearAuth, isTokenExpired, mapActivity
+} from './strava';
 
 /* ─── Fonts ─── */
 const _fl = document.createElement("link");
@@ -1207,6 +1211,47 @@ export default function App(){
   const[race,setRace]=useState(0);
   const r=RACE_SWITCHER[race];
 
+  /* ── Strava ── */
+  const[stravaAuth,setStravaAuth]=useState(null);
+  const[stravaActivities,setStravaActivities]=useState([]);
+  const[stravaLoading,setStravaLoading]=useState(false);
+  const[stravaError,setStravaError]=useState('');
+
+  const loadActivities = async (auth) => {
+    setStravaLoading(true);
+    setStravaError('');
+    try {
+      let token = auth.access_token;
+      if(isTokenExpired(auth)){
+        const refreshed = await refreshAccessToken(auth.refresh_token);
+        const newAuth = {...auth,...refreshed};
+        storeAuth(newAuth);
+        setStravaAuth(newAuth);
+        token = newAuth.access_token;
+      }
+      const acts = await fetchActivities(token,1,50);
+      setStravaActivities(acts.map(mapActivity));
+    } catch(e){ setStravaError(e.message); }
+    finally{ setStravaLoading(false); }
+  };
+
+  useEffect(()=>{
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if(params.get('error')){ window.history.replaceState({},'',window.location.pathname); return; }
+    if(code){
+      window.history.replaceState({},'',window.location.pathname);
+      setStravaLoading(true);
+      exchangeCode(code)
+        .then(auth=>{ storeAuth(auth); setStravaAuth(auth); return loadActivities(auth); })
+        .catch(e=>{ setStravaError(e.message); setStravaLoading(false); });
+    } else {
+      const stored = getStoredAuth();
+      if(stored){ setStravaAuth(stored); loadActivities(stored); }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+
   return(
     <div style={{background:C.bg,minHeight:"100vh",color:C.pri,fontFamily:F.b,maxWidth:800,margin:"0 auto",
       paddingBottom:48,backgroundImage:"radial-gradient(ellipse 70% 40% at 100% 0%,rgba(61,139,248,0.06),transparent),radial-gradient(ellipse 50% 40% at 0% 80%,rgba(129,140,248,0.04),transparent)"}}>
@@ -1220,8 +1265,31 @@ export default function App(){
         <div style={{position:"absolute",top:-80,right:-80,width:240,height:240,borderRadius:"50%",
           background:"rgba(61,139,248,0.1)",filter:"blur(70px)"}}/>
         <div style={{position:"relative"}}>
-          <div style={{fontSize:10,color:C.blue,fontFamily:F.m,fontWeight:700,letterSpacing:"0.2em",marginBottom:10}}>
-            ● ATHLETE · STRAVA #99703920 · 2026 SEASON · 7 RACES
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:10}}>
+            <div style={{fontSize:10,color:C.blue,fontFamily:F.m,fontWeight:700,letterSpacing:"0.2em"}}>
+              ● ATHLETE · STRAVA #99703920 · 2026 SEASON · 7 RACES
+            </div>
+            {stravaAuth
+              ? <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                  <span style={{fontSize:9,color:C.green,fontFamily:F.b,fontWeight:700}}>● STRAVA LIVE</span>
+                  <button onClick={()=>loadActivities(stravaAuth)} disabled={stravaLoading}
+                    style={{fontSize:9,padding:"3px 8px",borderRadius:10,border:`1px solid ${C.bdr2}`,
+                      background:"transparent",color:C.sec,cursor:"pointer",fontFamily:F.b}}>
+                    {stravaLoading?"Syncing…":"↻ Sync"}
+                  </button>
+                  <button onClick={()=>{clearAuth();setStravaAuth(null);setStravaActivities([]);setStravaError('');}}
+                    style={{fontSize:9,padding:"3px 8px",borderRadius:10,border:`1px solid ${C.bdr2}`,
+                      background:"transparent",color:C.mut,cursor:"pointer",fontFamily:F.b}}>
+                    Disconnect
+                  </button>
+                </div>
+              : <button onClick={()=>window.location.href=getAuthURL()}
+                  style={{fontSize:9,padding:"5px 12px",borderRadius:12,border:`1px solid ${C.blue}55`,
+                    background:`${C.blue}18`,color:C.blue,cursor:"pointer",fontFamily:F.b,fontWeight:700,
+                    letterSpacing:"0.08em",textTransform:"uppercase"}}>
+                  Connect Strava
+                </button>
+            }
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16,marginBottom:20}}>
             <div>
@@ -1271,98 +1339,142 @@ export default function App(){
       {/* ══════ TAB: TODAY ══════ */}
       {topTab===0&&(
         <div>
-          {/* Latest activity — Mar 11 Badminton */}
-          <div style={{background:"linear-gradient(135deg,#070A18,#080C1A)",borderBottom:`1px solid ${C.blue}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(61,139,248,0.08),transparent 50%)`}}/>
-            <div style={{position:"relative"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-                <div>
+          {/* Latest activity — dynamic from Strava or fallback */}
+          {(()=>{
+            const latest = stravaActivities.length>0 ? stravaActivities[0] : null;
+            const prev   = stravaActivities.length>1 ? stravaActivities[1] : null;
+            const isRun  = latest && ['EASY','TEMPO','LONG','ULTRA','RACE','STRIDES'].includes(latest.tag);
+            const ac     = latest ? tagColor(latest.tag) : C.blue;
+
+            // Estimate HR zone distribution from avg HR
+            const estZones = (avgHR) => {
+              if(!avgHR||avgHR==='—') return [{z:"Z1",c:C.green,pct:20},{z:"Z2",c:C.sky,pct:40},{z:"Z3",c:C.yellow,pct:25},{z:"Z4",c:C.orange,pct:10},{z:"Z5",c:C.red,pct:5}];
+              if(avgHR<118) return [{z:"Z1",c:C.green,pct:70},{z:"Z2",c:C.sky,pct:25},{z:"Z3",c:C.yellow,pct:4},{z:"Z4",c:C.orange,pct:1},{z:"Z5",c:C.red,pct:0}];
+              if(avgHR<135) return [{z:"Z1",c:C.green,pct:15},{z:"Z2",c:C.sky,pct:55},{z:"Z3",c:C.yellow,pct:22},{z:"Z4",c:C.orange,pct:7},{z:"Z5",c:C.red,pct:1}];
+              if(avgHR<148) return [{z:"Z1",c:C.green,pct:5},{z:"Z2",c:C.sky,pct:30},{z:"Z3",c:C.yellow,pct:42},{z:"Z4",c:C.orange,pct:20},{z:"Z5",c:C.red,pct:3}];
+              if(avgHR<163) return [{z:"Z1",c:C.green,pct:2},{z:"Z2",c:C.sky,pct:10},{z:"Z3",c:C.yellow,pct:28},{z:"Z4",c:C.orange,pct:48},{z:"Z5",c:C.red,pct:12}];
+              return [{z:"Z1",c:C.green,pct:1},{z:"Z2",c:C.sky,pct:5},{z:"Z3",c:C.yellow,pct:14},{z:"Z4",c:C.orange,pct:40},{z:"Z5",c:C.red,pct:40}];
+            };
+
+            // Generate coach tip from activity data
+            const coachTip = (act) => {
+              if(!act) return "Connect Strava to get personalised coach tips based on your latest activity.";
+              const hr = act.hr!=='—' ? act.hr : null;
+              const km = act.km!=='—' ? act.km : 0;
+              const tag = act.tag;
+              if(tag==='RACE') return `🏅 Race completed! ${km}km in ${act.time} (${act.pace}/km). HR avg ${hr||'—'} bpm. Recovery starts now — easy 2 days minimum. Reflect on your race nutrition and pacing for next time.`;
+              if(tag==='CROSS') return `🏸 Cross-training session: ${act.name}. ${hr?`Avg HR ${hr} bpm — ${hr<140?"good aerobic maintenance. Legs stay fresh.":"solid effort. Active recovery complete."}`:""} Cross-training keeps the engine running without pounding your joints.`;
+              if(tag==='LONG') return `🏃 Long run done — ${km}km at ${act.pace}/km. ${hr?`Avg HR ${hr} bpm.`:""} ${km>=14?"Excellent aerobic stimulus. Eat well, sleep 8+hrs, and keep tomorrow easy.":"Good base-building work. Each long run builds your ultra endurance foundation."}`;
+              if(tag==='TEMPO') return `⚡ Quality session: ${km}km at ${act.pace}/km. ${hr?`HR ${hr} bpm avg — ${hr>165?"high effort, solid threshold work.":"controlled tempo, good aerobic development."}`:""}  Race pace neurons are sharpening. Take tomorrow easy.`;
+              if(tag==='ULTRA') return `🔥 Ultra-distance effort: ${km}km at ${act.pace}/km. ${hr?`Avg HR ${hr} bpm.`:""} This is serious endurance work. Prioritise protein recovery, compression, and legs-up rest tonight.`;
+              if(tag==='STRIDES') return `💨 Strides session complete — ${km}km. Neuromuscular sharpness maintained. These short accelerations prime your legs for race pace. ${hr?`Avg HR ${hr} bpm — shows good easy base between strides.`:""}`;
+              return `✅ Easy run: ${km}km at ${act.pace}/km. ${hr?`Avg HR ${hr} bpm — ${hr<148?"aerobic zone, great for base building.":"keep it easier next easy day."}`:""}  Consistency is the key to improvement.`;
+            };
+
+            if(!latest) return (
+              <div style={{background:"linear-gradient(135deg,#070A18,#080C1A)",borderBottom:`1px solid ${C.blue}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(61,139,248,0.08),transparent 50%)`}}/>
+                <div style={{position:"relative"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
                     <div style={{width:7,height:7,borderRadius:"50%",background:C.blue,boxShadow:`0 0 8px ${C.blue}`}}/>
-                    <span style={{fontSize:11,color:C.blue,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Activity · Today</span>
-                    <Pill c={C.blue}>Mar 11</Pill>
-                    <Pill c={C.green}>🏸 Badminton</Pill>
-                    <Pill c={C.yellow}>REST DAY ✓</Pill>
+                    <span style={{fontSize:11,color:C.blue,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Activity · Mar 11</span>
+                    <Pill c={C.blue}>Mar 11</Pill><Pill c={C.green}>🏸 Badminton</Pill><Pill c={C.yellow}>REST DAY ✓</Pill>
                   </div>
                   <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>MORNING BADMINTON 🏸</div>
                   <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>4 days to Namma Power Run · Active recovery</div>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:28,fontFamily:F.h,color:C.sky,lineHeight:1}}>1:25<span style={{fontSize:14,color:C.mut}}>:43</span></div>
-                  <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>85 min · Court</div>
-                </div>
-              </div>
-              {/* Stats row */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
-                {[["❤️","Avg HR","134 bpm"],["🔥","Max HR","173 bpm"],["🔥","Calories","689 kcal"],["⏱","Duration","1:25:43"]].map(([ic,l,v])=>(
-                  <div key={l} style={{background:"rgba(255,255,255,0.02)",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
-                    <div style={{fontSize:13,marginBottom:2}}>{ic}</div>
-                    <div style={{fontSize:12,fontWeight:700,color:C.white,fontFamily:F.h}}>{v}</div>
-                    <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase"}}>{l}</div>
+                  <div style={{marginTop:12,padding:"10px 14px",background:`${C.blue}11`,border:`1px solid ${C.blue}33`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+                    <span style={{fontSize:11,color:C.sec,fontFamily:F.b}}>Connect Strava to see live activity data</span>
+                    <button onClick={()=>window.location.href=getAuthURL()} style={{padding:"6px 14px",borderRadius:10,border:`1px solid ${C.blue}55`,background:`${C.blue}22`,color:C.blue,cursor:"pointer",fontFamily:F.b,fontWeight:700,fontSize:10,textTransform:"uppercase"}}>Connect →</button>
                   </div>
-                ))}
+                  {stravaLoading&&<div style={{marginTop:8,fontSize:11,color:C.sec,fontFamily:F.b,textAlign:"center"}}>Loading from Strava…</div>}
+                </div>
               </div>
-              {/* HR Zones for badminton */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:12}}>
-                {[{z:"Z1–Z2",label:"Warmup",pct:55,dur:"~47 min",c:C.green},
-                  {z:"Z3",   label:"Steady",pct:27,dur:"~23 min",c:C.yellow},
-                  {z:"Z4",   label:"Rally",  pct:14,dur:"~12 min",c:C.orange},
-                  {z:"Z5",   label:"Burst",  pct:4, dur:"~3 min", c:C.red}].map(s=>(
-                  <div key={s.z} style={{background:C.faint,border:`1px solid ${s.c}33`,borderRadius:8,padding:"7px 8px",textAlign:"center"}}>
-                    <div style={{fontSize:10,color:s.c,fontWeight:700,fontFamily:F.h,marginBottom:3}}>{s.z}</div>
-                    <div style={{fontSize:16,fontWeight:700,color:C.white,fontFamily:F.h}}>{s.pct}<span style={{fontSize:9,color:C.mut}}>%</span></div>
-                    <div style={{fontSize:10,color:s.c,fontFamily:F.b,fontWeight:600}}>{s.label}</div>
-                    <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{s.dur}</div>
-                  </div>
-                ))}
-              </div>
-              {/* HR zone bars */}
-              <div style={{marginBottom:12}}>
-                {[{pct:55,c:C.green},{pct:27,c:C.yellow},{pct:14,c:C.orange},{pct:4,c:C.red}].map((z,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                    <div style={{width:24,fontSize:9,color:C.mut,fontFamily:F.m,textAlign:"right",flexShrink:0}}>Z{i+1+(i>0?1:0)}</div>
-                    <div style={{flex:1,height:5,background:C.bdr,borderRadius:3,overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${z.pct}%`,background:z.c,borderRadius:3}}/>
+            );
+
+            const zones = estZones(latest.hr);
+            return (
+              <div style={{background:"linear-gradient(135deg,#070A18,#080C1A)",borderBottom:`1px solid ${ac}22`,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(circle at 90% 10%,rgba(61,139,248,0.08),transparent 50%)`}}/>
+                <div style={{position:"relative"}}>
+                  {/* Header */}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+                    <div>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                        <div style={{width:7,height:7,borderRadius:"50%",background:ac,boxShadow:`0 0 8px ${ac}`}}/>
+                        <span style={{fontSize:11,color:ac,fontWeight:700,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.12em"}}>Latest Activity · {latest.date}</span>
+                        <Pill c={ac}>{latest.date}</Pill>
+                        <Pill c={ac}>{latest.tag}</Pill>
+                        {latest.stravaUrl&&<a href={latest.stravaUrl} target="_blank" rel="noreferrer" style={{textDecoration:"none"}}><Pill c={C.orange}>View on Strava ↗</Pill></a>}
+                      </div>
+                      <div style={{fontSize:20,fontFamily:F.h,letterSpacing:"1px",color:C.white}}>{latest.name.toUpperCase()}</div>
+                      <div style={{fontSize:11,color:C.mut,fontFamily:F.b,marginTop:2}}>
+                        {isRun?`${latest.km}km · ${latest.pace}/km · ${latest.elev}m elev`:`Duration: ${latest.time}`}
+                      </div>
                     </div>
-                    <div style={{width:28,fontSize:10,fontFamily:F.h,color:z.c,textAlign:"right"}}>{z.pct}%</div>
+                    <div style={{textAlign:"right",flexShrink:0}}>
+                      {isRun
+                        ? <><div style={{fontSize:26,fontFamily:F.h,color:ac,lineHeight:1}}>{latest.pace}<span style={{fontSize:11,color:C.mut}}>/km</span></div>
+                            <div style={{fontSize:11,color:C.sec,fontFamily:F.b}}>{latest.km} km</div></>
+                        : <><div style={{fontSize:24,fontFamily:F.h,color:ac,lineHeight:1}}>{latest.time}</div>
+                            <div style={{fontSize:11,color:C.sec,fontFamily:F.b}}>Duration</div></>
+                      }
+                    </div>
                   </div>
-                ))}
-              </div>
-              {/* HR chart */}
-              <div style={{fontSize:10,color:C.mut,marginBottom:6,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.1em"}}>Heart Rate · Duration (min)</div>
-              <ResponsiveContainer width="100%" height={72}>
-                <AreaChart data={latestRunHR} margin={{left:0,right:0,top:4,bottom:0}}>
-                  <defs><linearGradient id="lrg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.sky} stopOpacity={.4}/><stop offset="100%" stopColor={C.sky} stopOpacity={.02}/>
-                  </linearGradient></defs>
-                  <XAxis dataKey="d" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}
-                    tickFormatter={v=>`${Math.round(v/60)}m`} ticks={[0,120,240,360,480,600,720,810]}/>
-                  <YAxis domain={[70,180]} hide/>
-                  <Tooltip content={({active,payload})=>{if(!active||!payload?.length)return null;const t=payload[0].payload.d;return(<div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"5px 10px",fontSize:11,fontFamily:F.b}}><div style={{color:C.sec}}>{Math.floor(t/60)}:{String(t%60).padStart(2,"0")}</div><div style={{color:C.sky}}>{payload[0].value} bpm</div></div>);}}/>
-                  <ReferenceLine y={134} stroke={C.sky} strokeDasharray="3 3" strokeOpacity={.5}/>
-                  <ReferenceLine y={147} stroke={C.yellow} strokeDasharray="2 2" strokeOpacity={.3}/>
-                  <Area type="monotone" dataKey="hr" stroke={C.sky} strokeWidth={2} fill="url(#lrg)" dot={false} activeDot={{r:3,fill:C.sky}}/>
-                </AreaChart>
-              </ResponsiveContainer>
-              {/* Coach note */}
-              <div style={{marginTop:10,padding:"9px 12px",background:"rgba(52,211,153,0.06)",borderRadius:8,border:`1px solid ${C.green}33`}}>
-                <div style={{fontSize:12,color:"#86EFAC",lineHeight:1.6,fontFamily:F.b}}>
-                  ✅ <strong>Coach:</strong> Today was planned as recovery — you chose badminton over a jog. <strong style={{color:C.white}}>Smart.</strong> Avg HR 134 (Z2) means no leg stress, but blood flow active. Max HR 173 shows some intense rallies — kept neuromuscular system sharp. <strong style={{color:C.green}}>4 days to Namma: legs are fresh, body is primed. Full rest tomorrow (Thu).</strong>
+                  {/* Stats grid */}
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
+                    {[["❤️","Avg HR",latest.hr!=='—'?`${latest.hr} bpm`:'—'],
+                      ["📏","Distance",latest.km!=='—'?`${latest.km} km`:'—'],
+                      ["🔥","Calories",latest.calories!=='—'?`${latest.calories} kcal`:'—'],
+                      ["⏱","Duration",latest.time]].map(([ic,l,v])=>(
+                      <div key={l} style={{background:"rgba(255,255,255,0.02)",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
+                        <div style={{fontSize:13,marginBottom:2}}>{ic}</div>
+                        <div style={{fontSize:12,fontWeight:700,color:C.white,fontFamily:F.h}}>{v}</div>
+                        <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase"}}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* HR zone bars */}
+                  {latest.hr!=='—'&&(
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:10,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Estimated HR Zones</div>
+                      {zones.map((z,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                          <div style={{width:22,fontSize:9,color:C.mut,fontFamily:F.m,textAlign:"right",flexShrink:0}}>{z.z}</div>
+                          <div style={{flex:1,height:5,background:C.bdr,borderRadius:3,overflow:"hidden"}}>
+                            <div style={{height:"100%",width:`${z.pct}%`,background:z.c,borderRadius:3}}/>
+                          </div>
+                          <div style={{width:28,fontSize:10,fontFamily:F.h,color:z.c,textAlign:"right"}}>{z.pct}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Coach tip */}
+                  <div style={{marginTop:10,padding:"9px 12px",background:`${C.green}0D`,borderRadius:8,border:`1px solid ${C.green}33`}}>
+                    <div style={{fontSize:12,color:"#86EFAC",lineHeight:1.6,fontFamily:F.b}}>
+                      <strong>Coach:</strong> {coachTip(latest)}
+                    </div>
+                  </div>
+                  {/* Previous activity */}
+                  {prev&&(
+                    <div style={{marginTop:10,padding:"9px 12px",background:C.faint,borderRadius:8,border:`1px solid ${C.bdr}`}}>
+                      <div style={{fontSize:10,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Previous · {prev.date}</div>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div>
+                          <div style={{fontSize:13,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{prev.name.toUpperCase()}</div>
+                          <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginTop:1}}>
+                            {prev.km!=='—'?`${prev.km}km · `:''}
+                            {prev.pace!=='—'?`${prev.pace}/km · `:''}
+                            {prev.hr!=='—'?`HR ${prev.hr} avg`:''}
+                          </div>
+                        </div>
+                        <Pill c={tagColor(prev.tag)}>{prev.tag}</Pill>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              {/* Previous run mini card */}
-              <div style={{marginTop:10,padding:"9px 12px",background:C.faint,borderRadius:8,border:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:10,color:C.mut,fontFamily:F.b,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Yesterday · Mar 10</div>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <div>
-                    <div style={{fontSize:13,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>SHAKEOUT + 4 STRIDES 💨</div>
-                    <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginTop:1}}>6.57km · 46:43 · HR 153 avg · 4 strides (16.9 km/h!)</div>
-                  </div>
-                  <Pill c={C.green}>✓ Strides</Pill>
-                </div>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
           {/* Season road map */}
           <div style={{padding:"20px 18px 0"}}>
             <SHead label="2026 Race Roadmap" accent={C.sky}/>
@@ -1520,36 +1632,107 @@ export default function App(){
       {/* ══════ TAB: LOG ══════ */}
       {topTab===3&&(
         <div style={{padding:"0 18px"}}>
-          <SHead label="Recent Activity Log" accent={C.sky} right="Last 12 runs"/>
-          {ACTIVITY_LOG.map((a,i)=>(
-            <div key={i}>
-              <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 4px",background:i%2===0?"transparent":"rgba(255,255,255,0.01)"}}>
-                <div style={{width:46,flexShrink:0,textAlign:"right"}}>
-                  <div style={{fontSize:12,fontFamily:F.m,color:C.sec}}>{a.date.split(" ")[1]}</div>
-                  <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{a.date.split(" ")[0]}</div>
-                </div>
-                <div style={{width:8,height:8,borderRadius:"50%",background:tagColor(a.tag),flexShrink:0}}/>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{a.name}</div>
-                  <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:1}}>👟 {a.gear} · TL {a.tl}</div>
-                </div>
-                <div style={{display:"flex",gap:12,flexShrink:0}}>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:13,fontFamily:F.m,color:C.white,fontWeight:700}}>{a.km}<span style={{fontSize:10,color:C.mut}}> km</span></div>
-                    <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>{a.time}</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:13,fontFamily:F.m,color:tagColor(a.tag)}}>{a.pace}<span style={{fontSize:9,color:C.mut}}>/km</span></div>
-                    <div style={{fontSize:10,color:C.pink,fontFamily:F.b}}>♥ {a.hr}</div>
-                  </div>
-                  <div style={{width:52,display:"flex",alignItems:"center",justifyContent:"flex-end"}}>
-                    <Pill c={tagColor(a.tag)}>{a.tag}</Pill>
-                  </div>
-                </div>
+          {/* Strava connection banner */}
+          {!stravaAuth&&(
+            <div style={{background:"rgba(61,139,248,0.06)",border:`1px solid ${C.blue}33`,borderRadius:12,
+              padding:"14px 16px",marginTop:16,marginBottom:4,display:"flex",alignItems:"center",
+              justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:C.blue,fontFamily:F.b,marginBottom:2}}>Connect Strava for live data</div>
+                <div style={{fontSize:11,color:C.sec,fontFamily:F.b}}>Fetch your real activities automatically from Strava.</div>
               </div>
-              {i<ACTIVITY_LOG.length-1&&<Divider/>}
+              <button onClick={()=>window.location.href=getAuthURL()}
+                style={{padding:"8px 16px",borderRadius:10,border:`1px solid ${C.blue}55`,
+                  background:`${C.blue}22`,color:C.blue,cursor:"pointer",fontFamily:F.b,
+                  fontWeight:700,fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase"}}>
+                Connect Strava →
+              </button>
             </div>
-          ))}
+          )}
+          {stravaError&&(
+            <div style={{background:"rgba(248,113,113,0.08)",border:`1px solid ${C.red}33`,borderRadius:10,
+              padding:"10px 14px",marginBottom:8,fontSize:11,color:C.red,fontFamily:F.b}}>
+              ⚠ Strava error: {stravaError}
+            </div>
+          )}
+          {/* Activity list: live Strava or fallback */}
+          {stravaActivities.length>0?(
+            <>
+              <SHead label="Strava Activity Log" accent={C.blue} right={`${stravaActivities.length} activities · Live`}/>
+              {stravaActivities.map((a,i)=>(
+                <div key={a.id||i}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 4px",background:i%2===0?"transparent":"rgba(255,255,255,0.01)"}}>
+                    <div style={{width:46,flexShrink:0,textAlign:"right"}}>
+                      <div style={{fontSize:12,fontFamily:F.m,color:C.sec}}>{a.date.split(" ")[1]}</div>
+                      <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{a.date.split(" ")[0]}</div>
+                    </div>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:tagColor(a.tag),flexShrink:0}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <a href={a.stravaUrl} target="_blank" rel="noreferrer"
+                        style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b,
+                          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                          display:"block",textDecoration:"none"}}>
+                        {a.name}
+                      </a>
+                      <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:1}}>⛰ {a.elev}m · TL {a.tl}</div>
+                    </div>
+                    <div style={{display:"flex",gap:12,flexShrink:0}}>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:13,fontFamily:F.m,color:C.white,fontWeight:700}}>{a.km}<span style={{fontSize:10,color:C.mut}}> km</span></div>
+                        <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>{a.time}</div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:13,fontFamily:F.m,color:tagColor(a.tag)}}>{a.pace}<span style={{fontSize:9,color:C.mut}}>/km</span></div>
+                        <div style={{fontSize:10,color:C.pink,fontFamily:F.b}}>♥ {a.hr}</div>
+                      </div>
+                      <div style={{width:52,display:"flex",alignItems:"center",justifyContent:"flex-end"}}>
+                        <Pill c={tagColor(a.tag)}>{a.tag}</Pill>
+                      </div>
+                    </div>
+                  </div>
+                  {i<stravaActivities.length-1&&<Divider/>}
+                </div>
+              ))}
+            </>
+          ):(
+            <>
+              <SHead label="Recent Activity Log" accent={C.sky} right={stravaLoading?"Syncing from Strava…":"Last 12 runs"}/>
+              {stravaLoading&&(
+                <div style={{textAlign:"center",padding:"24px 0",fontSize:12,color:C.sec,fontFamily:F.b}}>
+                  Loading activities from Strava…
+                </div>
+              )}
+              {!stravaLoading&&ACTIVITY_LOG.map((a,i)=>(
+                <div key={i}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 4px",background:i%2===0?"transparent":"rgba(255,255,255,0.01)"}}>
+                    <div style={{width:46,flexShrink:0,textAlign:"right"}}>
+                      <div style={{fontSize:12,fontFamily:F.m,color:C.sec}}>{a.date.split(" ")[1]}</div>
+                      <div style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{a.date.split(" ")[0]}</div>
+                    </div>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:tagColor(a.tag),flexShrink:0}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:600,color:C.white,fontFamily:F.b,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{a.name}</div>
+                      <div style={{fontSize:10,color:C.mut,fontFamily:F.b,marginTop:1}}>👟 {a.gear} · TL {a.tl}</div>
+                    </div>
+                    <div style={{display:"flex",gap:12,flexShrink:0}}>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:13,fontFamily:F.m,color:C.white,fontWeight:700}}>{a.km}<span style={{fontSize:10,color:C.mut}}> km</span></div>
+                        <div style={{fontSize:10,color:C.sec,fontFamily:F.b}}>{a.time}</div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:13,fontFamily:F.m,color:tagColor(a.tag)}}>{a.pace}<span style={{fontSize:9,color:C.mut}}>/km</span></div>
+                        <div style={{fontSize:10,color:C.pink,fontFamily:F.b}}>♥ {a.hr}</div>
+                      </div>
+                      <div style={{width:52,display:"flex",alignItems:"center",justifyContent:"flex-end"}}>
+                        <Pill c={tagColor(a.tag)}>{a.tag}</Pill>
+                      </div>
+                    </div>
+                  </div>
+                  {i<ACTIVITY_LOG.length-1&&<Divider/>}
+                </div>
+              ))}
+            </>
+          )}
           <SHead label="Gear Tracker" accent={C.yellow}/>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
             {[{n:"ASICS Novablast 5",s:"Race + daily trainer",km:"~148km in 2026",c:C.blue,ic:"👟"},
