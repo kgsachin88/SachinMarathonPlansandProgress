@@ -112,6 +112,10 @@ export const mapActivity = (act) => {
     gear: '—',
     tag: guessTag(act),
     elev: Math.round(act.total_elevation_gain || 0),
-    calories: act.calories ? Math.round(act.calories) : '—',
+    calories: act.calories
+      ? Math.round(act.calories)
+      : act.kilojoules
+      ? Math.round(act.kilojoules * 0.239)
+      : '—',
   };
 };
