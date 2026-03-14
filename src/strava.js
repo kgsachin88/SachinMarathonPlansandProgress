@@ -108,15 +108,22 @@ export const mapActivity = (act) => {
     ? `${Math.floor(s/3600)}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
     : `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
   const d = new Date(act.start_date_local);
+  const paceMpkNum = paceMpk > 0 ? parseFloat(paceMpk.toFixed(4)) : 0;
   return {
     id: act.id,
     stravaUrl: `https://www.strava.com/activities/${act.id}`,
     date: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
+    dateISO: act.start_date_local ? act.start_date_local.slice(0, 10) : '',
     name: act.name,
+    type: act.sport_type || act.type || '',
     km: distKm > 0.1 ? parseFloat(distKm.toFixed(2)) : '—',
     time: timeStr,
+    movingSecs: act.moving_time || 0,
     pace: distKm > 0.1 ? paceStr : '—',
+    paceMpk: distKm > 0.1 ? paceMpkNum : 0,
     hr: act.average_heartrate ? Math.round(act.average_heartrate) : '—',
+    maxHR: act.max_heartrate ? Math.round(act.max_heartrate) : '—',
+    cadence: act.average_cadence ? Math.round(act.average_cadence * 2) : '—', // strava gives per-leg, *2 for spm
     tl: act.suffer_score || '—',
     gear: '—',
     tag: guessTag(act),

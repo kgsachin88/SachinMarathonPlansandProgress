@@ -18,20 +18,20 @@ document.head.appendChild(_fl);
 const F = { h:"'Bebas Neue', sans-serif", b:"'Outfit', system-ui, sans-serif", m:"'Space Mono', monospace" };
 
 const C = {
-  bg:"#050810", card:"#090D1A", card2:"#0D1220",
-  bdr:"#152038", bdr2:"#1E2D44",
-  white:"#E8F0FF", pri:"#C8D8F8", sec:"#7A90B8", mut:"#3A4D6A", faint:"#111A2E",
-  blue:"#3D8BF8", sky:"#60A5FA", indigo:"#818CF8", cyan:"#22D3EE",
-  green:"#34D399", yellow:"#FCD34D", orange:"#F97316", red:"#F87171", pink:"#F472B6",
-  violet:"#A78BFA",
+  bg:"#0D0E14", card:"#13151F", card2:"#191C28",
+  bdr:"#1F2235", bdr2:"#2A2E48",
+  white:"#F0F3FF", pri:"#C4CEEC", sec:"#6878A2", mut:"#3C4464", faint:"#10121C",
+  blue:"#5B8EF8", sky:"#7AADFF", indigo:"#8C9CF8", cyan:"#18D9EE",
+  green:"#26C87C", yellow:"#F5C03A", orange:"#F57232", red:"#EF5F60", pink:"#E868B4",
+  violet:"#A882F8",
   // Race palette
-  police:"#34D399",  // ✓ done
-  namma:"#60A5FA",   // Mar 15
-  tcs:"#818CF8",     // Apr 26
-  freedom:"#22D3EE", // May 24 HM
-  jatre:"#F472B6",   // Jun 14
-  b10k:"#A78BFA",    // Jul 5
-  ultra:"#FCD34D",   // Jul 25
+  police:"#26C87C",  // ✓ done
+  namma:"#7AADFF",   // Mar 15
+  tcs:"#8C9CF8",     // Apr 26
+  freedom:"#18D9EE", // May 24 HM
+  jatre:"#E868B4",   // Jun 14
+  b10k:"#A882F8",    // Jul 5
+  ultra:"#F5C03A",   // Jul 25
 };
 
 /* ── Helpers ── */
@@ -1284,14 +1284,14 @@ export default function App(){
 
   return(
     <div style={{background:C.bg,minHeight:"100vh",color:C.pri,fontFamily:F.b,maxWidth:800,margin:"0 auto",
-      paddingBottom:48,backgroundImage:"radial-gradient(ellipse 70% 40% at 100% 0%,rgba(61,139,248,0.06),transparent),radial-gradient(ellipse 50% 40% at 0% 80%,rgba(129,140,248,0.04),transparent)"}}>
+      paddingBottom:48,backgroundImage:"radial-gradient(ellipse 70% 35% at 100% 0%,rgba(91,142,248,0.07),transparent),radial-gradient(ellipse 50% 35% at 0% 85%,rgba(140,156,248,0.05),transparent)"}}>
 
       {/* ─── HERO ─── */}
-      <div style={{background:"linear-gradient(160deg,#060A14 0%,#0A1028 60%,#060C10 100%)",
+      <div style={{background:"linear-gradient(160deg,#0A0B12 0%,#0E1124 55%,#0A0D18 100%)",
         padding:"24px 20px 0",borderBottom:`1px solid ${C.bdr}`,position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",inset:0,opacity:.025,
-          backgroundImage:"linear-gradient(rgba(96,165,250,1) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,1) 1px,transparent 1px)",
-          backgroundSize:"36px 36px"}}/>
+        <div style={{position:"absolute",inset:0,opacity:.018,
+          backgroundImage:"linear-gradient(rgba(122,173,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(122,173,255,1) 1px,transparent 1px)",
+          backgroundSize:"40px 40px"}}/>
         <div style={{position:"absolute",top:-80,right:-80,width:240,height:240,borderRadius:"50%",
           background:"rgba(61,139,248,0.1)",filter:"blur(70px)"}}/>
         <div style={{position:"relative"}}>
@@ -1336,27 +1336,39 @@ export default function App(){
               <div style={{fontSize:9,color:C.sec,fontFamily:F.b}}>mL/kg/min</div>
             </div>
           </div>
-          {/* KPI strip */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:0,borderTop:`1px solid ${C.bdr}`,borderLeft:`1px solid ${C.bdr}`}}>
-            {[{v:"7",s:"",l:"2026 Races",sub:"Mar–Jul",c:C.blue},
-              {v:"460",s:"km",l:"Season Vol",sub:"Nov–Mar",c:C.sky},
+          {/* KPI strip — dynamic from Strava when connected */}
+          {(()=>{
+            const totalKm = stravaActivities.length>0
+              ? Math.round(stravaActivities.reduce((s,a)=>s+(a.km!=='—'?a.km:0),0))
+              : 460;
+            const totalRuns = stravaActivities.length>0
+              ? stravaActivities.filter(a=>['EASY','TEMPO','LONG','ULTRA','RACE','STRIDES'].includes(a.tag)).length
+              : null;
+            const kpis = [
+              {v:"7",s:"",l:"2026 Races",sub:"Mar–Jul",c:C.blue},
+              {v:totalKm,s:"km",l:stravaActivities.length>0?"Live Volume":"Season Vol",sub:stravaActivities.length>0?`${stravaActivities.length} activities`:"Nov–Mar",c:C.sky},
               {v:"58:53",s:"",l:"10K PR",sub:"Mar 1 2026",c:C.green},
-              {v:"21.1",s:"K",l:"First HM",sub:"May 24 '26",c:C.freedom},
+              {v:totalRuns!=null?totalRuns:"21.1",s:totalRuns!=null?"runs":"K",l:totalRuns!=null?"Total Runs":"First HM",sub:totalRuns!=null?"from Strava":"May 24 '26",c:C.freedom},
               {v:"25",s:"km",l:"Ultra 2×",sub:"Dec+Jul",c:C.ultra},
-            ].map(k=>(
-              <div key={k.l} style={{padding:"12px 8px",textAlign:"center",borderRight:`1px solid ${C.bdr}`,borderBottom:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:20,fontFamily:F.h,color:k.c,letterSpacing:"0.5px",lineHeight:1}}>{k.v}<span style={{fontSize:11}}>{k.s}</span></div>
-                <div style={{fontSize:10,color:C.white,fontFamily:F.b,fontWeight:600,marginTop:4}}>{k.l}</div>
-                <div style={{fontSize:9,color:C.mut,fontFamily:F.b,marginTop:1}}>{k.sub}</div>
-              </div>
-            ))}
-          </div>
+            ];
+            return(
+            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:0,borderTop:`1px solid ${C.bdr}`,borderLeft:`1px solid ${C.bdr}`}}>
+              {kpis.map(k=>(
+                <div key={k.l} style={{padding:"12px 6px",textAlign:"center",borderRight:`1px solid ${C.bdr}`,borderBottom:`1px solid ${C.bdr}`}}>
+                  <div style={{fontSize:18,fontFamily:F.h,color:k.c,letterSpacing:"0.5px",lineHeight:1}}>{k.v}<span style={{fontSize:10}}>{k.s}</span></div>
+                  <div style={{fontSize:9,color:C.white,fontFamily:F.b,fontWeight:600,marginTop:4}}>{k.l}</div>
+                  <div style={{fontSize:8,color:C.mut,fontFamily:F.b,marginTop:1}}>{k.sub}</div>
+                </div>
+              ))}
+            </div>
+            );
+          })()}
         </div>
       </div>
 
       {/* ─── TOP NAV ─── */}
-      <div style={{position:"sticky",top:0,zIndex:50,background:"rgba(5,8,16,0.95)",
-        backdropFilter:"blur(12px)",borderBottom:`1px solid ${C.bdr}`,display:"flex",overflowX:"auto"}}>
+      <div style={{position:"sticky",top:0,zIndex:50,background:"rgba(13,14,20,0.96)",
+        backdropFilter:"blur(14px)",borderBottom:`1px solid ${C.bdr}`,display:"flex",overflowX:"auto"}}>
         {TOP_TABS.map((t,i)=>(
           <button key={t} onClick={()=>setTopTab(i)} style={{flex:1,padding:"13px 4px",background:"transparent",
             border:"none",borderBottom:`2px solid ${topTab===i?C.blue:"transparent"}`,
@@ -1451,15 +1463,25 @@ export default function App(){
                     </div>
                   </div>
                   {/* Stats grid */}
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
-                    {[["❤️","Avg HR",latest.hr!=='—'?`${latest.hr} bpm`:'—'],
-                      ["📏","Distance",latest.km!=='—'?`${latest.km} km`:'—'],
-                      ["🔥","Calories",latest.calories!=='—'?`${latest.calories} kcal`:'—'],
-                      ["⏱","Duration",latest.time]].map(([ic,l,v])=>(
-                      <div key={l} style={{background:"rgba(255,255,255,0.02)",border:`1px solid ${C.bdr}`,borderRadius:8,padding:"7px 5px",textAlign:"center"}}>
-                        <div style={{fontSize:13,marginBottom:2}}>{ic}</div>
-                        <div style={{fontSize:12,fontWeight:700,color:C.white,fontFamily:F.h}}>{v}</div>
-                        <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase"}}>{l}</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:6}}>
+                    {[["❤️","Avg HR",latest.hr!=='—'?`${latest.hr} bpm`:'—',C.red],
+                      ["📏","Distance",latest.km!=='—'?`${latest.km} km`:'—',C.sky],
+                      ["⏱","Duration",latest.time,C.indigo]].map(([ic,l,v,ac])=>(
+                      <div key={l} style={{background:`${ac}08`,border:`1px solid ${ac}22`,borderRadius:10,padding:"10px 6px",textAlign:"center"}}>
+                        <div style={{fontSize:14,marginBottom:3}}>{ic}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
+                        <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",marginTop:2}}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
+                    {[["🔥","Calories",latest.calories!=='—'?`${latest.calories} kcal`:'—',C.orange],
+                      ["💓","Max HR",latest.maxHR!=='—'?`${latest.maxHR} bpm`:'—',C.pink],
+                      ["👣","Cadence",latest.cadence!=='—'?`${latest.cadence} spm`:'—',C.green]].map(([ic,l,v,ac])=>(
+                      <div key={l} style={{background:`${ac}08`,border:`1px solid ${ac}22`,borderRadius:10,padding:"10px 6px",textAlign:"center"}}>
+                        <div style={{fontSize:14,marginBottom:3}}>{ic}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:C.white,fontFamily:F.h,letterSpacing:"0.3px"}}>{v}</div>
+                        <div style={{fontSize:9,color:C.mut,fontFamily:F.b,textTransform:"uppercase",marginTop:2}}>{l}</div>
                       </div>
                     ))}
                   </div>
@@ -1834,6 +1856,74 @@ export default function App(){
               </div>
             ))}
           </div>
+
+          {/* Live metrics from Strava */}
+          {stravaActivities.length>0&&(()=>{
+            const runs = stravaActivities.filter(a=>a.tag!=='CROSS').slice(0,10);
+            const avgHRTrend = runs.filter(a=>a.hr!=='—').map((a,i)=>({r:a.date,hr:a.hr,pace:a.paceMpk,tag:a.tag,km:a.km,name:a.name}));
+            const weekMap = {};
+            stravaActivities.forEach(a=>{
+              if(!a.dateISO) return;
+              const d = new Date(a.dateISO);
+              const startOfWeek = new Date(d); startOfWeek.setDate(d.getDate()-d.getDay());
+              const wk = `${startOfWeek.getMonth()+1}/${startOfWeek.getDate()}`;
+              if(!weekMap[wk]) weekMap[wk]={w:wk,km:0,count:0};
+              weekMap[wk].km += a.km!=='—'?a.km:0;
+              weekMap[wk].count++;
+            });
+            const liveWeeks = Object.values(weekMap).slice(-8).map(w=>({...w,km:parseFloat(w.km.toFixed(1))}));
+            return(<>
+              <SHead label="Live Weekly Mileage" accent={C.green} right={`${stravaActivities.length} activities synced`}/>
+              <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:14,padding:"16px 14px",marginBottom:20}}>
+                <ResponsiveContainer width="100%" height={130}>
+                  <BarChart data={liveWeeks} barSize={28} margin={{left:0,right:0,top:4,bottom:0}}>
+                    <XAxis dataKey="w" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}/>
+                    <YAxis hide/>
+                    <Tooltip content={({active,payload,label})=>{
+                      if(!active||!payload?.length) return null;
+                      const d=liveWeeks.find(w=>w.w===label);
+                      return(<div style={{background:C.card,border:`1px solid ${C.bdr2}`,borderRadius:8,padding:"8px 12px",fontFamily:F.b,fontSize:11}}>
+                        <div style={{color:C.sec,marginBottom:3}}>Wk of {label}</div>
+                        <div style={{color:C.green,fontWeight:700}}>{payload[0].value} km · {d?.count} activities</div>
+                      </div>);
+                    }}/>
+                    <Bar dataKey="km" radius={[4,4,0,0]}>{liveWeeks.map((w,i)=><Cell key={i} fill={w.km>40?C.green:w.km>25?C.sky:C.indigo} opacity={.9}/>)}</Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              {avgHRTrend.length>1&&(<>
+                <SHead label="Recent Activity — Pace & HR" accent={C.pink}/>
+                <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:14,padding:"16px 14px",marginBottom:20}}>
+                  <ResponsiveContainer width="100%" height={140}>
+                    <LineChart data={avgHRTrend} margin={{left:0,right:8,top:4,bottom:0}}>
+                      <XAxis dataKey="r" tick={{fill:C.mut,fontSize:9,fontFamily:F.b}} axisLine={false} tickLine={false}/>
+                      <YAxis hide/>
+                      <Tooltip content={({active,payload,label})=>{
+                        if(!active||!payload?.length) return null;
+                        const d=avgHRTrend.find(p=>p.r===label);
+                        return(<div style={{background:C.card,border:`1px solid ${C.bdr2}`,borderRadius:8,padding:"8px 12px",fontFamily:F.b,fontSize:11}}>
+                          <div style={{color:C.sec,marginBottom:3}}>{d?.name||label}</div>
+                          <div style={{color:tagColor(d?.tag||''),marginBottom:2}}>{d?.km}km · {d?.tag}</div>
+                          <div style={{color:C.red}}>❤️ {d?.hr} bpm avg</div>
+                        </div>);
+                      }}/>
+                      <Line type="monotone" dataKey="hr" stroke={C.red} strokeWidth={2}
+                        dot={p=>{const d=avgHRTrend[p.index];return <circle key={p.key} cx={p.cx} cy={p.cy} r={4} fill={tagColor(d?.tag||'')} stroke={C.bg} strokeWidth={2}/>;}}
+                        activeDot={{r:5,fill:C.white,stroke:C.red,strokeWidth:2}}/>
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:8}}>
+                    {["RACE","TEMPO","LONG","EASY","CROSS"].map(t=>(
+                      <div key={t} style={{display:"flex",alignItems:"center",gap:4}}>
+                        <div style={{width:7,height:7,borderRadius:"50%",background:tagColor(t)}}/>
+                        <span style={{fontSize:9,color:C.mut,fontFamily:F.b}}>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>)}
+            </>);
+          })()}
         </div>
       )}
 
@@ -1841,7 +1931,7 @@ export default function App(){
       {topTab===5&&(
         <div style={{padding:"0 18px"}}>
           <SHead label="VO₂ Max & Training Paces" accent={C.blue}/>
-          <div style={{background:"linear-gradient(135deg,#08102A,#0A1230)",border:`1px solid ${C.blue}33`,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
+          <div style={{background:"linear-gradient(135deg,#0C1128,#0F1530)",border:`1px solid ${C.blue}33`,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
               <div>
                 <div style={{fontSize:12,color:C.blue,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:3}}>🫁 Estimated VO2 Max</div>
