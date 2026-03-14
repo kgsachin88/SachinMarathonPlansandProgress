@@ -5,7 +5,7 @@ import {
   Cell, ReferenceLine
 } from "recharts";
 import {
-  getAuthURL, exchangeCode, refreshAccessToken, fetchActivities,
+  getAuthURL, exchangeCode, refreshAccessToken, fetchActivities, fetchActivityDetail,
   getStoredAuth, storeAuth, clearAuth, isTokenExpired, mapActivity
 } from './strava';
 
@@ -257,12 +257,12 @@ const RACE_HISTORY=[
   {name:"SBI Green 10K",         date:"Nov 30 '25",dist:"10.14km",time:"1:03:09",  pace:"6:14/km",hr:"175/187",elev:"+111m",temp:"~22°C",color:C.mut,    status:"done",kcal:760, note:"Km 4 surge → km 7 blowup. Key lesson learned."},
   {name:"Bengaluru Ultra 25K",   date:"Dec 21 '25",dist:"25.04km",time:"3:12:04",  pace:"7:40/km",hr:"161/188",elev:"+169m",temp:"~20°C",color:C.yellow, status:"done",kcal:2582,note:"Longest race. 169m elev, 3h12m. Massive aerobic base."},
   {name:"Karnataka Police Run",  date:"Mar 1 '26", dist:"10.02km",time:"58:53",    pace:"5:53/km",hr:"180/190",elev:"+39m", temp:"~24°C",color:C.green,  status:"done",kcal:889, note:"Season opener. Sub-60 smashed. PR by 4:16."},
-  {name:"Namma Power Run",       date:"Mar 15 '26",dist:"10K",    time:"Target 57:30",pace:"5:45/km",hr:"—",  elev:"+90m", temp:"~33°C",color:C.namma,  status:"next",kcal:"~870",note:"NICE Road double climb. 4 days out. ⚡"},
-  {name:"TCS World 10K",         date:"Apr 26 '26",dist:"10K",    time:"Target 54:50",pace:"5:29/km",hr:"—",  elev:"+50m", temp:"~32°C",color:C.tcs,    status:"goal",kcal:"~850",note:"Season 10K goal. Cubbon Road. Sub-55 target."},
-  {name:"Freedom Bengaluru HM",  date:"May 24 '26",dist:"21.1km", time:"Target 2:20:00",pace:"6:38/km",hr:"—",elev:"+190m",temp:"~30°C",color:C.freedom,status:"new", kcal:"~1800",note:"First Half Marathon! NICE Road. Kalki Sports."},
-  {name:"Bengaluru Runners Jatre 10K",date:"Jun 14 '26",dist:"10K",time:"Target 54:00",pace:"5:24/km",hr:"—",elev:"+20m", temp:"~26°C",color:C.jatre,  status:"new", kcal:"~820",note:"Community fun race. Bengaluru Runners Jatre. Flat fast course."},
-  {name:"Bengaluru 10K Challenge",date:"Jul 5 '26", dist:"10K",   time:"Target 55:30",pace:"5:33/km",hr:"—",  elev:"+110m",temp:"~23°C",color:C.b10k,  status:"new", kcal:"~840",note:"The Tougher 10K. NICE Road. Godzilla Hill at km 7. Monsoon 🌧"},
-  {name:"Bengaluru Ultra 25K",   date:"Jul 25 '26",dist:"25K",    time:"Target 2:55:00",pace:"7:00/km",hr:"—",elev:"+170m",temp:"~23°C",color:C.ultra,  status:"new", kcal:"~2200",note:"2-loop GKVK campus. Monsoon running. Improve on Dec 3:12:04."},
+  {name:"Namma Power Run",       raceDate:"2026-03-15",date:"Mar 15 '26",dist:"10K",    time:"Target 57:30",pace:"5:45/km",hr:"—",  elev:"+90m", temp:"~33°C",color:C.namma,  status:"next",kcal:"~870",note:"NICE Road double climb. ⚡"},
+  {name:"TCS World 10K",         raceDate:"2026-04-26",date:"Apr 26 '26",dist:"10K",    time:"Target 54:50",pace:"5:29/km",hr:"—",  elev:"+50m", temp:"~32°C",color:C.tcs,    status:"goal",kcal:"~850",note:"Season 10K goal. Cubbon Road. Sub-55 target."},
+  {name:"Freedom Bengaluru HM",  raceDate:"2026-05-24",date:"May 24 '26",dist:"21.1km", time:"Target 2:20:00",pace:"6:38/km",hr:"—",elev:"+190m",temp:"~30°C",color:C.freedom,status:"new", kcal:"~1800",note:"First Half Marathon! NICE Road. Kalki Sports."},
+  {name:"Bengaluru Runners Jatre 10K",raceDate:"2026-06-14",date:"Jun 14 '26",dist:"10K",time:"Target 54:00",pace:"5:24/km",hr:"—",elev:"+20m", temp:"~26°C",color:C.jatre,  status:"new", kcal:"~820",note:"Community fun race. Bengaluru Runners Jatre. Flat fast course."},
+  {name:"Bengaluru 10K Challenge",raceDate:"2026-07-05",date:"Jul 5 '26", dist:"10K",   time:"Target 55:30",pace:"5:33/km",hr:"—",  elev:"+110m",temp:"~23°C",color:C.b10k,  status:"new", kcal:"~840",note:"The Tougher 10K. NICE Road. Godzilla Hill at km 7. Monsoon 🌧"},
+  {name:"Bengaluru Ultra 25K",   raceDate:"2026-07-25",date:"Jul 25 '26",dist:"25K",    time:"Target 2:55:00",pace:"7:00/km",hr:"—",elev:"+170m",temp:"~23°C",color:C.ultra,  status:"new", kcal:"~2200",note:"2-loop GKVK campus. Monsoon running. Improve on Dec 3:12:04."},
 ];
 const ACTIVITY_LOG=[
   {date:"Mar 11",name:"Morning Badminton",    km:"—",  time:"1:25:43",pace:"—",   hr:134,tl:112,gear:"Court shoes",tag:"CROSS"},
@@ -294,20 +294,47 @@ const RACE_PHOTOS=[
   "https://dgtzuqphqg23d.cloudfront.net/Yekpedx4fhIPOlthemrgoA4QFB2BCVyX1nVyMFEz2mw-576x768.jpg",
 ];
 
+// Returns days remaining until a race date (negative = past)
+const daysUntil = (iso) => {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const race  = new Date(iso); race.setHours(0,0,0,0);
+  return Math.round((race - today) / 86400000);
+};
+const raceSub = (iso, label) => {
+  const d = daysUntil(iso);
+  if(d < 0)  return `${label} · Done`;
+  if(d === 0) return `${label} · TODAY`;
+  return `${label} · ${d} day${d===1?'':'s'}`;
+};
+const raceBadge = (iso, doneBadge, upcomingIcon, fixedBadge) => {
+  const d = daysUntil(iso);
+  if(d < 0)  return doneBadge;
+  if(fixedBadge) return fixedBadge;
+  if(d === 0) return `${upcomingIcon} RACE DAY`;
+  return `${upcomingIcon} ${d} DAY${d===1?'':'S'}`;
+};
+
 const RACE_SWITCHER=[
-  {id:0,short:"Police Run",   sub:"Mar 1 · Done",    badge:"✓ DONE",     accent:C.police, bgGrad:"linear-gradient(135deg,#060F0A,#081208)",target:"58:53",    pace:"5:53/km",   dist:"10K",
+  {id:0,short:"Police Run",   raceDate:"2026-03-01", accent:C.police, bgGrad:"linear-gradient(135deg,#060F0A,#081208)",target:"58:53",    pace:"5:53/km",   dist:"10K",
+   doneBadge:"✓ DONE", upcomingIcon:"🏃",
    stats:[["🏁","Dist","10.02km"],["⏱","Time","58:53"],["❤️","Avg HR","180"],["💪","Power","228W"]]},
-  {id:1,short:"Namma Power",  sub:"Mar 15 · 4 days", badge:"⚡ 4 DAYS",   accent:C.namma,  bgGrad:"linear-gradient(135deg,#060A18,#08101A)",target:"57:30",    pace:"5:45/km",   dist:"10K",
+  {id:1,short:"Namma Power",  raceDate:"2026-03-15", accent:C.namma,  bgGrad:"linear-gradient(135deg,#060A18,#08101A)",target:"57:30",    pace:"5:45/km",   dist:"10K",
+   doneBadge:"✓ DONE", upcomingIcon:"⚡",
    stats:[["📅","Date","Mar 15"],["📍","Course","NICE Road"],["⛰","Elev","+90m"],["🌡","Temp","~33°C"]]},
-  {id:2,short:"TCS Open",     sub:"Apr 26 · 47 days",badge:"🎯 GOAL 10K",  accent:C.tcs,    bgGrad:"linear-gradient(135deg,#060A18,#080A1A)",target:"54:50",    pace:"5:29/km",   dist:"10K",
+  {id:2,short:"TCS Open",     raceDate:"2026-04-26", accent:C.tcs,    bgGrad:"linear-gradient(135deg,#060A18,#080A1A)",target:"54:50",    pace:"5:29/km",   dist:"10K",
+   doneBadge:"✓ DONE", fixedBadge:"🎯 GOAL 10K",
    stats:[["📅","Date","Apr 26"],["📍","Course","Cubbon Rd"],["⛰","Elev","+50m"],["🌡","Temp","~32°C"]]},
-  {id:3,short:"Freedom HM",   sub:"May 24 · First HM",badge:"🏆 FIRST HM",  accent:C.freedom,bgGrad:"linear-gradient(135deg,#051418,#06181A)",target:"2:20:00",  pace:"6:38/km",   dist:"21.1K",
+  {id:3,short:"Freedom HM",   raceDate:"2026-05-24", accent:C.freedom,bgGrad:"linear-gradient(135deg,#051418,#06181A)",target:"2:20:00",  pace:"6:38/km",   dist:"21.1K",
+   doneBadge:"✓ DONE", fixedBadge:"🏆 FIRST HM",
    stats:[["📅","Date","May 24"],["📍","Course","NICE Road"],["⛰","Elev","+190m"],["🌡","Temp","~30°C"]]},
-  {id:4,short:"Jatre 10K",    sub:"Jun 14 · Fun Run", badge:"🎉 COMMUNITY",  accent:C.jatre,  bgGrad:"linear-gradient(135deg,#180614,#1A0816)",target:"54:00",    pace:"5:24/km",   dist:"10K",
+  {id:4,short:"Jatre 10K",    raceDate:"2026-06-14", accent:C.jatre,  bgGrad:"linear-gradient(135deg,#180614,#1A0816)",target:"54:00",    pace:"5:24/km",   dist:"10K",
+   doneBadge:"✓ DONE", fixedBadge:"🎉 COMMUNITY",
    stats:[["📅","Date","Jun 14"],["📍","Course","City Roads"],["⛰","Elev","+20m"],["🌡","Temp","~26°C"]]},
-  {id:5,short:"B10K Challenge",sub:"Jul 5 · Toughest",badge:"🦖 TOUGHEST",   accent:C.b10k,   bgGrad:"linear-gradient(135deg,#08061A,#0A081E)",target:"55:30",    pace:"5:33/km",   dist:"10K",
+  {id:5,short:"B10K Challenge",raceDate:"2026-07-05", accent:C.b10k,   bgGrad:"linear-gradient(135deg,#08061A,#0A081E)",target:"55:30",    pace:"5:33/km",   dist:"10K",
+   doneBadge:"✓ DONE", fixedBadge:"🦖 TOUGHEST",
    stats:[["📅","Date","Jul 5"],["📍","Course","NICE Road"],["⛰","Elev","+110m"],["🌡","Temp","~23°C"]]},
-  {id:6,short:"Ultra 25K",    sub:"Jul 25 · 2-Loop",  badge:"🔥 ULTRA",      accent:C.ultra,  bgGrad:"linear-gradient(135deg,#141005,#1A1408)",target:"2:55:00",  pace:"7:00/km",   dist:"25K",
+  {id:6,short:"Ultra 25K",    raceDate:"2026-07-25", accent:C.ultra,  bgGrad:"linear-gradient(135deg,#141005,#1A1408)",target:"2:55:00",  pace:"7:00/km",   dist:"25K",
+   doneBadge:"✓ DONE", fixedBadge:"🔥 ULTRA",
    stats:[["📅","Date","Jul 25"],["📍","Course","GKVK Campus"],["⛰","Elev","+170m"],["🌡","Temp","~23°C"]]},
 ];
 
@@ -575,10 +602,13 @@ function PoliceRun(){
   );
 }
 
-function NammaRun(){
+function NammaRun({stravaActivities=[]}){
   const[tab,setTab]=useState(0);
   const tabs=["Race Plan","SBI Analysis","Route & Elev","Training Week","Race Morning"];
   const accent=C.namma;
+  // Build a map of date-string → strava activity for training week lookup
+  const stravaByDate = {};
+  stravaActivities.forEach(a=>{ if(a.date) stravaByDate[a.date]=a; });
   return(
     <>
       <div style={{display:"flex",background:"#070910",borderBottom:`1px solid ${C.bdr}`,overflowX:"auto"}}>
@@ -609,24 +639,39 @@ function NammaRun(){
             ))}
           </div></div>)}
         {tab===3&&(<div>
-          {nammaTraining.map((day,i)=>(
+          {nammaTraining.map((day,i)=>{
+            const sa=stravaByDate[day.date];
+            const isDone=day.done||(sa!=null&&!day.isRace);
+            const liveDesc=sa
+              ? [sa.km!=='—'?`${sa.km}km`:null,
+                 sa.time?sa.time:null,
+                 sa.pace!=='—'?`${sa.pace}/km`:null,
+                 sa.hr!=='—'?`HR ${sa.hr}`:null,
+                 sa.elev?`+${sa.elev}m elev`:null,
+                 sa.calories!=='—'?`${sa.calories} kcal`:null,
+                 '✅'].filter(Boolean).join(' · ')
+              : day.desc;
+            const liveEmoji=sa?({EASY:'🏃',TEMPO:'⚡',LONG:'🏃',ULTRA:'🏔',RACE:'🏅',CROSS:'🏸',STRIDES:'💨'}[sa.tag]||day.emoji):day.emoji;
+            return(
             <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:8,padding:"12px 14px",
-              background:day.isRace?`rgba(96,165,250,0.06)`:day.done?`rgba(52,211,153,0.04)`:C.card,
-              border:`1px solid ${day.isRace?accent+"55":day.done?day.light+"44":C.bdr}`,
-              borderRadius:10,borderLeft:`3px solid ${day.light}`,opacity:(!day.done&&!day.isRace&&i>4)?.72:1}}>
-              <div style={{fontSize:20,lineHeight:1,paddingTop:2}}>{day.emoji}</div>
+              background:day.isRace?`rgba(96,165,250,0.06)`:isDone?`rgba(52,211,153,0.04)`:C.card,
+              border:`1px solid ${day.isRace?accent+"55":isDone?day.light+"44":C.bdr}`,
+              borderRadius:10,borderLeft:`3px solid ${day.light}`,opacity:(!isDone&&!day.isRace&&i>4)?.72:1}}>
+              <div style={{fontSize:20,lineHeight:1,paddingTop:2}}>{liveEmoji}</div>
               <div style={{flex:1}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:14,fontWeight:700,color:day.light,fontFamily:F.h,letterSpacing:"0.5px"}}>{day.label}</span>
-                    {day.done&&<Pill c={C.green}>✓ Done</Pill>}
+                    <span style={{fontSize:14,fontWeight:700,color:day.light,fontFamily:F.h,letterSpacing:"0.5px"}}>{sa?sa.name:day.label}</span>
+                    {isDone&&<Pill c={C.green}>✓ Done</Pill>}
+                    {sa&&<Pill c={C.sky}>Strava</Pill>}
                   </div>
                   <span style={{fontSize:11,color:C.mut,fontFamily:F.b}}>{day.date}</span>
                 </div>
-                <div style={{fontSize:12,color:day.done?"#86EFAC88":C.sec,marginTop:2,lineHeight:1.6,fontFamily:F.b}}>{day.desc}</div>
+                <div style={{fontSize:12,color:isDone?"#86EFAC88":C.sec,marginTop:2,lineHeight:1.6,fontFamily:F.b}}>{liveDesc}</div>
               </div>
             </div>
-          ))}</div>)}
+            );
+          })}</div>)}
         {tab===4&&(<div>
           <SLabel children="Mar 15 Morning Timeline"/>
           <div style={{position:"relative"}}>
@@ -1207,7 +1252,15 @@ export default function App(){
         token = newAuth.access_token;
       }
       const acts = await fetchActivities(token,1,50);
-      setStravaActivities(acts.map(mapActivity));
+      const mapped = acts.map(mapActivity);
+      // Fetch full detail for latest activity to get accurate calories
+      if(mapped.length>0 && acts[0]){
+        const detail = await fetchActivityDetail(token, acts[0].id);
+        if(detail && detail.calories){
+          mapped[0] = {...mapped[0], calories: Math.round(detail.calories)};
+        }
+      }
+      setStravaActivities(mapped);
     } catch(e){ setStravaError(e.message); }
     finally{ setStravaLoading(false); }
   };
@@ -1468,11 +1521,11 @@ export default function App(){
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                       <div>
                         <div style={{display:"flex",gap:6,marginBottom:3}}>
-                          <Pill c={rc.accent}>{rc.badge}</Pill>
+                          <Pill c={rc.accent}>{raceBadge(rc.raceDate,rc.doneBadge,rc.upcomingIcon,rc.fixedBadge)}</Pill>
                           <span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{rc.dist}</span>
                         </div>
                         <div style={{fontSize:15,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{rc.short}</div>
-                        <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginTop:1}}>{rc.sub}</div>
+                        <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginTop:1}}>{raceSub(rc.raceDate,rc.short.split(' ')[0]+' '+rc.short.split(' ').slice(1).join(' '))}</div>
                       </div>
                       <div style={{textAlign:"right"}}>
                         <div style={{fontSize:22,fontFamily:F.h,color:rc.accent,lineHeight:1}}>{rc.target}</div>
@@ -1502,7 +1555,7 @@ export default function App(){
                   borderRadius:"8px 8px 0 0",cursor:"pointer",textAlign:"center",transition:"all .2s"}}>
                   <div style={{fontSize:8,color:race===rc.id?rc.accent:C.mut,textTransform:"uppercase",fontWeight:700,fontFamily:F.b,marginBottom:2}}>{rc.dist}</div>
                   <div style={{fontSize:12,fontFamily:F.h,letterSpacing:"0.5px",color:race===rc.id?C.white:C.mut}}>{rc.short.toUpperCase()}</div>
-                  <div style={{fontSize:8,color:race===rc.id?rc.accent:C.mut,fontFamily:F.b,marginBottom:6}}>{rc.sub.split("·")[0]}</div>
+                  <div style={{fontSize:8,color:race===rc.id?rc.accent:C.mut,fontFamily:F.b,marginBottom:6}}>{raceSub(rc.raceDate,rc.short).split("·")[0]}</div>
                 </button>
               ))}
             </div>
@@ -1515,7 +1568,7 @@ export default function App(){
                   borderRadius:"8px 8px 0 0",cursor:"pointer",textAlign:"center",transition:"all .2s"}}>
                   <div style={{fontSize:8,color:race===rc.id?rc.accent:C.mut,textTransform:"uppercase",fontWeight:700,fontFamily:F.b,marginBottom:2}}>{rc.dist}</div>
                   <div style={{fontSize:12,fontFamily:F.h,letterSpacing:"0.5px",color:race===rc.id?C.white:C.mut}}>{rc.short.toUpperCase()}</div>
-                  <div style={{fontSize:8,color:race===rc.id?rc.accent:C.mut,fontFamily:F.b,marginBottom:6}}>{rc.sub.split("·")[0]}</div>
+                  <div style={{fontSize:8,color:race===rc.id?rc.accent:C.mut,fontFamily:F.b,marginBottom:6}}>{raceSub(rc.raceDate,rc.short).split("·")[0]}</div>
                 </button>
               ))}
             </div>
@@ -1526,9 +1579,9 @@ export default function App(){
             <div style={{position:"relative"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12,marginBottom:16}}>
                 <div>
-                  <div style={{fontSize:11,color:r.accent,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:5,fontWeight:600,fontFamily:F.b}}>{r.sub}</div>
+                  <div style={{fontSize:11,color:r.accent,letterSpacing:"0.15em",textTransform:"uppercase",marginBottom:5,fontWeight:600,fontFamily:F.b}}>{raceSub(r.raceDate,r.short)}</div>
                   <h2 style={{margin:0,fontSize:26,fontFamily:F.h,letterSpacing:"1px",color:C.white,marginBottom:6}}>{r.short.toUpperCase()}</h2>
-                  <Pill c={r.accent}>{r.badge}</Pill>
+                  <Pill c={r.accent}>{raceBadge(r.raceDate,r.doneBadge,r.upcomingIcon,r.fixedBadge)}</Pill>
                 </div>
                 <div style={{textAlign:"right"}}>
                   <div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,fontFamily:F.b}}>{race===0?"Official Time":"Target"}</div>
@@ -1548,7 +1601,7 @@ export default function App(){
             </div>
           </div>
           {race===0&&<PoliceRun/>}
-          {race===1&&<NammaRun/>}
+          {race===1&&<NammaRun stravaActivities={stravaActivities}/>}
           {race===2&&<TCSRun/>}
           {race===3&&<FreedomHM/>}
           {race===4&&<DishaJatre/>}
@@ -1583,7 +1636,7 @@ export default function App(){
                   <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:6}}>
                     <div>
                       <div style={{display:"flex",gap:6,marginBottom:3,flexWrap:"wrap"}}>
-                        <Pill c={r.color}>{r.status==="done"?"✓ DONE":r.status==="next"?"⚡ 5 DAYS":r.status==="goal"?"🎯 GOAL":"🆕 NEW"}</Pill>
+                        <Pill c={r.color}>{r.status==="done"?"✓ DONE":r.raceDate?(()=>{const d=daysUntil(r.raceDate);return d===0?"⚡ TODAY":d>0?`⚡ ${d}D`:"✓ DONE";})():r.status==="goal"?"🎯 GOAL":"🆕 NEW"}</Pill>
                       </div>
                       <div style={{fontSize:14,fontFamily:F.h,color:C.white,letterSpacing:"0.5px"}}>{r.name}</div>
                       <div style={{fontSize:11,color:C.sec,fontFamily:F.b,marginTop:1}}>{r.date} · {r.dist}</div>

@@ -54,6 +54,15 @@ export const fetchActivities = async (access_token, page = 1, per_page = 50) => 
   return res.json();
 };
 
+export const fetchActivityDetail = async (access_token, id) => {
+  const res = await fetch(
+    `https://www.strava.com/api/v3/activities/${id}`,
+    { headers: { Authorization: `Bearer ${access_token}` } }
+  );
+  if (!res.ok) return null;
+  return res.json();
+};
+
 export const getStoredAuth = () => {
   try {
     const raw = localStorage.getItem('strava_auth');
