@@ -92,6 +92,57 @@ const trainingPaces = (vdot) => ({
 // VO2max fitness label
 const vo2Label = v => v>=60?"Elite":v>=55?"Advanced":v>=50?"Excellent":v>=44?"Good":v>=38?"Fair":"Developing";
 
+/* ── Route Map (polyline decoder + SVG renderer) ── */
+const decodePolyline = (enc) => {
+  if(!enc) return [];
+  const pts=[]; let i=0,lat=0,lng=0;
+  while(i<enc.length){
+    let b,shift=0,res=0;
+    do{b=enc.charCodeAt(i++)-63;res|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
+    lat+=(res&1)?~(res>>1):(res>>1);
+    shift=0;res=0;
+    do{b=enc.charCodeAt(i++)-63;res|=(b&0x1f)<<shift;shift+=5;}while(b>=0x20);
+    lng+=(res&1)?~(res>>1):(res>>1);
+    pts.push([lat/1e5,lng/1e5]);
+  }
+  return pts;
+};
+
+function RunMap({polyline,color,height=140,showDots=true}){
+  if(!polyline) return null;
+  const pts=decodePolyline(polyline);
+  if(pts.length<2) return null;
+  const ac=color||C.sky;
+  const W=300,H=150,pad=14;
+  const lats=pts.map(p=>p[0]),lngs=pts.map(p=>p[1]);
+  const minLat=Math.min(...lats),maxLat=Math.max(...lats);
+  const minLng=Math.min(...lngs),maxLng=Math.max(...lngs);
+  const latSpan=maxLat-minLat||0.001,lngSpan=maxLng-minLng||0.001;
+  // Preserve aspect ratio
+  const scale=Math.min((W-2*pad)/lngSpan,(H-2*pad)/latSpan);
+  const offX=(W-lngSpan*scale)/2,offY=(H-latSpan*scale)/2;
+  const px=lng=>offX+(lng-minLng)*scale;
+  const py=lat=>H-offY-(lat-minLat)*scale;
+  const d=pts.map((p,i)=>`${i===0?'M':'L'}${px(p[1]).toFixed(1)},${py(p[0]).toFixed(1)}`).join(' ');
+  const sx=px(pts[0][1]),sy=py(pts[0][0]);
+  const ex=px(pts[pts.length-1][1]),ey=py(pts[pts.length-1][0]);
+  return(
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height,display:"block",borderRadius:8}}>
+      <rect width={W} height={H} fill={C.faint} rx={8}/>
+      {/* glow under-layer */}
+      <path d={d} fill="none" stroke={ac} strokeWidth={6} strokeOpacity={0.12} strokeLinecap="round" strokeLinejoin="round"/>
+      {/* main route */}
+      <path d={d} fill="none" stroke={ac} strokeWidth={2} strokeOpacity={0.9} strokeLinecap="round" strokeLinejoin="round"/>
+      {showDots&&<>
+        <circle cx={sx} cy={sy} r={5} fill={C.green} stroke={C.bg} strokeWidth={2}/>
+        <circle cx={ex} cy={ey} r={5} fill={ac} stroke={C.bg} strokeWidth={2}/>
+        <text x={sx+7} y={sy+4} fill={C.green} fontSize={8} fontFamily="system-ui">S</text>
+        <text x={ex+7} y={ey+4} fill={ac} fontSize={8} fontFamily="system-ui">F</text>
+      </>}
+    </svg>
+  );
+}
+
 /* ════════════════════ DATA ════════════════════ */
 
 // Mar 11 Badminton HR stream (from Strava live pull)
@@ -1544,6 +1595,16 @@ export default function App(){
                       ))}
                     </div>
                   )}
+                  {/* Route map */}
+                  {latest.polyline&&(
+                    <div style={{marginTop:10,borderRadius:10,overflow:"hidden",border:`1px solid ${ac}22`}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",background:`${ac}0D`}}>
+                        <span style={{fontSize:9,color:ac,fontFamily:F.b,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase"}}>🗺 Route</span>
+                        <a href={latest.stravaUrl} target="_blank" rel="noopener noreferrer" style={{fontSize:9,color:C.mut,fontFamily:F.b,textDecoration:"none"}}>View on Strava ↗</a>
+                      </div>
+                      <RunMap polyline={latest.polyline} color={ac} height={160}/>
+                    </div>
+                  )}
                   {/* Coach tip */}
                   <div style={{marginTop:10,padding:"9px 12px",background:`${C.green}0D`,borderRadius:8,border:`1px solid ${C.green}33`}}>
                     <div style={{fontSize:12,color:"#86EFAC",lineHeight:1.6,fontFamily:F.b}}>
@@ -1786,6 +1847,11 @@ export default function App(){
                       </div>
                     </div>
                   </div>
+                  {a.polyline&&(
+                    <div style={{padding:"0 4px 10px",marginTop:-4}}>
+                      <RunMap polyline={a.polyline} color={tagColor(a.tag)} height={90} showDots={false}/>
+                    </div>
+                  )}
                   {i<stravaActivities.length-1&&<Divider/>}
                 </div>
               ))}

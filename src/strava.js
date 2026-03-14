@@ -128,6 +128,7 @@ export const mapActivity = (act) => {
     gear: '—',
     tag: guessTag(act),
     elev: Math.round(act.total_elevation_gain || 0),
+    polyline: act.map?.summary_polyline || '',
     calories: act.calories
       ? Math.round(act.calories)
       : act.kilojoules
