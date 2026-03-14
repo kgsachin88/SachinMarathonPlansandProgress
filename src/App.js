@@ -62,6 +62,36 @@ function IBar({val,color,h=4}){
 const tagColor = t=>({RACE:C.red,TEMPO:C.orange,LONG:C.indigo,STRIDES:C.green,EASY:C.sky,ULTRA:C.yellow,TRAIL:C.cyan,CROSS:C.pink}[t]||C.mut);
 const fmtPace = p=>{const m=Math.floor(p);const s=Math.round((p-m)*60);return`${m}:${s<10?"0"+s:s}`;};
 
+/* ── VDOT Engine (Jack Daniels) ── */
+// Estimate VDOT from a run: distM = metres, timeSecs = seconds
+const estimateVDOT = (distM, timeSecs) => {
+  if(!distM||!timeSecs||distM<800) return null;
+  const t = timeSecs/60;
+  const v = distM/t;
+  const pct = 0.8 + 0.1894393*Math.exp(-0.012778*t) + 0.2989558*Math.exp(-0.1932605*t);
+  const vo2 = -4.60 + 0.182258*v + 0.000104*v*v;
+  const vdot = vo2/pct;
+  return vdot>20&&vdot<90 ? parseFloat(vdot.toFixed(1)) : null;
+};
+// Derive training pace (min/km string) for a given VDOT at intensity fraction f
+const paceAtIntensity = (vdot, f) => {
+  const target = vdot*f;
+  const a=0.000104, b=0.182258, c=-(4.60+target);
+  const spd = (-b+Math.sqrt(b*b-4*a*c))/(2*a); // m/min
+  if(spd<=0) return '—';
+  const mpk = 1000/spd;
+  return `${Math.floor(mpk)}:${String(Math.round((mpk%1)*60)).padStart(2,'0')}`;
+};
+// Return {easy, tempo, interval, race} pace strings for a VDOT
+const trainingPaces = (vdot) => ({
+  easy:     `${paceAtIntensity(vdot,0.67)}–${paceAtIntensity(vdot,0.74)}`,
+  tempo:    `${paceAtIntensity(vdot,0.88)}–${paceAtIntensity(vdot,0.92)}`,
+  interval: `${paceAtIntensity(vdot,0.97)}–${paceAtIntensity(vdot,1.00)}`,
+  race:     paceAtIntensity(vdot,1.00),
+});
+// VO2max fitness label
+const vo2Label = v => v>=60?"Elite":v>=55?"Advanced":v>=50?"Excellent":v>=44?"Good":v>=38?"Fair":"Developing";
+
 /* ════════════════════ DATA ════════════════════ */
 
 // Mar 11 Badminton HR stream (from Strava live pull)
@@ -1239,6 +1269,19 @@ export default function App(){
   const[stravaLoading,setStravaLoading]=useState(false);
   const[stravaError,setStravaError]=useState('');
 
+  // Live VDOT: best estimate from all Strava runs (highest = most accurate race-like effort)
+  const liveVO2 = stravaActivities.length>0
+    ? (() => {
+        const vdots = stravaActivities
+          .filter(a=>a.km!=='—'&&a.movingSecs>0&&['EASY','TEMPO','LONG','ULTRA','RACE','STRIDES'].includes(a.tag))
+          .map(a=>estimateVDOT(a.km*1000, a.movingSecs))
+          .filter(Boolean);
+        return vdots.length>0 ? Math.max(...vdots) : null;
+      })()
+    : null;
+  const vo2Display = liveVO2 ? Math.round(liveVO2) : 38;
+  const paces = trainingPaces(vo2Display);
+
   const loadActivities = async (auth) => {
     setStravaLoading(true);
     setStravaError('');
@@ -1329,11 +1372,12 @@ export default function App(){
               </h1>
               <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>📍 Bangalore, Karnataka · ♂ 75 kg · ASICS · COROS</div>
             </div>
-            <div style={{background:"rgba(61,139,248,0.08)",border:`1px solid ${C.blue}33`,borderRadius:14,
+            <div style={{background:"rgba(91,142,248,0.08)",border:`1px solid ${C.blue}33`,borderRadius:14,
               padding:"14px 20px",textAlign:"center",flexShrink:0}}>
               <div style={{fontSize:9,color:C.blue,fontFamily:F.m,fontWeight:700,letterSpacing:"0.15em",marginBottom:2}}>VO₂ MAX</div>
-              <div style={{fontSize:42,fontFamily:F.h,color:C.white,lineHeight:1}}>~38</div>
+              <div style={{fontSize:42,fontFamily:F.h,color:C.white,lineHeight:1}}>{liveVO2?vo2Display:`~${vo2Display}`}</div>
               <div style={{fontSize:9,color:C.sec,fontFamily:F.b}}>mL/kg/min</div>
+              {liveVO2&&<div style={{fontSize:8,color:C.green,fontFamily:F.b,marginTop:3}}>● LIVE · {vo2Label(vo2Display)}</div>}
             </div>
           </div>
           {/* KPI strip — dynamic from Strava when connected */}
@@ -1934,33 +1978,45 @@ export default function App(){
           <div style={{background:"linear-gradient(135deg,#0C1128,#0F1530)",border:`1px solid ${C.blue}33`,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
               <div>
-                <div style={{fontSize:12,color:C.blue,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:3}}>🫁 Estimated VO2 Max</div>
-                <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>Jack Daniels VDOT · Police Run (58:53)</div>
+                <div style={{fontSize:12,color:C.blue,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:3}}>🫁 Estimated VO₂ Max</div>
+                <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>
+                  {liveVO2
+                    ? `Jack Daniels VDOT · Live from ${stravaActivities.filter(a=>['EASY','TEMPO','LONG','ULTRA','RACE','STRIDES'].includes(a.tag)).length} runs`
+                    : 'Jack Daniels VDOT · Police Run (58:53)'}
+                </div>
+                {liveVO2&&<div style={{fontSize:10,color:C.green,fontFamily:F.b,marginTop:4}}>● Auto-updated from Strava · {vo2Label(vo2Display)}</div>}
               </div>
               <div style={{textAlign:"right"}}>
-                <div style={{fontSize:42,fontFamily:F.h,color:C.blue,lineHeight:1}}>~38</div>
+                <div style={{fontSize:42,fontFamily:F.h,color:C.blue,lineHeight:1}}>{liveVO2?vo2Display:`~${vo2Display}`}</div>
                 <div style={{fontSize:9,color:C.sec,fontFamily:F.m}}>mL / kg / min</div>
               </div>
             </div>
-            <div style={{height:8,borderRadius:4,overflow:"hidden",marginBottom:6,
-              background:`linear-gradient(to right,#1E3A5F,${C.cyan} 33%,${C.yellow} 55%,${C.orange} 75%,${C.red} 90%,${C.indigo})`}}>
-              <div style={{position:"relative",height:"100%"}}>
-                <div style={{position:"absolute",top:0,bottom:0,left:"63%",width:3,background:C.white,borderRadius:2,boxShadow:"0 0 8px rgba(255,255,255,0.8)"}}/>
-              </div>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.mut,fontFamily:F.b,marginBottom:14}}>
-              {[["20","Beginner"],["30","Fair"],["38","◆ You"],["50","Excellent"],["60","Elite"]].map(([v,l])=>(
-                <div key={v} style={{textAlign:"center"}}>
-                  <div style={{fontWeight:700,color:v==="38"?C.blue:C.mut}}>{v}</div>
-                  <div style={{color:v==="38"?C.sky:C.mut}}>{l}</div>
+            {/* Fitness bar — marker position is dynamic */}
+            {(()=>{
+              const markerPct = Math.min(95, Math.max(5, (vo2Display-20)/(65-20)*100));
+              return(<>
+                <div style={{height:8,borderRadius:4,overflow:"hidden",marginBottom:6,
+                  background:`linear-gradient(to right,#1E3A5F,${C.cyan} 33%,${C.yellow} 55%,${C.orange} 75%,${C.red} 90%,${C.indigo})`}}>
+                  <div style={{position:"relative",height:"100%"}}>
+                    <div style={{position:"absolute",top:0,bottom:0,left:`${markerPct}%`,width:3,background:C.white,borderRadius:2,boxShadow:"0 0 8px rgba(255,255,255,0.8)"}}/>
+                  </div>
                 </div>
-              ))}
-            </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.mut,fontFamily:F.b,marginBottom:14}}>
+                  {[["20","Beginner"],["30","Fair"],["40","Good"],["50","Excellent"],["60","Elite"]].map(([v,l])=>{
+                    const isYou = Math.abs(parseInt(v)-vo2Display)<6;
+                    return(<div key={v} style={{textAlign:"center"}}>
+                      <div style={{fontWeight:700,color:isYou?C.blue:C.mut}}>{v}{isYou?` ◆`:''}</div>
+                      <div style={{color:isYou?C.sky:C.mut}}>{isYou?vo2Label(vo2Display):l}</div>
+                    </div>);
+                  })}
+                </div>
+              </>);
+            })()}
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-              {[["Easy","7:30–8:15",C.green],["Tempo","6:20–6:35",C.yellow],["Interval","5:55–6:05",C.orange],["Race","5:50–6:00",C.red]].map(([t,p,c])=>(
+              {[["Easy",paces.easy,C.green],["Tempo",paces.tempo,C.yellow],["Interval",paces.interval,C.orange],["Race 10K",paces.race,C.red]].map(([t,p,c])=>(
                 <div key={t} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${c}22`,borderRadius:8,padding:"8px",textAlign:"center"}}>
                   <div style={{fontSize:9,color:c,fontFamily:F.b,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{t}</div>
-                  <div style={{fontSize:12,fontFamily:F.m,color:C.white}}>{p}</div>
+                  <div style={{fontSize:11,fontFamily:F.m,color:C.white}}>{p}</div>
                   <div style={{fontSize:8,color:C.mut,fontFamily:F.b,marginTop:2}}>/km</div>
                 </div>
               ))}
