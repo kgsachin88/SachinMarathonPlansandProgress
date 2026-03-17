@@ -1713,7 +1713,7 @@ export default function App(){
                   <Pill c={r.accent}>{raceBadge(r.raceDate,r.doneBadge,r.upcomingIcon,r.fixedBadge)}</Pill>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,fontFamily:F.b}}>{race===0?"Official Time":"Target"}</div>
+                  <div style={{fontSize:10,color:C.mut,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600,fontFamily:F.b}}>{new Date(r.raceDate)<new Date()?"Official Time":"Target"}</div>
                   <div style={{fontSize:36,fontFamily:F.h,color:r.accent,lineHeight:1}}>{r.target}</div>
                   <div style={{fontSize:12,color:C.sec,fontFamily:F.b}}>{r.pace}</div>
                 </div>
