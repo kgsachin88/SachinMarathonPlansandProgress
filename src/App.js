@@ -401,9 +401,9 @@ const RACE_SWITCHER=[
   {id:0,short:"Police Run",   raceDate:"2026-03-01", accent:C.police, bgGrad:"linear-gradient(135deg,#060F0A,#081208)",target:"58:53",    pace:"5:53/km",   dist:"10K",
    doneBadge:"✓ DONE", upcomingIcon:"🏃",
    stats:[["🏁","Dist","10.02km"],["⏱","Time","58:53"],["❤️","Avg HR","180"],["💪","Power","228W"]]},
-  {id:1,short:"Namma Power",  raceDate:"2026-03-15", accent:C.namma,  bgGrad:"linear-gradient(135deg,#060A18,#08101A)",target:"57:30",    pace:"5:45/km",   dist:"10K",
+  {id:1,short:"Namma Power",  raceDate:"2026-03-15", accent:C.namma,  bgGrad:"linear-gradient(135deg,#060A18,#08101A)",target:"57:42",    pace:"5:46/km",   dist:"10K",
    doneBadge:"✓ DONE", upcomingIcon:"⚡",
-   stats:[["📅","Date","Mar 15"],["📍","Course","NICE Road"],["⛰","Elev","+90m"],["🌡","Temp","~33°C"]]},
+   stats:[["🏁","Dist","10.01km"],["⏱","Time","57:42"],["❤️","Avg HR","177"],["💪","Power","235W"]]},
   {id:2,short:"TCS Open",     raceDate:"2026-04-26", accent:C.tcs,    bgGrad:"linear-gradient(135deg,#060A18,#080A1A)",target:"54:50",    pace:"5:29/km",   dist:"10K",
    doneBadge:"✓ DONE", fixedBadge:"🎯 GOAL 10K",
    stats:[["📅","Date","Apr 26"],["📍","Course","Cubbon Rd"],["⛰","Elev","+50m"],["🌡","Temp","~32°C"]]},
@@ -1958,7 +1958,7 @@ export default function App(){
           </div>
           <SHead label="Personal Bests" accent={C.yellow}/>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
-            {[["🏅","58:53","10K PR","5:53/km · Mar 1"],["🏃","25 km","Longest Race","Ultra Dec"],["🔥","228W","Peak Power","Police Run"],
+            {[["🏅","57:42","10K PR","5:46/km · Mar 15"],["🏃","25 km","Longest Race","Ultra Dec"],["🔥","228W","Peak Power","Police Run"],
               ["❤️","192","Max HR Ever","Kaveri Trail"],["👣","91 spm","Max Cadence","Mar 10 stride"],["⛰️","169m","Most Elev","Bengaluru Ultra"]].map(([ic,v,l,sub])=>(
               <div key={l} style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:"13px 12px",borderTop:`2px solid ${C.bdr2}`}}>
                 <div style={{fontSize:18,marginBottom:6}}>{ic}</div>
