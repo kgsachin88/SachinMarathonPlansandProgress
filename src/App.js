@@ -171,12 +171,12 @@ const sbiKmData=[
   {km:"Km 9",pace:5.77,hr:177,flag:false},{km:"Km 10",pace:5.52,hr:176,flag:false},
 ];
 const nammaSegs=[
-  {km:"0–1 km",  terrain:"Flat Start",       pace:"6:10",hr:"~155",intensity:.35,color:C.green, tip:"Don't surge with the crowd. Start easy, HR under 160."},
-  {km:"1–2.5 km",terrain:"⬆️ The Climb",     pace:"6:35",hr:"~172",intensity:.75,color:C.orange,tip:"5.7% avg grade, max 13%. Shorten stride, keep cadence 85+."},
-  {km:"2.5–5 km",terrain:"Flat/Rolling",      pace:"5:50",hr:"~168",intensity:.60,color:C.sky,  tip:"Recover on the flat. Gentle downhill — bank time here."},
-  {km:"5–7 km",  terrain:"Turnaround+Flat",   pace:"5:45",hr:"~172",intensity:.65,color:C.sky,  tip:"Fastest stretch. Feel strong. Push now."},
-  {km:"7–8.5 km",terrain:"⬆️ Climb Again",    pace:"6:25",hr:"~182",intensity:.90,color:C.indigo,tip:"Shorten stride. Keep moving. Cadence 88+."},
-  {km:"8.5–10",  terrain:"⬇️ Downhill Finish",pace:"5:35",hr:"~185",intensity:.85,color:C.indigo,tip:"Gravity is your friend. Open up and empty the tank."},
+  {km:"0–1 km",  terrain:"Flat Start",       pace:"5:57",hr:"161",  intensity:.35,color:C.green, tip:"Started controlled at 5:57 — HR 161 at km end. Avoided the crowd surge. ✅"},
+  {km:"1–2.5 km",terrain:"⬆️ The Climb",     pace:"5:59",hr:"179",  intensity:.75,color:C.orange,tip:"First climb at 5:59/km — faster than planned. HR spiked to 179. Huge effort here."},
+  {km:"2.5–5 km",terrain:"Flat/Rolling",      pace:"5:20",hr:"181",  intensity:.70,color:C.sky,  tip:"Opened up on the descent. Km 4 blasted at 4:57 (-33m). HR held steady at 181."},
+  {km:"5–7 km",  terrain:"Turnaround+Flat",   pace:"5:44",hr:"180",  intensity:.65,color:C.sky,  tip:"Slightly slower on the return. HR 180. Wind and fatigue building."},
+  {km:"7–8.5 km",terrain:"⬆️ Climb Again",    pace:"7:53",hr:"169",  intensity:.90,color:C.indigo,tip:"Hardest km — 7:53 for +30m. Cadence dropped. Survived the grind. 💪"},
+  {km:"8.5–10",  terrain:"⬇️ Downhill Finish",pace:"5:12",hr:"186",  intensity:.88,color:C.indigo,tip:"Km 9 was 4:46 — fastest km of the race! Gravity + everything left. HR 184–187. 🚀"},
 ];
 const nammaTraining=[
   {date:"Mar 6", emoji:"🏸",label:"Badminton ✓",        light:C.green,done:true, isRace:false,desc:"67 min · HR 133 · 547 kcal ✅"},
@@ -188,7 +188,7 @@ const nammaTraining=[
   {date:"Mar 12",emoji:"💨",label:"Shakeout + Strides",    light:C.sky,  done:false,isRace:false,desc:"4km easy + 4×80m strides at race effort."},
   {date:"Mar 13",emoji:"🛌",label:"Full Rest",              light:C.sec,  done:false,isRace:false,desc:"Nothing. Carb load at dinner. Sleep by 10pm."},
   {date:"Mar 14",emoji:"🎽",label:"Shakeout + BIB",         light:C.blue, done:false,isRace:false,desc:"20min easy + 2 strides. BIB at Swaasthya Fitness, Whitefield."},
-  {date:"Mar 15",emoji:"🏅",label:"RACE DAY",               light:C.namma,done:false,isRace:true, desc:"Namma Power Run · 57:30–58:30 · NICE Road, Hoskerehalli"},
+  {date:"Mar 15",emoji:"🏅",label:"RACE DAY ✓",             light:C.namma,done:true, isRace:true, desc:"Namma Power Run · 57:42 · 5:46/km · HR 177/193 · +110m · 876 kcal · 5 PRs! 🏅⚡"},
 ];
 const NAMMA_ELEV=[0,3,6,12,22,35,45,52,58,62,65,67,68,66,63,58,52,45,38,30,24,18,14,10,7,5,4,3,2,2,2,3,5,8,12,18,25,33,42,50,57,63,67,68,67,65,62,58,53,47,40,33,26,20,15,10,7,4,2,0];
 
@@ -318,12 +318,12 @@ const MONTHLY=[
   {m:"Dec '25",km:90.1, runs:9, avgPace:"7:40",color:C.indigo},
   {m:"Jan '26",km:106.3,runs:15,avgPace:"7:25",color:C.sky},
   {m:"Feb '26",km:133.9,runs:18,avgPace:"7:22",color:C.blue},
-  {m:"Mar '26",km:51.1, runs:7, avgPace:"6:45",color:C.cyan},
+  {m:"Mar '26",km:61.1, runs:8, avgPace:"6:35",color:C.cyan},
 ];
 const WEEKLY=[
   {w:"Jan W1",km:22.0},{w:"Jan W2",km:32.1},{w:"Jan W3",km:29.1},{w:"Jan W4",km:23.1},
   {w:"Feb W1",km:17.9},{w:"Feb W2",km:14.6},{w:"Feb W3",km:24.3},{w:"Feb W4",km:46.6},
-  {w:"Mar W1",km:53.9},{w:"Mar W2",km:11.7},
+  {w:"Mar W1",km:53.9},{w:"Mar W2",km:11.7},{w:"Mar W3",km:10.0},
 ];
 const PACE_TREND=[
   {r:"Nov 16",pace:6.55,hr:178,km:10.3,tag:"TRAIL"},{r:"Nov 26",pace:5.90,hr:175,km:9.2,tag:"TEMPO"},
@@ -332,13 +332,14 @@ const PACE_TREND=[
   {r:"Feb 26",pace:7.47,hr:155,km:10.0,tag:"LONG"}, {r:"Mar 1", pace:5.88,hr:180,km:10.0,tag:"RACE"},
   {r:"Mar 7", pace:7.13,hr:159,km:14.1,tag:"LONG"}, {r:"Mar 9", pace:6.02,hr:171,km:5.2,tag:"TEMPO"},
   {r:"Mar 10",pace:7.12,hr:153,km:6.6, tag:"STRIDES"},
+  {r:"Mar 15",pace:5.77,hr:177,km:10.01,tag:"RACE"},
 ];
 const RACE_HISTORY=[
   {name:"Kaveri Trail 10K",      date:"Nov 16 '25",dist:"10.3km", time:"1:07:25",  pace:"6:33/km",hr:"178/192",elev:"+5m",  temp:"~26°C",color:C.mut,    status:"done",kcal:840, note:"Trail debut. HR 192 all-time max."},
   {name:"SBI Green 10K",         date:"Nov 30 '25",dist:"10.14km",time:"1:03:09",  pace:"6:14/km",hr:"175/187",elev:"+111m",temp:"~22°C",color:C.mut,    status:"done",kcal:760, note:"Km 4 surge → km 7 blowup. Key lesson learned."},
   {name:"Bengaluru Ultra 25K",   date:"Dec 21 '25",dist:"25.04km",time:"3:12:04",  pace:"7:40/km",hr:"161/188",elev:"+169m",temp:"~20°C",color:C.yellow, status:"done",kcal:2582,note:"Longest race. 169m elev, 3h12m. Massive aerobic base."},
   {name:"Karnataka Police Run",  date:"Mar 1 '26", dist:"10.02km",time:"58:53",    pace:"5:53/km",hr:"180/190",elev:"+39m", temp:"~24°C",color:C.green,  status:"done",kcal:889, note:"Season opener. Sub-60 smashed. PR by 4:16."},
-  {name:"Namma Power Run",       raceDate:"2026-03-15",date:"Mar 15 '26",dist:"10K",    time:"Target 57:30",pace:"5:45/km",hr:"—",  elev:"+90m", temp:"~33°C",color:C.namma,  status:"next",kcal:"~870",note:"NICE Road double climb. ⚡"},
+  {name:"Namma Power Run",       raceDate:"2026-03-15",date:"Mar 15 '26",dist:"10.01km",time:"57:42",    pace:"5:46/km",hr:"177/193",elev:"+110m",temp:"~33°C",color:C.namma,  status:"done",kcal:876,     note:"10K PR! 5 Strava PRs. Adidas EVO SL debut. Double climb conquered. Suffer 237. 🏅⚡"},
   {name:"TCS World 10K",         raceDate:"2026-04-26",date:"Apr 26 '26",dist:"10K",    time:"Target 54:50",pace:"5:29/km",hr:"—",  elev:"+50m", temp:"~32°C",color:C.tcs,    status:"goal",kcal:"~850",note:"Season 10K goal. Cubbon Road. Sub-55 target."},
   {name:"Freedom Bengaluru HM",  raceDate:"2026-05-24",date:"May 24 '26",dist:"21.1km", time:"Target 2:20:00",pace:"6:38/km",hr:"—",elev:"+190m",temp:"~30°C",color:C.freedom,status:"new", kcal:"~1800",note:"First Half Marathon! NICE Road. Kalki Sports."},
   {name:"Bengaluru Runners Jatre 10K",raceDate:"2026-06-14",date:"Jun 14 '26",dist:"10K",time:"Target 54:00",pace:"5:24/km",hr:"—",elev:"+20m", temp:"~26°C",color:C.jatre,  status:"new", kcal:"~820",note:"Community fun race. Bengaluru Runners Jatre. Flat fast course."},
@@ -346,6 +347,7 @@ const RACE_HISTORY=[
   {name:"Bengaluru Ultra 25K",   raceDate:"2026-07-25",date:"Jul 25 '26",dist:"25K",    time:"Target 2:55:00",pace:"7:00/km",hr:"—",elev:"+170m",temp:"~23°C",color:C.ultra,  status:"new", kcal:"~2200",note:"2-loop GKVK campus. Monsoon running. Improve on Dec 3:12:04."},
 ];
 const ACTIVITY_LOG=[
+  {date:"Mar 15",name:"Namma Power Run 2026", km:10.01,time:"57:42",  pace:"5:46",hr:177,tl:237,gear:"Adidas EVO SL",tag:"RACE"},
   {date:"Mar 11",name:"Morning Badminton",    km:"—",  time:"1:25:43",pace:"—",   hr:134,tl:112,gear:"Court shoes",tag:"CROSS"},
   {date:"Mar 10",name:"Shakeout + 4 Strides",km:6.57, time:"46:43",  pace:"7:07",hr:153,tl:131,gear:"Novablast 5",tag:"STRIDES"},
   {date:"Mar 9", name:"Morning Run",          km:5.15, time:"31:00",pace:"6:01",hr:171,tl:153,gear:"Nimbus 27",  tag:"TEMPO"},
