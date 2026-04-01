@@ -1444,7 +1444,7 @@ export default function App(){
             const kpis = [
               {v:"7",s:"",l:"2026 Races",sub:"Mar–Jul",c:C.blue},
               {v:totalKm,s:"km",l:stravaActivities.length>0?"Live Volume":"Season Vol",sub:stravaActivities.length>0?`${stravaActivities.length} activities`:"Nov–Mar",c:C.sky},
-              {v:"58:53",s:"",l:"10K PR",sub:"Mar 1 2026",c:C.green},
+              {v:"57:42",s:"",l:"10K PR",sub:"Mar 15 2026",c:C.namma},
               {v:totalRuns!=null?totalRuns:"21.1",s:totalRuns!=null?"runs":"K",l:totalRuns!=null?"Total Runs":"First HM",sub:totalRuns!=null?"from Strava":"May 24 '26",c:C.freedom},
               {v:"25",s:"km",l:"Ultra 2×",sub:"Dec+Jul",c:C.ultra},
             ];
@@ -2050,7 +2050,7 @@ export default function App(){
                 <div style={{fontSize:11,color:C.mut,fontFamily:F.b}}>
                   {liveVO2
                     ? `Jack Daniels VDOT · Live from ${stravaActivities.filter(a=>['EASY','TEMPO','LONG','ULTRA','RACE','STRIDES'].includes(a.tag)).length} runs`
-                    : 'Jack Daniels VDOT · Police Run (58:53)'}
+                    : 'Jack Daniels VDOT · Namma Power Run (57:42)'}
                 </div>
                 {liveVO2&&<div style={{fontSize:10,color:C.green,fontFamily:F.b,marginTop:4}}>● Auto-updated from Strava · {vo2Label(vo2Display)}</div>}
               </div>
