@@ -1378,6 +1378,12 @@ export default function App(){
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
+  // Auto-sync Strava whenever the DASH tab is opened
+  useEffect(()=>{
+    if(topTab===6 && stravaAuth && !stravaLoading) loadActivities(stravaAuth);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[topTab]);
+
   return(
     <div style={{background:C.bg,minHeight:"100vh",color:C.pri,fontFamily:F.b,maxWidth:800,margin:"0 auto",
       paddingBottom:48,backgroundImage:"radial-gradient(ellipse 70% 35% at 100% 0%,rgba(91,142,248,0.07),transparent),radial-gradient(ellipse 50% 35% at 0% 85%,rgba(140,156,248,0.05),transparent)"}}>
