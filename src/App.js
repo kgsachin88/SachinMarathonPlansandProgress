@@ -1309,7 +1309,7 @@ function BengaluruUltra(){
 }
 
 /* ════════════════════ ROOT APP ════════════════════ */
-const TOP_TABS=["TODAY","RACES","SEASON","LOG","STATS","PROFILE"];
+const TOP_TABS=["TODAY","RACES","SEASON","LOG","STATS","PROFILE","DASH"];
 
 export default function App(){
   const[topTab,setTopTab]=useState(0);
@@ -2137,6 +2137,204 @@ export default function App(){
           </div>
         </div>
       )}
+
+      {/* ══════ TAB: DASH ══════ */}
+      {topTab===6&&(()=>{
+        const now=new Date();
+        const dow=now.getDay()||7;
+        const weekStart=new Date(now);
+        weekStart.setDate(now.getDate()-(dow-1));
+        weekStart.setHours(0,0,0,0);
+
+        const isRunAct=a=>['EASY','TEMPO','LONG','ULTRA','RACE','STRIDES'].includes(a.tag);
+        const weekActs=stravaActivities.filter(a=>a.dateISO&&new Date(a.dateISO)>=weekStart);
+        const weekRuns=weekActs.filter(isRunAct);
+        const weekCross=weekActs.filter(a=>a.tag==='CROSS');
+        const weekKm=weekRuns.reduce((s,a)=>s+(a.km!=='—'?+a.km||0:0),0);
+        const weekHRs=weekRuns.filter(a=>a.hr&&a.hr!=='—');
+        const weekAvgHR=weekHRs.length?Math.round(weekHRs.reduce((s,a)=>s+a.hr,0)/weekHRs.length):'—';
+        const weekTL=Math.round(weekActs.reduce((s,a)=>s+(a.tl!=='—'?+a.tl||0:0),0));
+        const weekLabel=`${weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} – ${new Date(weekStart.getTime()+6*86400e3).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}`;
+
+        const allRuns=stravaActivities.filter(isRunAct);
+        const allCross=stravaActivities.filter(a=>a.tag==='CROSS');
+        const allKm=stravaActivities.length>0?Math.round(allRuns.reduce((s,a)=>s+(a.km!=='—'?+a.km||0:0),0)):Math.round(MONTHLY.reduce((s,m)=>s+m.km,0));
+        const totalRunCount=stravaActivities.length>0?allRuns.length:MONTHLY.reduce((s,m)=>s+m.runs,0);
+        const totalWorkouts=stravaActivities.length>0?stravaActivities.length:MONTHLY.reduce((s,m)=>s+m.runs,0);
+        const allRunsWithHR=allRuns.filter(a=>a.hr&&a.hr!=='—');
+        const yearAvgHR=allRunsWithHR.length?Math.round(allRunsWithHR.reduce((s,a)=>s+a.hr,0)/allRunsWithHR.length):'—';
+        const totalTL=Math.round(stravaActivities.reduce((s,a)=>s+(a.tl!=='—'?+a.tl||0:0),0));
+        const doneRaces=RACE_HISTORY.filter(rc=>rc.status==='done').length;
+        const maxMonthKm=Math.max(...MONTHLY.map(m=>m.km));
+        const firstP=PACE_TREND[0];
+        const lastP=PACE_TREND[PACE_TREND.length-1];
+        const paceGain=firstP.pace-lastP.pace;
+        const pgMin=Math.floor(Math.abs(paceGain));
+        const pgSec=Math.round((Math.abs(paceGain)%1)*60);
+
+        return(
+          <div style={{padding:"16px 16px 40px"}}>
+            <SHead label="2026 Dashboard" accent={C.blue} right={stravaActivities.length>0?"● Live from Strava":"Static data"}/>
+
+            {/* ── THIS WEEK ── */}
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+                <SLabel children="This Week" col={C.blue}/>
+                <span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>{weekLabel}</span>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:6,marginBottom:12}}>
+                {[
+                  {v:weekKm.toFixed(1),s:"km",l:"Distance",c:C.sky},
+                  {v:weekRuns.length,s:"",l:"Runs",c:C.green},
+                  {v:weekCross.length,s:"",l:"Cross",c:C.orange},
+                  {v:weekAvgHR,s:"",l:"Avg HR",c:C.red},
+                  {v:weekTL||"—",s:"",l:"Load",c:C.indigo},
+                ].map(k=>(
+                  <div key={k.l} style={{background:C.faint,borderRadius:10,padding:"10px 4px",textAlign:"center",border:`1px solid ${C.bdr}`}}>
+                    <div style={{fontSize:18,fontFamily:F.h,color:k.c,lineHeight:1}}>{k.v}<span style={{fontSize:9}}>{k.s}</span></div>
+                    <div style={{fontSize:9,color:C.sec,fontFamily:F.b,marginTop:3}}>{k.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{fontSize:9,color:C.sec,fontFamily:F.b}}>Weekly target · 50 km</span>
+                <span style={{fontSize:9,color:C.blue,fontFamily:F.b}}>{weekKm.toFixed(1)} / 50 km</span>
+              </div>
+              <IBar val={weekKm/50} color={C.blue} h={6}/>
+            </div>
+
+            {/* ── MONTHLY SUMMARY ── */}
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="Monthly Summary" col={C.sky}/>
+              {MONTHLY.map((m,i)=>{
+                const prev=i>0?MONTHLY[i-1]:null;
+                const delta=prev?(((m.km-prev.km)/prev.km)*100).toFixed(0):null;
+                const up=prev&&m.km>=prev.km;
+                return(
+                  <div key={m.m} style={{marginBottom:10}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                      <span style={{fontSize:11,fontFamily:F.h,color:C.white,width:52,flexShrink:0}}>{m.m}</span>
+                      <div style={{flex:1}}><IBar val={m.km/maxMonthKm} color={m.color} h={7}/></div>
+                      <span style={{fontSize:12,fontFamily:F.h,color:m.color,width:50,textAlign:"right",flexShrink:0}}>{m.km}<span style={{fontSize:8}}>km</span></span>
+                      <span style={{fontSize:10,color:C.sec,fontFamily:F.b,width:22,flexShrink:0,textAlign:"right"}}>{m.runs}r</span>
+                      <span style={{fontSize:9,color:C.mut,fontFamily:F.m,width:30,flexShrink:0,textAlign:"right"}}>{m.avgPace}</span>
+                      {delta&&<span style={{fontSize:9,color:up?C.green:C.red,width:28,flexShrink:0,textAlign:"right"}}>{up?"+":""}{delta}%</span>}
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{borderTop:`1px solid ${C.bdr}`,marginTop:4,paddingTop:8,display:"flex",justifyContent:"space-between"}}>
+                <span style={{fontSize:10,color:C.mut,fontFamily:F.b}}>5-month total</span>
+                <span style={{fontSize:12,fontFamily:F.h,color:C.white}}>{MONTHLY.reduce((s,m)=>+(s+m.km).toFixed(1),0)} km · {MONTHLY.reduce((s,m)=>s+m.runs,0)} runs</span>
+              </div>
+            </div>
+
+            {/* ── 2026 YEAR AT A GLANCE ── */}
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="2026 Year at a Glance" col={C.namma}/>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                {[
+                  {ic:"🏃",v:totalRunCount,s:"",l:"Total Runs",c:C.green},
+                  {ic:"📏",v:allKm,s:"km",l:"Total Distance",c:C.sky},
+                  {ic:"🏋️",v:totalWorkouts,s:"",l:"All Workouts",c:C.blue},
+                  {ic:"🏸",v:stravaActivities.length>0?allCross.length:"~20",s:"",l:"Cross Sessions",c:C.orange},
+                  {ic:"❤️",v:yearAvgHR,s:"",l:"Avg HR (runs)",c:C.red},
+                  {ic:"🏅",v:doneRaces,s:"",l:"Races Done",c:C.namma},
+                  {ic:"💪",v:totalTL||"—",s:"",l:"Total Load",c:C.indigo},
+                  {ic:"⚡",v:"57:42",s:"",l:"10K PR",c:C.namma},
+                  {ic:"🏆",v:`${doneRaces}/7`,s:"",l:"Season Progress",c:C.yellow},
+                ].map(k=>(
+                  <div key={k.l} style={{background:C.faint,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 6px",textAlign:"center"}}>
+                    <div style={{fontSize:16,marginBottom:3}}>{k.ic}</div>
+                    <div style={{fontSize:17,fontFamily:F.h,color:k.c,lineHeight:1}}>{k.v}<span style={{fontSize:9}}>{k.s}</span></div>
+                    <div style={{fontSize:9,color:C.sec,fontFamily:F.b,marginTop:3}}>{k.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── PACE PROGRESSION ── */}
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="Pace Progression" col={C.green}/>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:C.mut,fontFamily:F.b,marginBottom:2}}>FIRST RECORDED</div>
+                  <div style={{fontSize:22,fontFamily:F.h,color:C.orange}}>{fmtPace(firstP.pace)}</div>
+                  <div style={{fontSize:9,color:C.sec,fontFamily:F.b}}>{firstP.r} · {firstP.tag}</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:paceGain>0?11:9,color:paceGain>0?C.green:C.red,fontFamily:F.h,letterSpacing:"0.08em"}}>
+                    {paceGain>0?`▼ ${pgMin}:${String(pgSec).padStart(2,"0")} FASTER`:"▲ SLOWER"}
+                  </div>
+                  <div style={{fontSize:8,color:C.mut,fontFamily:F.b,marginTop:2}}>{PACE_TREND.length} data points</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:C.mut,fontFamily:F.b,marginBottom:2}}>LATEST</div>
+                  <div style={{fontSize:22,fontFamily:F.h,color:C.green}}>{fmtPace(lastP.pace)}</div>
+                  <div style={{fontSize:9,color:C.sec,fontFamily:F.b}}>{lastP.r} · {lastP.tag}</div>
+                </div>
+              </div>
+              {(()=>{
+                const pts=PACE_TREND;
+                const mn=Math.min(...pts.map(p=>p.pace));
+                const mx=Math.max(...pts.map(p=>p.pace));
+                const W=320,H=52,pd=8;
+                const xy=pts.map((p,i)=>[pd+(i/(pts.length-1))*(W-2*pd),H-pd-((mx-p.pace)/(mx-mn||1))*(H-2*pd)]);
+                return(
+                  <svg viewBox={`0 0 ${W} ${H}`} style={{width:"100%",height:52,overflow:"visible"}}>
+                    <polyline points={xy.map(p=>p.join(",")).join(" ")} fill="none" stroke={C.green} strokeWidth="1.5" strokeOpacity=".6"/>
+                    {pts.map((p,i)=>(
+                      <circle key={i} cx={xy[i][0]} cy={xy[i][1]} r={p.tag==='RACE'?4:2.5}
+                        fill={p.tag==='RACE'?C.namma:C.sky} stroke={C.bg} strokeWidth="1"/>
+                    ))}
+                  </svg>
+                );
+              })()}
+              <div style={{display:"flex",gap:16,marginTop:4,justifyContent:"center"}}>
+                <span style={{fontSize:9,color:C.namma,fontFamily:F.b}}>● Race</span>
+                <span style={{fontSize:9,color:C.sky,fontFamily:F.b}}>● Training</span>
+                <span style={{fontSize:9,color:C.mut,fontFamily:F.b}}>Lower = Faster</span>
+              </div>
+            </div>
+
+            {/* ── HR ZONE DISTRIBUTION ── */}
+            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+              <SLabel children="HR Zone Distribution (Season)" col={C.red}/>
+              {HR_ZONES.map(z=>(
+                <div key={z.z} style={{marginBottom:10}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                    <span style={{fontSize:11,fontFamily:F.h,color:z.c,width:100,flexShrink:0}}>{z.z} · {z.name}</span>
+                    <span style={{fontSize:10,color:C.sec,fontFamily:F.b}}>{z.bpm}</span>
+                    <span style={{fontSize:10,color:C.sec,fontFamily:F.b}}>{z.hrs}</span>
+                    <span style={{fontSize:12,fontFamily:F.h,color:z.c}}>{z.pct}%</span>
+                  </div>
+                  <IBar val={z.pct/100} color={z.c} h={6}/>
+                </div>
+              ))}
+            </div>
+
+            {/* ── ACTIVITY BREAKDOWN (live only) ── */}
+            {stravaActivities.length>0&&(()=>{
+              const tagCounts={};
+              stravaActivities.forEach(a=>{tagCounts[a.tag]=(tagCounts[a.tag]||0)+1;});
+              const total=stravaActivities.length;
+              return(
+                <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:16,marginBottom:12}}>
+                  <SLabel children="Activity Breakdown" col={C.orange}/>
+                  {Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).map(([tag,count])=>(
+                    <div key={tag} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                      <span style={{fontSize:10,fontFamily:F.h,color:tagColor(tag),width:56,flexShrink:0}}>{tag}</span>
+                      <div style={{flex:1}}><IBar val={count/total} color={tagColor(tag)} h={6}/></div>
+                      <span style={{fontSize:11,fontFamily:F.h,color:C.white,width:22,textAlign:"right"}}>{count}</span>
+                      <span style={{fontSize:9,color:C.mut,fontFamily:F.b,width:32,textAlign:"right"}}>{Math.round(count/total*100)}%</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
 
       {/* FOOTER */}
       <div style={{borderTop:`1px solid ${C.bdr}`,padding:"20px 20px 32px",display:"flex",
